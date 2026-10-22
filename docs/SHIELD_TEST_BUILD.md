@@ -64,3 +64,9 @@ These environment variables are read only when `-PshieldTestBuild=true` is passe
 5. A **second signed build using the same private key** upgrades the test app and preserves its test-local data.
 
 Only after these checks should we modify the audio engine or memory buffers.
+
+## Activating CI on a new fork
+
+GitHub may initially disable Actions after forking. Enable workflows in the repository's **Actions** tab. Then push a change to this feature branch or synchronize its draft PR into `dev` to trigger **PR Full Debug Build**. Review the workflow run for Gradle test/build logs and its attached test APK artifact.
+
+**Do not merge the draft PR merely to start CI**; keep `dev` unchanged until the APK installs cleanly on the real Shield. If GitHub doesn't create a run, inspect Actions permissions and workflow activation before assuming a build succeeded.
