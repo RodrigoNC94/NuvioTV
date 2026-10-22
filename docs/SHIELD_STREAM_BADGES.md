@@ -31,3 +31,7 @@ AIOStreams installs using a custom/self-hosted `ADDON_ID` are **not recognized**
 - [ ] Existing AIOStreams formatter and lossless-audio behavior remain unchanged.
 
 This is a **draft feature** until Android CI compilation and on-device visual validation succeed.
+
+## Build validation on the fork
+
+This badge feature is intentionally isolated from the signing/build work in PR #2. GitHub Actions on this branch compiles the original `fullDebug` variant, while PR #2 introduces the separate `com.nuvio.shieldpro.test` package identity. **Do not install a debug APK from this badge PR over the official app.** Once both sets of changes are validated, integrate them in order: build isolation first, then badge layout. Keep the PRs as drafts until compiled and device-reviewed.
