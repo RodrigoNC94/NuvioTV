@@ -229,7 +229,8 @@ class StreamRepositoryImpl @Inject constructor(
                                             AddonStreams(
                                                 addonName = addon.displayName,
                                                 addonLogo = addon.logo,
-                                                streams = namedStreams
+                                                streams = namedStreams,
+                                                addonId = addon.id
                                             )
                                         )
                                     } else {
@@ -243,7 +244,8 @@ class StreamRepositoryImpl @Inject constructor(
                                                 AddonStreams(
                                                     addonName = addon.displayName,
                                                     addonLogo = addon.logo,
-                                                    streams = inlineStreams
+                                                    streams = inlineStreams,
+                                                    addonId = addon.id
                                                 )
                                             )
                                         } else {
