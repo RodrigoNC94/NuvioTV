@@ -30,11 +30,9 @@ class StreamBadgePresentation @Inject constructor(
         if (filters.isEmpty()) return groups
         val pool = badgeInstancePool.get()
         return groups.map { group ->
-            // This fork's imported image pack belongs to AIOStreams only.
-            // Check the manifest ID, not the user-editable display name ("English").
-            if (!isAioStreamsManifestId(group.addonId)) return@map group
             group.copy(
                 streams = group.streams.map { stream ->
+                    if (!isAioStreamsManifestId(stream.addonId)) return@map stream
                     val matchedBadges = StreamBadgeMatcher.matchedBadgesPooled(stream, filters, pool)
                     if (matchedBadges.isEmpty()) {
                         stream
