@@ -31,8 +31,8 @@ class StreamBadgePresentation @Inject constructor(
         val pool = badgeInstancePool.get()
         return groups.map { group ->
             group.copy(
-                streams = group.streams.map { stream ->
-                    if (!isAioStreamsManifestId(stream.addonId)) return@map stream
+                streams = group.streams.map streamMap@{ stream ->
+                    if (!isAioStreamsManifestId(stream.addonId)) return@streamMap stream
                     val matchedBadges = StreamBadgeMatcher.matchedBadgesPooled(stream, filters, pool)
                     if (matchedBadges.isEmpty()) {
                         stream
