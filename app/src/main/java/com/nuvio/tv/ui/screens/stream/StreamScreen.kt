@@ -1377,7 +1377,25 @@ private fun StreamCard(
         }
     }
 
-    Card(
+    // Keep the stream-bar content unchanged while displaying crisp imported badges
+    // in a separate, measured row above it. This avoids Card clipping/focus artifacts.
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (hasBadges && badgePlacement == StreamBadgePlacement.TOP) {
+            if (stream.badges.isNotEmpty() || (showFileSizeBadges && stream.behaviorHints?.videoSize != null)) {
+                StreamBadgeChips(
+                    badges = stream.badges,
+                    fileSizeBytes = stream.behaviorHints?.videoSize,
+                    showFileSizeBadge = showFileSizeBadges,
+                    animate = shouldAnimateBadges,
+                    focused = isFocused
+                )
+            } else if (reserveBadgeSpace) {
+                Spacer(modifier = Modifier.height(20.dp))
+            }
+            Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
+        }
+
+        Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -1420,20 +1438,6 @@ private fun StreamCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)
             ) {
-                if (hasBadges && badgePlacement == StreamBadgePlacement.TOP) {
-                    if (stream.badges.isNotEmpty() || (showFileSizeBadges && stream.behaviorHints?.videoSize != null)) {
-                        StreamBadgeChips(
-                            badges = stream.badges,
-                            fileSizeBytes = stream.behaviorHints?.videoSize,
-                            showFileSizeBadge = showFileSizeBadges,
-                            animate = shouldAnimateBadges,
-                            focused = isFocused
-                        )
-                    } else {
-                        Spacer(modifier = Modifier.height(20.dp))
-                    }
-                    Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
-                }
 
                 Row(
                     modifier = Modifier.align(streamName.contentTextDirection().toAbsoluteAlignment()),
@@ -1526,8 +1530,8 @@ private fun StreamCard(
             }
         }
     }
+    }
 }
-
 @Composable
 private fun outlineBorder(outlined: Boolean, shape: RoundedCornerShape): Border =
     if (outlined) {
