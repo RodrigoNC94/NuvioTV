@@ -294,7 +294,9 @@ data class ProxyHeaders(
 data class AddonStreams(
     val addonName: String,
     val addonLogo: String?,
-    val streams: List<Stream>
+    val streams: List<Stream>,
+    /** Stable manifest ID for provider-specific presentation (never an addon display name). */
+    val addonId: String? = null
 )
 
 private fun String?.isMagnetLink(): Boolean =
