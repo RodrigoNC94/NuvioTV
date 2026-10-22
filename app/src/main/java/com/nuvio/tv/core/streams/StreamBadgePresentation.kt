@@ -30,6 +30,9 @@ class StreamBadgePresentation @Inject constructor(
         if (filters.isEmpty()) return groups
         val pool = badgeInstancePool.get()
         return groups.map { group ->
+            // This fork's imported image pack belongs to AIOStreams only.
+            // Check the manifest ID, not the user-editable display name ("English").
+            if (!isAioStreamsManifestId(group.addonId)) return@map group
             group.copy(
                 streams = group.streams.map { stream ->
                     val matchedBadges = StreamBadgeMatcher.matchedBadgesPooled(stream, filters, pool)
@@ -80,4 +83,18 @@ class StreamBadgePresentation @Inject constructor(
         }
         return merged.values.toList()
     }
+}
+
+/**
+ * AIOStreams' stock manifest ID (packages/core/src/config/schema/branding.ts)
+ * can include a per-installation suffix. A full manifest ID is significantly more
+ * reliable than addonName, which users can customize to anything.
+ *
+ * Self-hosted AIOStreams instances with custom ADDON_ID require explicit
+ * scope selection in a future settings feature.
+ */
+internal fun isAioStreamsManifestId(id: String?): Boolean {
+    val prefix = "com.aiostreams.viren070"
+    return id?.equals(prefix, ignoreCase = true) == true ||
+        id?.startsWith("$prefix.", ignoreCase = true) == true
 }
