@@ -13,6 +13,9 @@ permissions:
 
 jobs:
   comment:
+    # The fork has GitHub Issues disabled; inherited issue-comment calls return HTTP 410.
+    # Keep this upstream automation dormant instead of failing every Shield build.
+    if: github.repository == 'NuvioMedia/NuvioTV'
     name: Comment PR with debug build result
     runs-on: ubuntu-latest
 
