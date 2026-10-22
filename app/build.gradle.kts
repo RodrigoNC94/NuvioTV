@@ -111,6 +111,10 @@ fun truthy(value: String?): Boolean {
 
 val buildingAppBundle = gradle.startParameter.taskNames.any { it.contains("bundle", ignoreCase = true) }
 val useDebugReleaseSigning = env("CI_USE_DEBUG_SIGNING").equals("true", ignoreCase = true)
+// Fork-only smoke/test build. Keep upstream release and other variant defaults unchanged.
+val shieldTestBuild = parseBooleanProperty(
+    providers.gradleProperty("shieldTestBuild").orNull ?: env("SHIELD_TEST_BUILD")
+)
 val useLocalFfmpegDecoder = truthy(
     providers.gradleProperty("useLocalFfmpegDecoder").orNull
         ?: env("USE_LOCAL_FFMPEG_DECODER")
@@ -177,7 +181,7 @@ android {
         buildConfigField("String", "SENTRY_DSN", buildConfigString(sentryDsn))
 
         // In-app updater (GitHub Releases)
-        buildConfigField("String", "GITHUB_OWNER", "\"NuvioMedia\"")
+        buildConfigField("String", "GITHUB_OWNER", if (shieldTestBuild) "\"RodrigoNC94\"" else "\"NuvioMedia\"")
         buildConfigField("String", "GITHUB_REPO", "\"NuvioTV\"")
     }
 
@@ -186,7 +190,7 @@ android {
         create("full") {
             dimension = "distribution"
             buildConfigField("boolean", "FEATURE_PLUGINS_ENABLED", "true")
-            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", "true")
+            buildConfigField("boolean", "FEATURE_IN_APP_UPDATES_ENABLED", if (shieldTestBuild) "false" else "true")
             buildConfigField("boolean", "FEATURE_IN_APP_TRAILERS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_EXTERNAL_TRAILERS_ENABLED", "true")
             buildConfigField("boolean", "FEATURE_EXTERNAL_PLAYBACK_KEEP_ALIVE_ENABLED", "true")
@@ -213,6 +217,15 @@ android {
     }
 
     signingConfigs {
+        create("shieldTest") {
+            // Never commit the signing key. CI decodes its private secret into RUNNER_TEMP.
+            env("SHIELD_SIGNING_STORE_FILE")?.takeIf { it.isNotBlank() }?.let { keyPath ->
+                storeFile = file(keyPath)
+                storePassword = env("SHIELD_SIGNING_STORE_PASSWORD")
+                keyAlias = env("SHIELD_SIGNING_KEY_ALIAS")
+                keyPassword = env("SHIELD_SIGNING_KEY_PASSWORD")
+            }
+        }
         create("release") {
             keyAlias = releaseKeyAliasValue
             keyPassword = releaseKeyPasswordValue
@@ -223,7 +236,18 @@ android {
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("release")
+            // A separate, consistently identifiable Shield test APK; never overwrite official Nuvio.
+            // In CI, use a persistent private keystore via SHIELD_SIGNING_* secrets; otherwise
+            // AGP's per-environment debug key is suitable only for a disposable smoke test.
+            signingConfig = if (shieldTestBuild) {
+                if (!env("SHIELD_SIGNING_STORE_FILE").isNullOrBlank()) {
+                    signingConfigs.getByName("shieldTest")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
+            } else {
+                signingConfigs.getByName("release")
+            }
             isDebuggable = parseBooleanProperty(providers.gradleProperty("debuggable").orNull)
             isMinifyEnabled = false
 
@@ -365,7 +389,11 @@ android {
 androidComponents {
     onVariants(selector().withBuildType("debug")) { variant ->
         val isPlaystore = variant.productFlavors.any { it.second == "playstore" }
-        variant.applicationId.set(if (isPlaystore) "com.nuvio.appdebug" else "com.nuviodebug.com")
+        variant.applicationId.set(
+            if (isPlaystore) "com.nuvio.appdebug"
+            else if (shieldTestBuild) "com.nuvio.shieldpro.test"
+            else "com.nuviodebug.com"
+        )
     }
     // Only the full flavor ships the in-app updater.
     onVariants(selector().withFlavor("distribution" to "full")) { variant ->
