@@ -108,140 +108,144 @@ internal fun StreamItem(
         }
     }
 
-    Card(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(if (focusRequester != null && requestInitialFocus) Modifier.focusRequester(focusRequester) else Modifier)
-            .onFocusChanged {
-                onFocusChanged?.invoke(it.isFocused)
-            }
-            .then(if (onUpKey != null) Modifier.onKeyEvent { event ->
-                if (event.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN &&
-                    event.key == Key.DirectionUp) {
-                    onUpKey(); true
-                } else false
-            } else Modifier),
-        colors = CardDefaults.colors(
-            containerColor = NuvioTheme.colors.BackgroundElevated,
-            focusedContainerColor = NuvioTheme.colors.BackgroundElevated
-        ),
-        shape = CardDefaults.shape(shape = RoundedCornerShape(NuvioTheme.radii.md)),
-        border = CardDefaults.border(
-            border = Border(
-                border = BorderStroke(
-                    NuvioTheme.spacing.hairline,
-                    if (isCurrentStream) NuvioTheme.colors.Primary.copy(alpha = 0.65f) else Color.Transparent
-                ),
-                shape = RoundedCornerShape(NuvioTheme.radii.md)
-            ),
-            focusedBorder = Border(
-                border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
-                shape = RoundedCornerShape(NuvioTheme.radii.md)
+    // Float the selected badge pack just above the playback-source card's top edge.
+    // Badge space is measured by the parent, so the images do not clip to Card bounds.
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (hasBadges && badgePlacement == StreamBadgePlacement.TOP) {
+            StreamBadgeChips(
+                badges = stream.badges,
+                fileSizeBytes = stream.behaviorHints?.videoSize,
+                showFileSizeBadge = showFileSizeBadges
             )
-        ),
-        scale = CardDefaults.scale(focusedScale = 1.04f)
-    ) {
-        Row(
+            Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
+        }
+
+        Card(
+            onClick = onClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(NuvioTheme.spacing.lg),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)
-            ) {
-                if (hasBadges && badgePlacement == StreamBadgePlacement.TOP) {
-                    StreamBadgeChips(
-                        badges = stream.badges,
-                        fileSizeBytes = stream.behaviorHints?.videoSize,
-                        showFileSizeBadge = showFileSizeBadges
-                    )
-                    Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
+                .then(if (focusRequester != null && requestInitialFocus) Modifier.focusRequester(focusRequester) else Modifier)
+                .onFocusChanged {
+                    onFocusChanged?.invoke(it.isFocused)
                 }
+                .then(if (onUpKey != null) Modifier.onKeyEvent { event ->
+                    if (event.nativeKeyEvent.action == android.view.KeyEvent.ACTION_DOWN &&
+                        event.key == Key.DirectionUp) {
+                        onUpKey(); true
+                    } else false
+                } else Modifier),
+            colors = CardDefaults.colors(
+                containerColor = NuvioTheme.colors.BackgroundElevated,
+                focusedContainerColor = NuvioTheme.colors.BackgroundElevated
+            ),
+            shape = CardDefaults.shape(shape = RoundedCornerShape(NuvioTheme.radii.md)),
+            border = CardDefaults.border(
+                border = Border(
+                    border = BorderStroke(
+                        NuvioTheme.spacing.hairline,
+                        if (isCurrentStream) NuvioTheme.colors.Primary.copy(alpha = 0.65f) else Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(NuvioTheme.radii.md)
+                ),
+                focusedBorder = Border(
+                    border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
+                    shape = RoundedCornerShape(NuvioTheme.radii.md)
+                )
+            ),
+            scale = CardDefaults.scale(focusedScale = 1.04f)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(NuvioTheme.spacing.lg),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)
+                ) {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        Row(
+                            modifier = Modifier.align(streamName.contentTextDirection().toAbsoluteAlignment()),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
+                        ) {
+                            Text(
+                                text = streamName,
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    textDirection = streamName.contentTextDirection()
+                                ),
+                                color = NuvioTheme.colors.TextPrimary
+                            )
 
-                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
-                    Row(
-                        modifier = Modifier.align(streamName.contentTextDirection().toAbsoluteAlignment()),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)
-                    ) {
-                        Text(
-                            text = streamName,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                textDirection = streamName.contentTextDirection()
-                            ),
-                            color = NuvioTheme.colors.TextPrimary
-                        )
-
-                        if (isCurrentStream) {
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(999.dp))
-                                    .background(NuvioTheme.colors.Primary.copy(alpha = 0.2f))
-                                    .padding(horizontal = NuvioTheme.spacing.sm, vertical = NuvioTheme.spacing.xs)
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.sources_playing),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = NuvioTheme.colors.Primary
-                                )
+                            if (isCurrentStream) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(999.dp))
+                                        .background(NuvioTheme.colors.Primary.copy(alpha = 0.2f))
+                                        .padding(horizontal = NuvioTheme.spacing.sm, vertical = NuvioTheme.spacing.xs)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.sources_playing),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = NuvioTheme.colors.Primary
+                                    )
+                                }
                             }
                         }
                     }
+
+                    streamDescription?.let { description ->
+                        if (description != streamName) {
+                            Text(
+                                text = description,
+                                modifier = Modifier.align(description.contentTextDirection().toAbsoluteAlignment()),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    textDirection = description.contentTextDirection()
+                                ),
+                                color = NuvioTheme.extendedColors.textSecondary
+                            )
+                        }
+                    }
+
+                    if (hasBadges && badgePlacement == StreamBadgePlacement.BOTTOM) {
+                        StreamBadgeChips(
+                            badges = stream.badges,
+                            fileSizeBytes = stream.behaviorHints?.videoSize,
+                            showFileSizeBadge = showFileSizeBadges,
+                            modifier = Modifier.padding(top = NuvioTheme.spacing.xxs)
+                        )
+                    }
                 }
 
-                streamDescription?.let { description ->
-                    if (description != streamName) {
+                if (showAddonLogo) {
+                    Column(
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        if (addonLogoModel != null) {
+                            AsyncImage(
+                                model = addonLogoModel,
+                                contentDescription = stream.addonName,
+                                modifier = Modifier
+                                    .size(NuvioTheme.spacing.xxl)
+                                    .clip(RoundedCornerShape(NuvioTheme.radii.xs)),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(NuvioTheme.spacing.xs))
+
                         Text(
-                            text = description,
-                            modifier = Modifier.align(description.contentTextDirection().toAbsoluteAlignment()),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                textDirection = description.contentTextDirection()
+                            text = stream.addonName,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                textDirection = stream.addonName.contentTextDirection()
                             ),
-                            color = NuvioTheme.extendedColors.textSecondary
+                            color = NuvioTheme.extendedColors.textTertiary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
-                }
-
-                if (hasBadges && badgePlacement == StreamBadgePlacement.BOTTOM) {
-                    StreamBadgeChips(
-                        badges = stream.badges,
-                        fileSizeBytes = stream.behaviorHints?.videoSize,
-                        showFileSizeBadge = showFileSizeBadges,
-                        modifier = Modifier.padding(top = NuvioTheme.spacing.xxs)
-                    )
-                }
-            }
-
-            if (showAddonLogo) {
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
-                    if (addonLogoModel != null) {
-                        AsyncImage(
-                            model = addonLogoModel,
-                            contentDescription = stream.addonName,
-                            modifier = Modifier
-                                .size(NuvioTheme.spacing.xxl)
-                                .clip(RoundedCornerShape(NuvioTheme.radii.xs)),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(NuvioTheme.spacing.xs))
-
-                    Text(
-                        text = stream.addonName,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            textDirection = stream.addonName.contentTextDirection()
-                        ),
-                        color = NuvioTheme.extendedColors.textTertiary,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
                 }
             }
         }

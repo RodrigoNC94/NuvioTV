@@ -30,7 +30,9 @@ data class Stream(
     val badges: List<StreamBadge> = emptyList(),
     val subtitles: List<Subtitle> = emptyList(),
     val serverTarget: ServerPlaybackTarget? = null,
-    val pluginSourceName: String? = null
+    val pluginSourceName: String? = null,
+    /** Stable upstream addon manifest ID. Needed after streams are flattened into chunks. */
+    val addonId: String? = null
 ) {
     /**
      * Returns the primary stream source URL
@@ -294,7 +296,9 @@ data class ProxyHeaders(
 data class AddonStreams(
     val addonName: String,
     val addonLogo: String?,
-    val streams: List<Stream>
+    val streams: List<Stream>,
+    /** Stable manifest ID for provider-specific presentation (never an addon display name). */
+    val addonId: String? = null
 )
 
 private fun String?.isMagnetLink(): Boolean =

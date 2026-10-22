@@ -223,13 +223,14 @@ class StreamRepositoryImpl @Inject constructor(
                                 is NetworkResult.Success -> {
                                     if (streamsResult.data.isNotEmpty()) {
                                         val namedStreams = streamsResult.data.map {
-                                            it.copy(addonName = addon.displayName, addonLogo = addon.logo)
+                                            it.copy(addonName = addon.displayName, addonLogo = addon.logo, addonId = addon.id)
                                         }
                                         resultChannel.send(
                                             AddonStreams(
                                                 addonName = addon.displayName,
                                                 addonLogo = addon.logo,
-                                                streams = namedStreams
+                                                streams = namedStreams,
+                                                addonId = addon.id
                                             )
                                         )
                                     } else {
@@ -243,7 +244,10 @@ class StreamRepositoryImpl @Inject constructor(
                                                 AddonStreams(
                                                     addonName = addon.displayName,
                                                     addonLogo = addon.logo,
-                                                    streams = inlineStreams
+                                                    streams = inlineStreams.map {
+                                                        it.copy(addonName = addon.displayName, addonLogo = addon.logo, addonId = addon.id)
+                                                    },
+                                                    addonId = addon.id
                                                 )
                                             )
                                         } else {
