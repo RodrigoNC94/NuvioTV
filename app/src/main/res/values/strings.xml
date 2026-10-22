@@ -1416,10 +1416,10 @@
     <string name="settings_stream_addon_logo_description">Show addon logo and name next to stream sources.</string>
     <string name="settings_stream_display_section">Display</string>
     <string name="settings_stream_badge_position_title">Badge position</string>
-    <string name="settings_stream_badge_position_description">Choose whether Fusion and size badges appear above or below stream cards.</string>
+    <string name="settings_stream_badge_position_description">Place imported badges above the source bar or within its bottom edge.</string>
     <string name="settings_stream_badge_position_dialog_title">Badge position</string>
-    <string name="settings_stream_badge_position_dialog_description">Select where stream badges appear on stream cards.</string>
-    <string name="settings_stream_badge_position_top">Top</string>
+    <string name="settings_stream_badge_position_dialog_description">Choose where badges appear relative to stream result bars.</string>
+    <string name="settings_stream_badge_position_top">Above source bar</string>
     <string name="settings_stream_badge_position_bottom">Bottom</string>
     <string name="settings_stream_badge_urls_title">Fusion badge URLs</string>
     <string name="settings_stream_badge_urls_description">Import up to %1$d Fusion-style stream badge JSON URLs. Each URL can be updated or deleted separately.</string>
