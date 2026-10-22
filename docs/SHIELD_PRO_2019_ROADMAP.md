@@ -67,6 +67,7 @@
 - [ ] Preserve the known working Cinemeta → metadata → AIOStreams search route; add tests for `tmdb:` and canonical IMDb stream IDs. Retry converted IDs only where a valid conversion is available and the original lookup genuinely lacked usable results; avoid duplicating streams or masking provider errors.
 - [ ] Understand addon manifest refresh vs account addon-list sync, and provide controlled refresh/retry without erasing catalog ordering.
 - [ ] Add **badge scope by stable addon URL/ID** so imported Elite Badges apply only to the selected AIOStreams install; do not identify it solely by the user-renamable label `English`.
+- [ ] Add a **floating badge strip above the top edge of each AIOStreams source bar/card** (user-provided design reference), not just the existing `TOP` placement inside the card. Retain readable stream title and selection controls below the strip; prevent badge/image clipping, account for remote focus/browse scrolling, use compact crisp images and allow disabling/reverting to standard Nuvio layout.
 - [ ] Preserve existing filename/description details and badge sizing and settings; verify output on the Shield.
 
 **Acceptance:** metadata source choice no longer causes avoidable empty result pages; only selected addon streams receive badges.
