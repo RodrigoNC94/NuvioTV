@@ -108,7 +108,19 @@ internal fun StreamItem(
         }
     }
 
-    Card(
+    // Float the selected badge pack just above the playback-source card's top edge.
+    // Badge space is measured by the parent, so the images do not clip to Card bounds.
+    Column(modifier = Modifier.fillMaxWidth()) {
+        if (hasBadges && badgePlacement == StreamBadgePlacement.TOP) {
+            StreamBadgeChips(
+                badges = stream.badges,
+                fileSizeBytes = stream.behaviorHints?.videoSize,
+                showFileSizeBadge = showFileSizeBadges
+            )
+            Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
+        }
+
+        Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
@@ -153,14 +165,6 @@ internal fun StreamItem(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.xs)
             ) {
-                if (hasBadges && badgePlacement == StreamBadgePlacement.TOP) {
-                    StreamBadgeChips(
-                        badges = stream.badges,
-                        fileSizeBytes = stream.behaviorHints?.videoSize,
-                        showFileSizeBadge = showFileSizeBadges
-                    )
-                    Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
-                }
 
                 CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
                     Row(
@@ -246,8 +250,8 @@ internal fun StreamItem(
             }
         }
     }
+    }
 }
-
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 internal fun AddonFilterChips(
