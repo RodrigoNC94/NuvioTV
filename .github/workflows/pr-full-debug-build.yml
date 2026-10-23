@@ -76,8 +76,13 @@ jobs:
             echo "SHIELD_SIGNING_KEY_PASSWORD=$SHIELD_TEST_KEY_PASSWORD"
           } >> "$GITHUB_ENV"
 
-      - name: Test and build isolated fullDebug APK
-        run: ./gradlew :app:testFullDebugUnitTest :app:assembleFullDebug -PshieldTestBuild=true --stacktrace
+      - name: Run fullDebug unit tests
+        id: unit_tests
+        continue-on-error: true
+        run: ./gradlew :app:testFullDebugUnitTest -PshieldTestBuild=true --stacktrace
+
+      - name: Assemble isolated fullDebug APK
+        run: ./gradlew :app:assembleFullDebug -PshieldTestBuild=true --stacktrace
 
       - name: Verify Shield test application ID
         run: |
@@ -96,3 +101,9 @@ jobs:
           path: app/build/outputs/apk/full/debug/app-full-universal-debug.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Mark workflow failed when unit tests fail
+        if: steps.unit_tests.outcome == 'failure'
+        run: |
+          echo "::error::FullDebug unit tests failed. The APK was uploaded for smoke testing, but the workflow remains failed until tests pass."
+          exit 1
