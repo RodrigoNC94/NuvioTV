@@ -1,5 +1,6 @@
 package com.nuvio.tv.ui.screens.detail
 
+import com.nuvio.tv.ui.theme.NuvioComponents
 import com.nuvio.tv.ui.theme.NuvioTheme
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -111,8 +112,8 @@ fun CollectionSection(
             width = 260.dp,
             height = 146.dp,
             cornerRadius = posterCardCornerRadius,
-            focusedBorderWidth = NuvioTheme.spacing.xxs,
-            focusedScale = 1.02f
+            focusedBorderWidth = NuvioComponents.tokens.backdropCard.focusedBorderWidth,
+            focusedScale = NuvioComponents.tokens.backdropCard.focusedScale
         )
     }
 

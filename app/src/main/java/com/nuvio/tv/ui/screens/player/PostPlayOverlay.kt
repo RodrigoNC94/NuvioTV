@@ -190,7 +190,7 @@ private fun AutoPlayBody(
             Text(
                 text = stringResource(R.string.next_episode_label),
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = 11.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
             )
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
@@ -277,7 +277,7 @@ private fun StillWatchingBody(
             Text(
                 text = stringResource(R.string.still_watching_title),
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = 11.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Medium,
             )
             Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
@@ -432,7 +432,7 @@ private fun NextEpisodeStatusLine(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         color = Color.White.copy(alpha = 0.78f),
-        fontSize = 11.sp,
+        fontSize = 13.sp,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier,

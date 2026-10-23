@@ -95,7 +95,8 @@ fun HomeScreen(
     onContinueWatchingStartFromBeginning: (ContinueWatchingItem) -> Unit = onContinueWatchingClick,
     onContinueWatchingPlayManually: (ContinueWatchingItem) -> Unit = onContinueWatchingClick,
     onNavigateToCatalogSeeAll: (String, String, String) -> Unit = { _, _, _ -> },
-    onNavigateToFolderDetail: (String, String) -> Unit = { _, _ -> }
+    onNavigateToFolderDetail: (String, String) -> Unit = { _, _ -> },
+    onNavigateToAddons: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -271,16 +272,10 @@ fun HomeScreen(
                 if (!homeStableGateReleased) {
                     Unit
                 } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.home_no_addons),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = NuvioTheme.colors.TextSecondary
-                        )
-                    }
+                    HomeEmptyAddonsState(
+                        message = stringResource(R.string.home_no_addons),
+                        onOpenAddons = onNavigateToAddons
+                    )
                 }
             }
 
@@ -288,16 +283,10 @@ fun HomeScreen(
                 if (!homeStableGateReleased) {
                     Unit
                 } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = stringResource(R.string.home_no_catalog_addons),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = NuvioTheme.colors.TextSecondary
-                        )
-                    }
+                    HomeEmptyAddonsState(
+                        message = stringResource(R.string.home_no_catalog_addons),
+                        onOpenAddons = onNavigateToAddons
+                    )
                 }
             }
 
@@ -872,6 +861,42 @@ private fun HomeLibraryListPickerDialog(
                 )
             ) {
                 Text(if (isPending) stringResource(R.string.action_saving) else stringResource(R.string.action_save))
+            }
+        }
+    }
+}
+
+/**
+ * Empty Home with nothing focusable left D-pad users stranded; give them one obvious next step.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HomeEmptyAddonsState(
+    message: String,
+    onOpenAddons: () -> Unit
+) {
+    val buttonFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        runCatching { buttonFocusRequester.requestFocus() }
+    }
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.foundation.layout.Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.lg)
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = NuvioTheme.colors.TextSecondary
+            )
+            Button(
+                onClick = onOpenAddons,
+                modifier = Modifier.focusRequester(buttonFocusRequester)
+            ) {
+                Text(stringResource(R.string.home_open_addons))
             }
         }
     }

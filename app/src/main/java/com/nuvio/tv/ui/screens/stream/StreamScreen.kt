@@ -2,6 +2,8 @@
 
 package com.nuvio.tv.ui.screens.stream
 
+import com.nuvio.tv.ui.theme.NuvioComponents
+import androidx.compose.ui.graphics.lerp
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -1352,7 +1354,6 @@ private fun StreamCard(
     val streamDescription = remember(stream) { stream.getDisplayDescription() }
     val hasBadges = stream.badges.isNotEmpty() || (showFileSizeBadges && stream.behaviorHints?.videoSize != null) || reserveBadgeSpace
     val cardShape = RoundedCornerShape(NuvioTheme.radii.md)
-    val hasGradientFocusRing = NuvioTheme.palette.focusRingGradient.size > 1
 
     var isFocused by remember { mutableStateOf(false) }
 
@@ -1393,21 +1394,19 @@ private fun StreamCard(
             } else Modifier),
         colors = CardDefaults.colors(
             containerColor = NuvioTheme.colors.BackgroundElevated,
-            focusedContainerColor = NuvioTheme.colors.BackgroundElevated
+            focusedContainerColor = lerp(NuvioTheme.colors.BackgroundElevated, Color.White, 0.08f)
         ),
         shape = CardDefaults.shape(shape = cardShape),
-        border = if (hasGradientFocusRing) {
-            CardDefaults.border(
-                border = outlineBorder(outlined, cardShape),
-                focusedBorder = Border(
-                    border = NuvioTheme.focusRing.border(NuvioTheme.spacing.xxs),
-                    shape = cardShape
-                )
+        // Always draw the theme focus ring: single-colour themes previously fell back to
+        // tv-material's default grey outline, so focus looked different here than everywhere else.
+        border = CardDefaults.border(
+            border = outlineBorder(outlined, cardShape),
+            focusedBorder = Border(
+                border = NuvioTheme.focusRing.border(NuvioComponents.tokens.posterCard.focusedBorderWidth),
+                shape = cardShape
             )
-        } else {
-            CardDefaults.border(border = outlineBorder(outlined, cardShape))
-        },
-        scale = CardDefaults.scale(focusedScale = 1f)
+        ),
+        scale = CardDefaults.scale(focusedScale = 1.02f)
     ) {
         Row(
             modifier = Modifier
@@ -1476,7 +1475,9 @@ private fun StreamCard(
                             style = MaterialTheme.typography.bodySmall.copy(
                                 textDirection = description.contentTextDirection()
                             ),
-                            color = NuvioTheme.extendedColors.textSecondary
+                            color = NuvioTheme.extendedColors.textSecondary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

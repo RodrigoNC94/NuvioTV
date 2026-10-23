@@ -54,24 +54,24 @@ fun TorrentOverlay(
                 Text(
                     text = "P2P",
                     color = Color(0xFF4CAF50),
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "↓ ${formatSpeed(downloadSpeed)}",
                     color = Color.White,
-                    fontSize = 11.sp
+                    fontSize = 12.sp
                 )
                 Text(
                     text = "↑ ${formatSpeed(uploadSpeed)}",
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 11.sp
+                    fontSize = 12.sp
                 )
             }
             Text(
                 text = stringResource(R.string.player_torrent_stats, peers, seeds, (totalProgress * 100).toInt()),
                 color = Color.White.copy(alpha = 0.6f),
-                fontSize = 10.sp
+                fontSize = 12.sp
             )
         }
     }

@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
 
-private val ROW_HEIGHT = 18.dp
+private val ROW_HEIGHT = 20.dp
 private val ROW_GAP = NuvioTheme.spacing.xxs
 
 /**
@@ -141,18 +141,18 @@ fun ParentalGuideOverlay(
                 ) {
                     Text(
                         text = warning.label,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.85f),
                         fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         text = " · ",
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.4f),
                     )
                     Text(
                         text = warning.severity,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
                         color = Color.White.copy(alpha = 0.5f),
                     )
                 }

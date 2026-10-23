@@ -245,6 +245,9 @@ private fun PlaybackNavHost(
             }
 
             HomeScreen(
+                onNavigateToAddons = {
+                    navController.navigate(Screen.AddonManager.route) { launchSingleTop = true }
+                },
                 onNavigateToDetail = { itemId, itemType, addonBaseUrl ->
                     val heroBackdrop = HeroBackdropState.consumeAndClear()
                     navController.navigate(

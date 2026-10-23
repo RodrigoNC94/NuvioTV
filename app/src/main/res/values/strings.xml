@@ -3402,4 +3402,7 @@
     <string name="autosync_label_synced">Auto synced</string>
     <string name="stream_resume_from_time">Resume from %1$s</string>
     <string name="stream_resume_from_percent">Resume from %1$d%%</string>
+    <string name="hero_hint_hold_play_options">Hold OK for more play options</string>
+    <string name="hero_hint_hold_library_lists">Hold OK to choose lists</string>
+    <string name="home_open_addons">Open Add-ons</string>
 </resources>

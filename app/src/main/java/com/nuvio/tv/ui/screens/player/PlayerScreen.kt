@@ -923,7 +923,10 @@ fun PlayerScreen(
                             true
                         }
                         KeyEvent.KEYCODE_MEDIA_STOP -> {
-                            viewModel.onEvent(PlayerEvent.OnPlayPause)
+                            // Stop should never resume playback; previously it toggled play/pause.
+                            if (uiState.isPlaying) {
+                                viewModel.onEvent(PlayerEvent.OnPlayPause)
+                            }
                             true
                         }
                         KeyEvent.KEYCODE_MEDIA_NEXT,
@@ -3521,7 +3524,7 @@ private fun PlayerClockOverlay(
         if (!isLive) {
             Text(
                 text = stringResource(R.string.player_ends_at, endTimeText),
-                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 10.sp),
+                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
                 color = Color.White.copy(alpha = 0.78f)
             )
         }

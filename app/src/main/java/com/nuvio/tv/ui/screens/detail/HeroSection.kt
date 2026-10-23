@@ -246,10 +246,19 @@ fun HeroContentSection(
                 exit = fadeOut(tween(NuvioMotion.tokens.durations.overlay))
             ) {
                 Column {
+                    // Label for whichever hero action has focus. Icon-only buttons have no visible
+                    // text, and hold-OK actions were otherwise undiscoverable from a remote.
+                    var focusedActionHint by remember { mutableStateOf<String?>(null) }
+                    val playOptionsHint = stringResource(R.string.hero_hint_hold_play_options)
+                    val libraryListsHint = stringResource(R.string.hero_hint_hold_library_lists)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.md),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.onFocusChanged { if (!it.hasFocus) focusedActionHint = null }
                     ) {
+                        Box(Modifier.onFocusChanged {
+                            if (it.hasFocus) focusedActionHint = if (onPlayLongPress != null) playOptionsHint else null
+                        }) {
                         PlayButton(
                             text = if (isPlayEnabled) nextToWatch?.displayText else stringResource(R.string.playback_unavailable),
                             enabled = isPlayEnabled,
@@ -263,6 +272,12 @@ fun HeroContentSection(
                             }
                         )
 
+                        }
+
+                        val libraryLabel = if (isInLibrary) stringResource(R.string.hero_remove_from_library) else stringResource(R.string.hero_add_to_library)
+                        Box(Modifier.onFocusChanged {
+                            if (it.hasFocus) focusedActionHint = "$libraryLabel  ·  $libraryListsHint"
+                        }) {
                         ActionIconButton(
                             icon = if (isInLibrary) Icons.Default.Check else null,
                             painter = if (!isInLibrary) {
@@ -270,24 +285,27 @@ fun HeroContentSection(
                             } else {
                                 null
                             },
-                            contentDescription = if (isInLibrary) stringResource(R.string.hero_remove_from_library) else stringResource(R.string.hero_add_to_library),
+                            contentDescription = libraryLabel,
                             onClick = onToggleLibrary,
                             onLongPress = onLibraryLongPress,
                             onFocused = onHeroActionFocused
                         )
+                        }
 
                         if (meta.apiType == "movie") {
+                            val watchedLabel = if (isMovieWatched) {
+                                stringResource(R.string.hero_mark_unwatched)
+                            } else {
+                                stringResource(R.string.hero_mark_watched)
+                            }
+                            Box(Modifier.onFocusChanged { if (it.hasFocus) focusedActionHint = watchedLabel }) {
                             ActionIconButton(
                                 icon = if (isMovieWatched) {
                                     Icons.Default.Visibility
                                 } else {
                                     Icons.Default.VisibilityOff
                                 },
-                                contentDescription = if (isMovieWatched) {
-                                    stringResource(R.string.hero_mark_unwatched)
-                                } else {
-                                    stringResource(R.string.hero_mark_watched)
-                                },
+                                contentDescription = watchedLabel,
                                 onClick = onToggleMovieWatched,
                                 enabled = !isMovieWatchedPending,
                                 selected = isMovieWatched,
@@ -295,18 +313,23 @@ fun HeroContentSection(
                                 selectedContentColor = Color.Black,
                                 onFocused = onHeroActionFocused
                             )
+                            }
                         }
 
                         if (trailerAvailable) {
+                            val trailerLabel = stringResource(R.string.hero_play_trailer)
+                            Box(Modifier.onFocusChanged { if (it.hasFocus) focusedActionHint = trailerLabel }) {
                             ActionIconButtonPainter(
                                 painter = trailerPainter,
-                                contentDescription = stringResource(R.string.hero_play_trailer),
+                                contentDescription = trailerLabel,
                                 onClick = onTrailerClick,
                                 onFocused = onHeroActionFocused
                             )
+                            }
                         }
 
                         if (showRandomEpisodeButton) {
+                            Box(Modifier.onFocusChanged { if (it.hasFocus) focusedActionHint = null }) {
                             ShuffleButton(
                                 active = episodeShuffle.enabled,
                                 pending = shuffleActionPending,
@@ -314,10 +337,26 @@ fun HeroContentSection(
                                 focusRequester = randomEpisodeFocusRequester,
                                 onFocused = onHeroActionFocused
                             )
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(NuvioTheme.spacing.lg))
+                    // Fixed-height slot so the layout doesn't jump as focus moves along the row.
+                    Box(
+                        modifier = Modifier
+                            .height(32.dp)
+                            .padding(top = 6.dp),
+                        contentAlignment = Alignment.TopStart
+                    ) {
+                        focusedActionHint?.let { hint ->
+                            Text(
+                                text = hint,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = NuvioTheme.colors.TextSecondary,
+                                maxLines = 1
+                            )
+                        }
+                    }
 
                     // Director/Writer line above description
                     if (!creditLine.isNullOrBlank()) {
