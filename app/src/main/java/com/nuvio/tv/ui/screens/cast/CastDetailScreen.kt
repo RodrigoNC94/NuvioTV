@@ -89,6 +89,7 @@ import com.nuvio.tv.domain.model.MetaPreview
 import com.nuvio.tv.domain.model.PersonDetail
 import com.nuvio.tv.ui.components.GridContentCard
 import com.nuvio.tv.ui.components.PosterCardStyle
+import com.nuvio.tv.ui.components.rememberPosterCardStyle
 import com.nuvio.tv.ui.components.rememberScaledPosterCardStyle
 import com.nuvio.tv.ui.components.PosterCardDefaults
 import com.nuvio.tv.ui.components.LocalLandscapePosterMode
@@ -149,6 +150,7 @@ fun CastDetailScreen(
                         onNavigateToDetail = onNavigateToDetail,
                         posterOptions = viewModel.posterOptions,
                         posterCardCornerRadiusDp = viewModel.posterCardCornerRadiusDp.collectAsState().value,
+                        posterCardWidthDp = viewModel.posterCardWidthDp.collectAsState().value,
                         isItemWatched = { item ->
                             if (item.apiType == "movie") item.id in watchedMovieIds
                             else item.id in watchedSeriesIds
@@ -178,6 +180,7 @@ private fun CastDetailContent(
     onNavigateToDetail: (itemId: String, itemType: String, addonBaseUrl: String?) -> Unit,
     posterOptions: com.nuvio.tv.ui.components.posteroptions.PosterOptionsController,
     posterCardCornerRadiusDp: Int = 12,
+    posterCardWidthDp: Int = 126,
     isItemWatched: (MetaPreview) -> Boolean = { false }
 ) {
     val backgroundColor = NuvioTheme.colors.Background
@@ -190,25 +193,10 @@ private fun CastDetailContent(
     }
 
     val globalLandscape = LocalLandscapePosterMode.current
-    val filmographyPosterStyle = rememberScaledPosterCardStyle(remember(posterCardCornerRadiusDp, globalLandscape) {
-        if (globalLandscape) {
-            PosterCardStyle(
-                width = 112.dp,
-                height = 240.dp,
-                cornerRadius = posterCardCornerRadiusDp.dp,
-                focusedBorderWidth = PosterCardDefaults.Style.focusedBorderWidth,
-                focusedScale = PosterCardDefaults.Style.focusedScale
-            )
-        } else {
-            PosterCardStyle(
-                width = 112.dp,
-                height = 168.dp,
-                cornerRadius = posterCardCornerRadiusDp.dp,
-                focusedBorderWidth = PosterCardDefaults.Style.focusedBorderWidth,
-                focusedScale = PosterCardDefaults.Style.focusedScale
-            )
-        }
-    })
+    val posterStyle = rememberPosterCardStyle(posterCardWidthDp, posterCardCornerRadiusDp)
+    val filmographyPosterStyle = remember(posterStyle, globalLandscape) {
+        if (globalLandscape) posterStyle.copy(height = posterStyle.width * (240f / 112f)) else posterStyle
+    }
 
     val firstPosterFocusRequester = remember { FocusRequester() }
     var isBiographyTruncated by rememberSaveable(person.tmdbId) { mutableStateOf(false) }
