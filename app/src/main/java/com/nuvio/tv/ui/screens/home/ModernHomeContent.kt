@@ -1116,7 +1116,13 @@ fun ModernHomeContent(
             val heroMetadataModifier = remember(rowHorizontalPadding, rowsViewportHeight, foregroundModifier) {
                 foregroundModifier
                     .align(Alignment.BottomStart)
-                    .padding(start = rowHorizontalPadding, end = NuvioTheme.spacing.xxxl, bottom = NuvioTheme.spacing.none + rowsViewportHeight + NuvioTheme.spacing.lg)
+                    // The top inset keeps a tall block (big cards, few lines to spare) off the screen edge.
+                    .padding(
+                        start = rowHorizontalPadding,
+                        top = NuvioTheme.spacing.screen.vertical,
+                        end = NuvioTheme.spacing.xxxl,
+                        bottom = NuvioTheme.spacing.none + rowsViewportHeight + NuvioTheme.spacing.lg
+                    )
                     .fillMaxWidth(MODERN_HERO_TEXT_WIDTH_FRACTION)
             }
 

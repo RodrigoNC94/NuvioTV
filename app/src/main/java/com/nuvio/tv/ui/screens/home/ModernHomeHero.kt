@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -523,11 +522,7 @@ private fun HeroTitleContent(
             }
         }
 
-        val metadataRowHeight = maxOf(
-            with(density) { labelMedium.lineHeight.toDp() } + NuvioTheme.spacing.xs * 2,
-            NuvioTheme.spacing.xl
-        )
-        Column(Modifier.heightIn(min = metadataRowHeight * 2 + titleSpacing), verticalArrangement = Arrangement.spacedBy(titleSpacing)) {
+        Column(verticalArrangement = Arrangement.spacedBy(titleSpacing)) {
         val strStatusEnded = stringResource(if (preview.isSeries) R.string.series_status_ended else R.string.movie_status_ended)
         val strStatusContinuing = stringResource(if (preview.isSeries) R.string.series_status_continuing else R.string.movie_status_continuing)
         val strStatusCurrent = stringResource(if (preview.isSeries) R.string.series_status_current else R.string.movie_status_current)
@@ -758,15 +753,16 @@ private fun HeroTitleContent(
 
         }
 
-        preview.description.orEmpty().let { description ->
+        // The block sits on the rows and grows upwards, so a short description leaves no gap above them.
+        // Weighted, the description is measured last and gives up lines first when the hero is short.
+        preview.description?.takeIf { it.isNotBlank() }?.let { description ->
             Text(
                 text = description,
                 style = scaledDescriptionStyle.copy(textDirection = description.contentTextDirection()),
                 color = NuvioTheme.colors.TextPrimary,
-                minLines = descriptionMaxLines,
                 maxLines = descriptionMaxLines,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.graphicsLayer { alpha = metaAlpha }
+                modifier = Modifier.weight(1f, fill = false).graphicsLayer { alpha = metaAlpha }
             )
         }
     }
