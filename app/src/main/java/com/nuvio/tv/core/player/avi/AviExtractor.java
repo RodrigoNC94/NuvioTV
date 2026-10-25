@@ -642,9 +642,16 @@ public final class AviExtractor implements Extractor {
     return null;
   }
 
+  private int endOfInput() {
+    for (ChunkReader chunkReader : chunkReaders) {
+      chunkReader.flushHeldSamples();
+    }
+    return C.RESULT_END_OF_INPUT;
+  }
+
   private int readMoviChunks(ExtractorInput input) throws IOException {
     if (!followsRiffSegments && input.getPosition() >= moviEnd) {
-      return C.RESULT_END_OF_INPUT;
+      return endOfInput();
     } else if (currentChunkReader != null) {
       if (currentChunkReader.onChunkData(input)) {
         currentChunkReader = null;
@@ -652,7 +659,7 @@ public final class AviExtractor implements Extractor {
     } else {
       if (!alignInputToEvenPosition(input)
           || !input.peekFully(scratch.getData(), /* offset= */ 0, 8, /* allowEndOfInput= */ true)) {
-        return C.RESULT_END_OF_INPUT;
+        return endOfInput();
       }
       scratch.setPosition(0);
       int chunkType = scratch.readLittleEndianInt();
@@ -713,7 +720,8 @@ public final class AviExtractor implements Extractor {
       trackOutput.format(builder.build());
       trackOutput.durationUs(durationUs);
       this.durationUs = max(this.durationUs, durationUs);
-      return new ChunkReader(streamId, aviStreamHeaderChunk, trackOutput);
+      return new ChunkReader(
+          streamId, aviStreamHeaderChunk, trackOutput, streamFormat.sampleMimeType);
     } else {
       // We don't currently support tracks other than video and audio.
       return null;

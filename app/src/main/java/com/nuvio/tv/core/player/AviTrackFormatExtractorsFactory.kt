@@ -20,6 +20,7 @@ import androidx.media3.extractor.TrackOutput
 import androidx.media3.extractor.avi.AviExtractor
 import androidx.media3.extractor.text.SubtitleParser
 import com.nuvio.tv.core.player.avi.AviExtractor as OpenDmlAviExtractor
+import com.nuvio.tv.core.player.avi.PackedBFrameUnpacker
 import java.io.EOFException
 import java.io.IOException
 
@@ -57,6 +58,7 @@ private class AviTrackFormatExtractor(private val delegate: OpenDmlAviExtractor)
 
     private var headerRead = false
     private var video: AviHeader.Video? = null
+    private var packedMpeg4 = false
     private var streams: List<AviHeader.Stream> = emptyList()
     private val audioTracks = ArrayList<AudioFrameTrackOutput>()
     private var videoStreamId = C.INDEX_UNSET
@@ -124,6 +126,12 @@ private class AviTrackFormatExtractor(private val delegate: OpenDmlAviExtractor)
             val length = peekUpTo(input, head)
             video = AviHeader.read(head, length)
             streams = AviHeader.streams(head, length)
+            val videoStream = streams.firstOrNull { it.type == "vids" }
+            if (videoStream != null && AviHeader.isMpeg4Part2(video?.fourCc)) {
+                input.resetPeekPosition()
+                val window = ByteArray(AviHeader.PACKED_PROBE_BYTES)
+                packedMpeg4 = AviHeader.hasPackedMpeg4Marker(window, peekUpTo(input, window), videoStream.number)
+            }
         } finally {
             input.resetPeekPosition()
         }
@@ -171,6 +179,9 @@ private class AviTrackFormatExtractor(private val delegate: OpenDmlAviExtractor)
             if (format.containerMimeType == null) builder.setContainerMimeType(MimeTypes.VIDEO_AVI)
             val frameRate = video?.frameRate ?: Format.NO_VALUE.toFloat()
             if (format.frameRate <= 0f && frameRate > 0f) builder.setFrameRate(frameRate)
+            if (packedMpeg4 && format.sampleMimeType == MimeTypes.VIDEO_MP4V) {
+                builder.setCustomData(PresentationOrderTimes)
+            }
             super.format(builder.build())
         }
     }
@@ -342,6 +353,41 @@ internal object AviHeader {
         }
         return MIN_PROBE_BYTES
     }
+
+    const val PACKED_PROBE_BYTES = 256 * 1024
+    private val MPEG4_PART2_FOURCCS = setOf("XVID", "DIVX", "DX50", "FMP4", "3VID")
+
+    fun isMpeg4Part2(fourCc: String?): Boolean = fourCc != null && fourCc.uppercase() in MPEG4_PART2_FOURCCS
+
+    /**
+     * Whether the first chunk of video stream [stream] in the movi list carries the DivX user data that marks
+     * packed B-frames, see [PackedBFrameUnpacker].
+     */
+    fun hasPackedMpeg4Marker(window: ByteArray, length: Int, stream: Int): Boolean {
+        val end = minOf(length, window.size)
+        if (end < 12 || fourCc(window, 0) != "RIFF" || fourCc(window, 8) != "AVI ") return false
+        val streamTag = "%02d".format(stream)
+        var inMovi = false
+        var at = 12L
+        while (at + 12 <= end) {
+            val i = at.toInt()
+            val id = fourCc(window, i)
+            val size = u32(window, i + 4)
+            if (id == "LIST") {
+                val type = fourCc(window, i + 8)
+                if (type == "movi" || (inMovi && type == "rec ")) {
+                    inMovi = true
+                    at += 12
+                    continue
+                }
+            } else if (inMovi && id.startsWith(streamTag) && (id.endsWith("dc") || id.endsWith("db"))) {
+                return PackedBFrameUnpacker.hasPackedMarker(window, i + 8, minOf(at + 8 + size, end.toLong()).toInt())
+            }
+            at += 8 + size + (size and 1L)
+        }
+        return false
+    }
+
     private const val MIN_FPS = 5f
     private const val MAX_FPS = 121f
     private const val STREAM_HEADER_BYTES = 48

@@ -1,5 +1,6 @@
 package com.nuvio.tv.core.player
 
+import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
 import java.util.PriorityQueue
 
@@ -115,6 +116,14 @@ internal class DecodeOrderTimestamps(private val maxReorderFrames: Int) {
         private const val REORDER_FRAMES_SINGLE_REFERENCE = 1
         private const val REORDER_FRAMES_H264 = 4
 
+        /** As below; null as well for tracks whose extractor already gives presentation times. */
+        fun maxReorderFramesFor(format: Format): Int? =
+            if (format.customData === PresentationOrderTimes) {
+                null
+            } else {
+                maxReorderFramesFor(format.sampleMimeType, format.containerMimeType)
+            }
+
         /**
          * How far a picture's time can sit behind its input time, in frames, for tracks that may carry decode-order
          * times; null for everything else, which is never touched.
@@ -134,3 +143,6 @@ internal class DecodeOrderTimestamps(private val maxReorderFrames: Int) {
         }
     }
 }
+
+/** [Format.customData] of a video track whose extractor already gives presentation times (unpacked AVI). */
+internal object PresentationOrderTimes

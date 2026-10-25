@@ -60,7 +60,7 @@ internal class DecodeOrderPtsVideoRenderer(
         val evaluation = super.onInputFormatChanged(formatHolder)
         val format = formatHolder.format
         if (format != null && !sameTrackKind(format, inputFormat)) {
-            val depth = DecodeOrderTimestamps.maxReorderFramesFor(format.sampleMimeType, format.containerMimeType)
+            val depth = DecodeOrderTimestamps.maxReorderFramesFor(format)
             timestamps = depth?.let { DecodeOrderTimestamps(it) }
             consumed = 0L
             loggedEngage = false
@@ -143,7 +143,7 @@ internal class DecodeOrderPtsVideoRenderer(
             tunnelingAudioSessionId
         )
         if (vendorUnstablePts &&
-            DecodeOrderTimestamps.maxReorderFramesFor(format.sampleMimeType, format.containerMimeType) != null
+            DecodeOrderTimestamps.maxReorderFramesFor(format) != null
         ) {
             mediaFormat.setInteger(KEY_AMLOGIC_UNSTABLE_PTS, 1)
             if (format.containerMimeType.equals(MimeTypes.VIDEO_AVI, ignoreCase = true)) {
