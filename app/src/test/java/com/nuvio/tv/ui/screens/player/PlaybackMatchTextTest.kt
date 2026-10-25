@@ -176,7 +176,11 @@ class PlaybackMatchTextTest {
 
     @Test
     fun `language tokens carry both iso 639-2 codes`() {
-        assertEquals(listOf("de", "deu", "ger", "German"), playbackLanguageTokens("de").take(4))
+        assertEquals(listOf("de", "DE", "deu", "ger", "German"), playbackLanguageTokens("de").take(5))
+        assertEquals("🇩🇪", playbackLanguageTokens("de").last())
+        assertEquals(true, "🇬🇧" in playbackLanguageTokens("eng"))
+        assertEquals(true, playbackLanguageTokens("pt-BR").containsAll(listOf("PT", "PT-BR", "🇧🇷")))
+        assertEquals(true, "🇵🇹" in playbackLanguageTokens("pt"))
         assertEquals(emptyList<String>(), playbackLanguageTokens("und"))
         assertEquals(emptyList<String>(), playbackLanguageTokens(null))
     }

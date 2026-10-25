@@ -23,19 +23,31 @@ internal fun playbackMatchText(info: PlayerMediaInfo, languages: List<String>, r
     }.distinct().joinToString(" ")
 }
 
-/** The selected audio language as packs spell it: the track's code, both ISO 639-2 codes and the name. */
+/**
+ * The selected audio language as packs spell it: the track's code, the upper-case ISO 639-1 code
+ * AIOStreams prints (EN, PT-BR), both ISO 639-2 codes, the name, and AIOStreams' flag for it.
+ */
 internal fun playbackLanguageTokens(code: String?): List<String> {
     val trimmed = code?.trim()?.takeIf { it.isNotEmpty() && it.lowercase() !in UNKNOWN_LANGUAGES } ?: return emptyList()
     val locale = Locale.forLanguageTag(trimmed.replace('_', '-'))
+    val iso1 = locale.language.lowercase().let { if (it.length == 2) it else ISO_639_1_BY_ISO_639_2[it] }
+    val region = locale.country.uppercase().takeIf { it.length == 2 }
     val iso3 = runCatching { locale.isO3Language }.getOrNull()?.takeIf { it.isNotBlank() }
     return listOfNotNull(
         trimmed,
+        iso1?.uppercase(),
+        if (iso1 != null && region != null) "${iso1.uppercase()}-$region" else null,
         iso3,
         iso3?.let(ISO_639_2_BIBLIOGRAPHIC::get),
         locale.getDisplayLanguage(Locale.ENGLISH).takeIf { it.isNotBlank() && !it.equals(trimmed, ignoreCase = true) },
-        languageCodeToName(trimmed)
+        languageCodeToName(trimmed),
+        iso1?.let { languageFlag(it, region) }
     ).distinct()
 }
+
+/** AIOStreams' flag for a language (its languageEmojis), so packs that match the flag a formatter prints still hit. */
+private fun languageFlag(iso1: String, region: String?): String? =
+    if (iso1 == "pt" && region == "BR") "🇧🇷" else LANGUAGE_FLAGS[iso1]
 
 private fun resolutionTokens(info: PlayerMediaInfo): List<String> {
     val width = info.videoWidth ?: return emptyList()
@@ -182,4 +194,25 @@ private val ISO_639_2_BIBLIOGRAPHIC = mapOf(
     "ell" to "gre", "fas" to "per", "ron" to "rum", "slk" to "slo", "sqi" to "alb",
     "hye" to "arm", "eus" to "baq", "kat" to "geo", "isl" to "ice", "mkd" to "mac",
     "msa" to "may", "mya" to "bur", "bod" to "tib", "cym" to "wel"
+)
+
+/** ISO 639-2 (both /T and /B) to ISO 639-1, as MKV tracks often carry eng or fre. */
+private val ISO_639_1_BY_ISO_639_2: Map<String, String> by lazy {
+    val byTerminology = Locale.getISOLanguages().mapNotNull { iso1 ->
+        runCatching { Locale.forLanguageTag(iso1).isO3Language }.getOrNull()?.takeIf { it.isNotBlank() }?.let { it to iso1 }
+    }.toMap()
+    byTerminology + ISO_639_2_BIBLIOGRAPHIC.mapNotNull { (t, b) -> byTerminology[t]?.let { b to it } }
+}
+
+/** From AIOStreams' languageEmojiMap, keyed by ISO 639-1; iw and in are the old codes some Android builds still give. */
+private val LANGUAGE_FLAGS = mapOf(
+    "en" to "🇬🇧", "ja" to "🇯🇵", "zh" to "🇨🇳", "ru" to "🇷🇺", "ar" to "🇸🇦", "pt" to "🇵🇹",
+    "es" to "🇪🇸", "fr" to "🇫🇷", "de" to "🇩🇪", "it" to "🇮🇹", "ko" to "🇰🇷", "hi" to "🇮🇳",
+    "bn" to "🇧🇩", "pa" to "🇵🇰", "mr" to "🇮🇳", "gu" to "🇮🇳", "ta" to "🇮🇳", "te" to "🇮🇳",
+    "kn" to "🇮🇳", "ml" to "🇮🇳", "th" to "🇹🇭", "vi" to "🇻🇳", "id" to "🇮🇩", "in" to "🇮🇩",
+    "tr" to "🇹🇷", "he" to "🇮🇱", "iw" to "🇮🇱", "fa" to "🇮🇷", "uk" to "🇺🇦", "el" to "🇬🇷",
+    "lt" to "🇱🇹", "lv" to "🇱🇻", "et" to "🇪🇪", "pl" to "🇵🇱", "cs" to "🇨🇿", "sk" to "🇸🇰",
+    "hu" to "🇭🇺", "ro" to "🇷🇴", "bg" to "🇧🇬", "sr" to "🇷🇸", "hr" to "🇭🇷", "sl" to "🇸🇮",
+    "nl" to "🇳🇱", "da" to "🇩🇰", "fi" to "🇫🇮", "sv" to "🇸🇪", "no" to "🇳🇴", "nb" to "🇳🇴",
+    "nn" to "🇳🇴", "ms" to "🇲🇾"
 )
