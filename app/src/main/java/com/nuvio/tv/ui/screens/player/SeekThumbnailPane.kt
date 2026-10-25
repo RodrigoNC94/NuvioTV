@@ -74,6 +74,7 @@ internal object SeekBarAnchor {
 }
 
 private val BarGap = 12.dp
+private val StripCentreHeight = 127.dp
 
 /** True while thumbnails are drawn over the seek bar; the title block above the bar steps aside meanwhile. */
 internal object SeekThumbnailOverlay {
@@ -199,19 +200,26 @@ fun SeekThumbnailOverlayHost(
     )
     val durationMs = timeline.duration
     DisposableEffect(Unit) { onDispose { SeekThumbnailOverlay.visible = false } }
+    val stripPlace = remember { booleanArrayOf(false) }
     val restingMs = seekPositionMs ?: timeline.currentPosition
     val fraction by animateFloatAsState(
         targetValue = if (durationMs > 0L) (restingMs.toFloat() / durationMs).coerceIn(0f, 1f) else 0f,
         animationSpec = tween(PlayerScrubRates.GLIDE_PUBLISH_MS.toInt(), easing = LinearEasing),
         label = "thumbFraction"
     )
+    val stripSpacing = remember(tick) { SeekThumbnails.stripSpacingMs() }
+    val showsStrip = stripSpacing != null && gliding
+    stripPlace[0] = PauseOnTimeline.keepsStripPlace(
+        keptBefore = stripPlace[0],
+        stripShown = showsStrip,
+        thumbnailShown = seekPositionMs != null && durationMs > 0L
+    )
     if (seekPositionMs == null || durationMs <= 0L) {
         SideEffect { SeekThumbnailOverlay.visible = false }
         return
     }
 
-    val stripSpacing = remember(tick) { SeekThumbnails.stripSpacingMs() }
-    if (stripSpacing != null && gliding) {
+    if (stripSpacing != null && showsStrip) {
         val aspect = SeekThumbnails.frameAspect() ?: (16f / 9f)
         // Re-spaced only when the speed crosses a step, and never back down while the glide stands still.
         val lastMultiple = remember { longArrayOf(1L) }
@@ -229,21 +237,23 @@ fun SeekThumbnailOverlayHost(
     }
 
     val painter = remember(seekPositionMs, tick) { croppedPainter(SeekThumbnails.shownFor(seekPositionMs)) }
-    val aspect = painter?.intrinsicSize?.let { it.width / it.height }
-        ?: SeekThumbnails.frameAspect()
+    // One frame shape for every picture of the title, so the frame never changes width from one picture to the next.
+    val aspect = SeekThumbnails.frameAspect() ?: painter?.intrinsicSize?.let { it.width / it.height }
     if (aspect == null) {
         SideEffect { SeekThumbnailOverlay.visible = false }
         return
     }
     SideEffect { SeekThumbnailOverlay.visible = true }
-    val height = 108.dp
+    val centred = stripPlace[0]
+    val height = if (centred) StripCentreHeight else 108.dp
     val shape = RoundedCornerShape(if (LocalV2Appearance.current != null) 12.dp else NuvioTheme.radii.sm)
-    AboveSeekBar(modifier, contentAlignment = BiasAlignment(horizontalBias = fraction * 2f - 1f, verticalBias = 1f)) {
+    val bias = if (centred) 0f else fraction * 2f - 1f
+    AboveSeekBar(modifier, contentAlignment = BiasAlignment(horizontalBias = bias, verticalBias = 1f)) {
         androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
             SeekThumbnailLabel(uiState.chapters, seekPositionMs, Modifier.padding(bottom = NuvioTheme.spacing.sm))
             Box(Modifier.height(height).width(height * aspect).landingFrame(shape).thumbnailSurface(shape)) {
                 if (painter != null) {
-                    Image(painter, contentDescription = null, contentScale = ContentScale.FillBounds,
+                    Image(painter, contentDescription = null, contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize())
                 }
             }
@@ -276,7 +286,7 @@ private fun SeekThumbnailStrip(
     }
     val anchorMs = anchor[0]
     val v2 = LocalV2Appearance.current != null
-    val centreH = 127.dp
+    val centreH = StripCentreHeight
     val tileH = 95.dp
     val gap = 10.dp
     val centreW = centreH * aspect
@@ -285,6 +295,7 @@ private fun SeekThumbnailStrip(
     val centreShape = RoundedCornerShape(if (v2) 12.dp else NuvioTheme.radii.sm)
     val density = LocalDensity.current
     val tileWPx = with(density) { tileW.toPx() }
+    val centreWPx = with(density) { centreW.toPx() }
     val stridePx = with(density) { (tileW + gap).toPx() }
     val liftPx = with(density) { ((centreH - tileH) / 2).roundToPx() }
     val pxPerMs = stridePx / spacingMs
@@ -312,13 +323,15 @@ private fun SeekThumbnailStrip(
                             val x = centreX + (tileMs - glidePosMs()).toFloat() * pxPerMs - tileWPx / 2f
                             IntOffset(x.toInt(), -liftPx)
                         }
-                        .graphicsLayer { alpha = if (abs(tileMs - glidePosMs()) < spacingMs * 0.5) 0f else 1f }
+                        .graphicsLayer {
+                            alpha = SeekStripLayout.tileAlpha(abs(tileMs - glidePosMs()).toFloat() * pxPerMs, centreWPx, tileWPx)
+                        }
                         .height(tileH)
                         .width(tileW)
                         .thumbnailSurface(tileShape)
                 ) {
                     if (painter != null) {
-                        Image(painter, contentDescription = null, contentScale = ContentScale.FillBounds,
+                        Image(painter, contentDescription = null, contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize())
                     }
                 }
@@ -337,7 +350,7 @@ private fun SeekThumbnailStrip(
                 .thumbnailSurface(centreShape)
         ) {
             if (centre != null) {
-                Image(centre, contentDescription = null, contentScale = ContentScale.FillBounds,
+                Image(centre, contentDescription = null, contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize())
             }
         }

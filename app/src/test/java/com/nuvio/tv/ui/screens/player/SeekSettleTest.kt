@@ -1,5 +1,6 @@
 package com.nuvio.tv.ui.screens.player
 
+import com.nuvio.tv.data.local.SeekingMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -101,7 +102,44 @@ class SeekSettleTest {
     }
 
     @Test
-    fun theWaitIsTwoSeconds() {
-        assertEquals(2_000L, SeekSettle.SETTLE_MS)
+    fun aTapWaitsLessThanASecond_aHoldTwoSeconds() {
+        assertEquals(800L, SeekSettle.waitMs(afterHold = false))
+        assertEquals(2_000L, SeekSettle.waitMs(afterHold = true))
+    }
+
+    @Test
+    fun theWaitOnlyComesWhileThumbnailsRun() {
+        assertTrue(SeekSettle.applies(open = false, userPaused = false, inParty = false, playing = true, thumbnails = true))
+        assertFalse(SeekSettle.applies(open = false, userPaused = false, inParty = false, playing = true, thumbnails = false))
+    }
+
+    @Test
+    fun pausedOrInAParty_theSeekGoesOnRelease() {
+        assertFalse(SeekSettle.applies(open = false, userPaused = true, inParty = false, playing = true, thumbnails = true))
+        assertFalse(SeekSettle.applies(open = false, userPaused = false, inParty = true, playing = true, thumbnails = true))
+        assertFalse(SeekSettle.applies(open = false, userPaused = false, inParty = false, playing = false, thumbnails = true))
+    }
+
+    @Test
+    fun anOpenRun_goesOnEvenWhenThumbnailsStop() {
+        assertTrue(SeekSettle.applies(open = true, userPaused = false, inParty = false, playing = true, thumbnails = false))
+    }
+
+    @Test
+    fun eachChoiceWaitsItsOwnTime() {
+        assertEquals(2_000L, SeekSettle.waitMs(afterHold = false, mode = SeekingMode.GENTLE))
+        assertEquals(2_000L, SeekSettle.waitMs(afterHold = true, mode = SeekingMode.GENTLE))
+        assertEquals(800L, SeekSettle.waitMs(afterHold = false, mode = SeekingMode.BALANCED))
+        assertEquals(2_000L, SeekSettle.waitMs(afterHold = true, mode = SeekingMode.BALANCED))
+        assertEquals(0L, SeekSettle.waitMs(afterHold = false, mode = SeekingMode.FAST))
+        assertEquals(0L, SeekSettle.waitMs(afterHold = true, mode = SeekingMode.FAST))
+    }
+
+    @Test
+    fun fast_seeksOnReleaseLikeTheOfficialApp() {
+        assertFalse(SeekSettle.applies(open = false, userPaused = false, inParty = false, playing = true,
+            thumbnails = true, mode = SeekingMode.FAST))
+        assertTrue(SeekSettle.applies(open = false, userPaused = false, inParty = false, playing = true,
+            thumbnails = true, mode = SeekingMode.GENTLE))
     }
 }

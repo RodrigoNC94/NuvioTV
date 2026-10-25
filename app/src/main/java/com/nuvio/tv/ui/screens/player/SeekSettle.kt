@@ -1,9 +1,12 @@
 package com.nuvio.tv.ui.screens.player
 
+import com.nuvio.tv.data.local.SeekingMode
+
 /**
  * A run of seek keys while the video plays. Playback holds where it is and every key goes on from the pending
- * target, so quick presses add up. The run ends with one seek [SETTLE_MS] after the last key, at once on OK, or
- * without a seek on Back.
+ * target, so quick presses add up. The run ends with one seek [waitMs] after the last key, at once on OK, or
+ * without a seek on Back. Only while thumbnails run for this playback: without one to look at the seek goes on
+ * release. Gentle waits [HOLD_SETTLE_MS] after a tap too; Fast never waits.
  */
 internal class SeekSettle {
     /** Playback position when the run began; null while no run is open. */
@@ -37,7 +40,25 @@ internal class SeekSettle {
     class Run(val fromMs: Long, val presses: Int)
 
     companion object {
-        const val SETTLE_MS = 2_000L
+        /** Long enough for the next quick tap on a remote (200 to 400 ms apart). */
+        const val TAP_SETTLE_MS = 800L
+        /** After a hold there was a run of thumbnails to look at. */
+        const val HOLD_SETTLE_MS = 2_000L
+
+        fun waitMs(afterHold: Boolean, mode: SeekingMode = SeekingMode.BALANCED): Long = when {
+            mode == SeekingMode.FAST -> 0L
+            afterHold || mode == SeekingMode.GENTLE -> HOLD_SETTLE_MS
+            else -> TAP_SETTLE_MS
+        }
+
+        fun applies(
+            open: Boolean,
+            userPaused: Boolean,
+            inParty: Boolean,
+            playing: Boolean,
+            thumbnails: Boolean,
+            mode: SeekingMode = SeekingMode.BALANCED
+        ): Boolean = open || (mode != SeekingMode.FAST && !userPaused && !inParty && playing && thumbnails)
 
         /**
          * Where a step of [deltaMs] lands: from the pending target while one is open, else from where playback is.

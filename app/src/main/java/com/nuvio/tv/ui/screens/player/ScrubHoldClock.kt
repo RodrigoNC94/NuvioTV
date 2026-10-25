@@ -42,6 +42,9 @@ class ScrubHoldClock {
         releasedHold = held
     }
 
+    /** The key that came up last was held, not tapped. */
+    val releasedAfterHold: Boolean get() = releasedHold
+
     /** True once when the last tap turned out to start a TV's backlog after a hold: its step is to be taken back. */
     fun takeUndoTap(): Boolean = undoTap.also { undoTap = false }
 

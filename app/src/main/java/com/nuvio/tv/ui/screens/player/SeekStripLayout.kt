@@ -37,6 +37,15 @@ internal object SeekStripLayout {
         return ceil((posMs - reachMs - anchorMs) / spacingMs).toLong()..floor((posMs + reachMs - anchorMs) / spacingMs).toLong()
     }
 
+    /**
+     * A tile [dxPx] from the centre fades in as it comes out from behind the centre picture and out as it slides
+     * under it, so no tile pops in or out at the centre frame's edges.
+     */
+    fun tileAlpha(dxPx: Float, centreWPx: Float, tileWPx: Float): Float {
+        if (tileWPx <= 0f) return 1f
+        return ((dxPx - (centreWPx - tileWPx) / 2f) / tileWPx).coerceIn(0f, 1f)
+    }
+
     /** Stored thumbnail time for a tile at [tileMs]. */
     fun pictureMs(tileMs: Double, baseSpacingMs: Long): Long =
         if (baseSpacingMs <= 0L) tileMs.roundToLong() else (tileMs / baseSpacingMs).roundToLong() * baseSpacingMs

@@ -187,4 +187,19 @@ class ScrubHoldClockTest {
         assertEquals(0L, clock.cec(400L))
         assertTrue(clock.moving(450L))
     }
+
+    @Test
+    fun theReleaseTellsAHoldFromATap() {
+        val clock = ScrubHoldClock()
+        clock.press(0L)
+        clock.release(120L)
+        assertFalse(clock.releasedAfterHold)
+        clock.press(1_000L)
+        assertEquals(1_000L, clock.repeat(eventTime = 1_500L, downTime = 1_000L))
+        clock.release(2_000L)
+        assertTrue(clock.releasedAfterHold)
+        clock.press(3_000L)
+        clock.release(3_100L)
+        assertFalse(clock.releasedAfterHold)
+    }
 }

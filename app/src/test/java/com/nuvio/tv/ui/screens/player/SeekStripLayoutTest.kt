@@ -1,5 +1,6 @@
 package com.nuvio.tv.ui.screens.player
 
+import com.nuvio.tv.data.local.SeekingMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -93,60 +94,121 @@ class SeekStripLayoutTest {
         assertEquals(0L, SeekStripLayout.pictureMs(-14_000.0, base))
     }
 
-    /** A held seek on the real speed curve, frame by frame, as the strip sees it. */
-    private fun walkHold(baseSpacingMs: Long, tvRemote: Boolean, check: (Long, Double, Long, Long) -> Unit) {
+    private val film = 7_200_000L
+    private val modes = SeekingMode.entries
+
+    /**
+     * A held seek on the real speed curve of [mode], frame by frame, as the strip sees it: (time, glide position,
+     * spacing multiple before, after). Fast follows its steps on a remote repeating every [everyMs]; its strip
+     * spacing follows the fastest speed of the hold, as in the player.
+     */
+    private fun walkHold(
+        mode: SeekingMode,
+        baseSpacingMs: Long,
+        tvRemote: Boolean,
+        everyMs: Long = if (tvRemote) 150L else 50L,
+        check: (Long, Double, Long, Long, Double) -> Unit
+    ) {
         var glide = 600_000.0
         var multiple = 1L
         var t = 400L
+        val chase = if (mode == SeekingMode.FAST) PlayerScrubRates.StepChase(glide, film.toDouble()) else null
+        var nextRepeat = 400L
+        var fastest = 0.0
         while (t <= 20_000L) {
-            val speed = PlayerScrubRates.glideSpeed(t, tvRemote)
-            glide += speed * 16
+            val speed = if (chase != null) {
+                while (nextRepeat <= t) {
+                    chase.repeat(nextRepeat, true)
+                    nextRepeat += everyMs
+                }
+                val v = chase.advance(16)
+                glide = chase.cursorMs
+                fastest = maxOf(fastest, v)
+                fastest
+            } else {
+                PlayerScrubRates.glideSpeed(t, mode, film, tvRemote).also { glide += it * 16 }
+            }
             val next = SeekStripLayout.multipleForSpeed(speed.toFloat(), baseSpacingMs)
-            check(t, glide, multiple, next)
+            check(t, glide, multiple, next, speed)
             multiple = next
             t += 16
         }
     }
 
     @Test
-    fun heldSeek_spacingOnlyGrowsAndStaysReadableOnTheSpeedCurve() {
-        for (spacing in listOf(10_000L, 30_000L)) {
-            for (tv in listOf(false, true)) {
-                walkHold(spacing, tv) { t, _, before, after ->
-                    assertTrue("$spacing $tv at $t: $before -> $after", after >= before)
-                    val speed = PlayerScrubRates.glideSpeed(t, tv)
-                    assertTrue("$spacing $tv at $t", speed * 1000.0 / (spacing * after) <= 5.0)
-                }
+    fun heldSeek_spacingOnlyGrowsAndStaysReadableOnEverySpeedCurve() {
+        for (mode in modes) for (spacing in listOf(10_000L, 30_000L)) for (tv in listOf(false, true)) {
+            walkHold(mode, spacing, tv) { t, _, before, after, speed ->
+                assertTrue("$mode $spacing $tv at $t: $before -> $after", after >= before)
+                assertTrue("$mode $spacing $tv at $t", speed * 1000.0 / (spacing * after) <= 5.0)
             }
         }
     }
 
     @Test
     fun heldSeek_tilesKeepTheirPlaceAtEverySpacingStep() {
-        var steps = 0
-        walkHold(10_000L, false) { _, glide, before, after ->
-            if (after == before) return@walkHold
-            steps++
-            val old = 10_000.0 * before
-            val new = 10_000.0 * after
-            val anchor = 3_000.0
-            val respaced = SeekStripLayout.respacedAnchor(anchor, glide, old, new)
-            val oldPhase = screenStrides(anchor, 0, glide, old).let { it - Math.floor(it) }
-            val newPhase = screenStrides(respaced, 0, glide, new).let { it - Math.floor(it) }
-            assertEquals(oldPhase, newPhase, 1e-6)
+        for (mode in modes) {
+            var steps = 0
+            walkHold(mode, 10_000L, false) { _, glide, before, after, _ ->
+                if (after == before) return@walkHold
+                steps++
+                val old = 10_000.0 * before
+                val new = 10_000.0 * after
+                val anchor = 3_000.0
+                val respaced = SeekStripLayout.respacedAnchor(anchor, glide, old, new)
+                val oldPhase = screenStrides(anchor, 0, glide, old).let { it - Math.floor(it) }
+                val newPhase = screenStrides(respaced, 0, glide, new).let { it - Math.floor(it) }
+                assertEquals(oldPhase, newPhase, 1e-6)
+            }
+            assertTrue("$mode steps $steps", steps >= 2)
         }
-        assertTrue("steps $steps", steps >= 2)
     }
 
     @Test
     fun heldSeek_cursorMovesWithoutJumpsAtTheStartAndAtEveryDoubling() {
-        var lastStep = PlayerScrubRates.glideSpeed(384L) * 16
-        var t = 400L
-        while (t <= 20_000L) {
-            val step = PlayerScrubRates.glideSpeed(t) * 16
-            assertTrue("at $t: $lastStep -> $step", step >= lastStep && step <= lastStep * 1.01)
-            lastStep = step
-            t += 16
+        for (mode in listOf(SeekingMode.GENTLE, SeekingMode.BALANCED)) {
+            var lastStep = PlayerScrubRates.glideSpeed(384L, mode, film) * 16
+            var t = 400L
+            while (t <= 20_000L) {
+                val step = PlayerScrubRates.glideSpeed(t, mode, film) * 16
+                assertTrue("$mode at $t: $lastStep -> $step", step >= lastStep && step <= lastStep * 1.03)
+                lastStep = step
+                t += 16
+            }
+        }
+    }
+
+    /** Tiles on screen move by at most this share of a tile stride per 16 ms frame, at any speed of any choice. */
+    @Test
+    fun heldSeek_tilesNeverSkipAcrossTheScreen() {
+        for (mode in modes) for (tv in listOf(false, true)) {
+            var last = Double.NaN
+            walkHold(mode, 10_000L, tv) { t, glide, _, after, _ ->
+                if (!last.isNaN()) {
+                    val strides = (glide - last) / (10_000.0 * after)
+                    assertTrue("$mode $tv at $t: $strides strides in a frame", strides in 0.0..0.12)
+                }
+                last = glide
+            }
+        }
+    }
+
+    @Test
+    fun tileAlpha_hiddenBehindTheCentreAndFadesInAsItComesOut() {
+        val centre = 226f
+        val tile = 169f
+        assertEquals(0f, SeekStripLayout.tileAlpha(0f, centre, tile), 1e-6f)
+        assertEquals(0f, SeekStripLayout.tileAlpha((centre - tile) / 2f, centre, tile), 1e-6f)
+        assertEquals(0.5f, SeekStripLayout.tileAlpha(centre / 2f, centre, tile), 1e-6f)
+        assertEquals(1f, SeekStripLayout.tileAlpha((centre + tile) / 2f, centre, tile), 1e-6f)
+        assertEquals(1f, SeekStripLayout.tileAlpha(1_000f, centre, tile), 1e-6f)
+        var last = 0f
+        var dx = 0f
+        while (dx < 400f) {
+            val a = SeekStripLayout.tileAlpha(dx, centre, tile)
+            assertTrue("at $dx", a >= last && a - last <= 1f / tile + 1e-6f)
+            last = a
+            dx += 1f
         }
     }
 }
