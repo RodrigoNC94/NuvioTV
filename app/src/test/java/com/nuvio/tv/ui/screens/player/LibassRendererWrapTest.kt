@@ -1,72 +1,40 @@
 package com.nuvio.tv.ui.screens.player
 
-import androidx.media3.exoplayer.ForwardingRenderer
-import androidx.media3.exoplayer.Renderer
-import androidx.media3.exoplayer.RenderersFactory
-import io.github.peerless2012.ass.media.AssHandler
-import io.github.peerless2012.ass.media.kt.withAssSupport
-import io.github.peerless2012.ass.media.render.AssRenderer
-import io.github.peerless2012.ass.media.type.AssRenderType
-import io.mockk.mockk
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LibassRendererWrapTest {
 
-    private class ShiftingRenderer(base: Renderer, private val shiftUs: Long) : ForwardingRenderer(base) {
-        override fun render(positionUs: Long, elapsedRealtimeUs: Long) {
-            super.render(positionUs + shiftUs, elapsedRealtimeUs)
-        }
-    }
-
-    private fun createRenderers(factory: RenderersFactory): Array<Renderer> =
-        factory.createRenderers(
-            mockk(relaxed = true),
-            mockk(relaxed = true),
-            mockk(relaxed = true),
-            mockk(relaxed = true),
-            mockk(relaxed = true)
-        )
-
-    @Test
-    fun `the libass renderer is wrapped and the other renderers are left alone`() {
-        val other = mockk<Renderer>(relaxed = true)
-        val base = RenderersFactory { _, _, _, _, _ -> arrayOf(other) }
-        val handler = AssHandler(AssRenderType.OVERLAY_OPEN_GL)
-
-        val renderers = createRenderers(
-            base.withAssSupport(handler).wrapAssRenderer { ShiftingRenderer(it, 0L) }
-        )
-
-        assertEquals(2, renderers.size)
-        assertSame(other, renderers[0])
-        assertTrue(renderers[1] is ShiftingRenderer)
+    private fun renderAt(presentationTimeUs: Long, shiftUs: Long): Pair<Long, Long> {
+        var rendered: Pair<Long, Long>? = null
+        val callback = shiftedAssVideoFrameCallback({ shiftUs }) { timeUs, releaseNs -> rendered = timeUs to releaseNs }
+        callback(presentationTimeUs, 42L)
+        return requireNotNull(rendered)
     }
 
     @Test
-    fun `libass gets the shifted position from the wrapper`() {
-        val base = RenderersFactory { _, _, _, _, _ -> emptyArray() }
-        val handler = AssHandler(AssRenderType.OVERLAY_OPEN_GL)
-        val renderers = createRenderers(
-            base.withAssSupport(handler).wrapAssRenderer { ShiftingRenderer(it, -2_000_000L) }
-        )
-
-        renderers.single().render(1_000_000_000_000L + 10_000_000L, 0L)
-
-        assertEquals(8_000_000L, handler.videoTime)
+    fun `a subtitle delay moves libass subtitles later`() {
+        assertEquals(8_000_000L to 42L, renderAt(10_000_000L, shiftUs = -2_000_000L))
     }
 
     @Test
-    fun `without a wrapper libass keeps the player position`() {
-        val base = RenderersFactory { _, _, _, _, _ -> emptyArray() }
-        val handler = AssHandler(AssRenderType.OVERLAY_OPEN_GL)
-        val renderers = createRenderers(base.withAssSupport(handler).wrapAssRenderer { it })
+    fun `without a delay libass gets the frame time`() {
+        assertEquals(10_000_000L to 42L, renderAt(10_000_000L, shiftUs = 0L))
+    }
 
-        assertTrue(renderers.single() is AssRenderer)
-        renderers.single().render(1_000_000_000_000L + 10_000_000L, 0L)
+    @Test
+    fun `the shift is read on every frame`() {
+        var shiftUs = 0L
+        val seen = mutableListOf<Long>()
+        val callback = shiftedAssVideoFrameCallback({ shiftUs }) { timeUs, _ -> seen += timeUs }
+        callback(1_000_000L, 0L)
+        shiftUs = 500_000L
+        callback(1_000_000L, 0L)
+        assertEquals(listOf(1_000_000L, 1_500_000L), seen)
+    }
 
-        assertEquals(10_000_000L, handler.videoTime)
+    @Test
+    fun `a delay before the start never gives a negative time`() {
+        assertEquals(0L to 42L, renderAt(1_000_000L, shiftUs = -5_000_000L))
     }
 }

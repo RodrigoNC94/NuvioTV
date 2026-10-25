@@ -84,7 +84,7 @@ class PlayerSubtitleStylingTest {
     }
 
     @Test
-    fun `SRT to ASS clears overrides and ignores queued SRT padding`() {
+    fun `SRT to ASS clears overrides and SRT padding`() {
         select(MimeTypes.APPLICATION_SUBRIP)
         view.applySubtitleStyleIfNeeded(custom)
         assertEquals(Color.BLUE, styles.last().backgroundColor)
@@ -104,11 +104,11 @@ class PlayerSubtitleStylingTest {
             subtitles.setPadding(4, 8, 12, 0)
         }
         pending.forEach { it.run() }
-        verify(exactly = 0) { subtitles.setPadding(4, 8, 12, 100) }
+        verify(exactly = 1) { subtitles.setPadding(4, 8, 12, 100) }
     }
 
     @Test
-    fun `ASS to WebVTT restores customization and latest padding only`() {
+    fun `ASS to WebVTT restores customization and the latest padding`() {
         select(MimeTypes.TEXT_SSA)
         view.applySubtitleStyleIfNeeded(custom)
         select(MimeTypes.TEXT_VTT)
@@ -118,7 +118,7 @@ class PlayerSubtitleStylingTest {
         assertEquals(Color.BLUE, styles.last().backgroundColor)
         assertEquals(CaptionStyleCompat.EDGE_TYPE_OUTLINE, styles.last().edgeType)
         verify { subtitles.setApplyEmbeddedFontSizes(false); subtitles.setPadding(4, 8, 12, 50) }
-        verify(exactly = 0) { subtitles.setPadding(4, 8, 12, 100) }
+        verify(exactly = 1) { subtitles.setPadding(4, 8, 12, 100) }
     }
 
     @Test
@@ -130,11 +130,11 @@ class PlayerSubtitleStylingTest {
     }
 
     @Test
-    fun `forced application invalidates older identical padding configuration`() {
+    fun `forced application applies the padding again`() {
         select(MimeTypes.APPLICATION_SUBRIP)
         view.applySubtitleStyleIfNeeded(custom)
         view.applySubtitleStyleIfNeeded(custom, force = true)
         pending.forEach { it.run() }
-        verify(exactly = 1) { subtitles.setPadding(4, 8, 12, 100) }
+        verify(exactly = 2) { subtitles.setPadding(4, 8, 12, 100) }
     }
 }

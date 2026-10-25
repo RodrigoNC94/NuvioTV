@@ -13,6 +13,8 @@ enum class RemoteButtonJob(val id: String) {
     NEXT_AUDIO("next_audio"),
     SUBTITLES("subtitles"),
     SUBTITLES_TOGGLE("subtitles_toggle"),
+    SUBTITLES_UP("subtitles_up"),
+    SUBTITLES_DOWN("subtitles_down"),
     PLAY_PAUSE("play_pause"),
     SEEK_FORWARD("seek_forward"),
     SEEK_BACK("seek_back"),

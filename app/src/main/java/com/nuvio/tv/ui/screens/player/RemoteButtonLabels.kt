@@ -73,6 +73,8 @@ internal fun remoteJobLabel(context: Context, job: RemoteButtonJob): String = co
     RemoteButtonJob.NEXT_AUDIO -> R.string.remote_buttons_job_next_audio
     RemoteButtonJob.SUBTITLES -> R.string.cd_subtitles
     RemoteButtonJob.SUBTITLES_TOGGLE -> R.string.remote_buttons_job_subtitles_toggle
+    RemoteButtonJob.SUBTITLES_UP -> R.string.remote_buttons_job_subtitles_up
+    RemoteButtonJob.SUBTITLES_DOWN -> R.string.remote_buttons_job_subtitles_down
     RemoteButtonJob.PLAY_PAUSE -> R.string.remote_buttons_job_play_pause
     RemoteButtonJob.SEEK_FORWARD -> R.string.remote_buttons_job_seek_forward
     RemoteButtonJob.SEEK_BACK -> R.string.remote_buttons_job_seek_back

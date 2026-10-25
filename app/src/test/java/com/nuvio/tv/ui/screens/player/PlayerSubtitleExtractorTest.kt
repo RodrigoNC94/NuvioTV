@@ -14,7 +14,7 @@ import com.nuvio.tv.core.player.DolbyVisionConversionConfig
 import com.nuvio.tv.core.player.DolbyVisionExtractorsFactory
 import com.nuvio.tv.core.player.HdrColorSignalingExtractor
 import com.nuvio.tv.core.player.dvmkv.MatroskaExtractor as DvMatroskaExtractor
-import io.github.peerless2012.ass.media.AssHandler
+import com.nuvio.tv.libass.media.AssHandler
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

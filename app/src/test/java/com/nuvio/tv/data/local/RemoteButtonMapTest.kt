@@ -260,6 +260,17 @@ class RemoteButtonMapTest {
     }
 
     @Test
+    fun `subtitles up and down are offered and kept, and no key has them out of the box`() {
+        for (job in listOf(RemoteButtonJob.SUBTITLES_UP, RemoteButtonJob.SUBTITLES_DOWN)) {
+            assertTrue(job in RemoteButtonMap.jobsFor(KeyEvent.KEYCODE_PROG_RED))
+            assertTrue(job in RemoteButtonMap.jobsFor(KeyEvent.KEYCODE_PROG_RED, RemotePressKind.HOLD))
+            val read = RemoteButtonMap.decode(default.with(KeyEvent.KEYCODE_PROG_RED, RemoteButtonBinding(job)).encode())
+            assertEquals(job, read.overrideFor(KeyEvent.KEYCODE_PROG_RED)?.job)
+            assertTrue(RemoteButtonMap.DEFAULTS.values.none { it.job == job })
+        }
+    }
+
+    @Test
     fun `show details is offered as a press and a hold job and Info keeps stream info`() {
         assertTrue(RemoteButtonJob.SHOW_DETAILS in RemoteButtonMap.jobsFor(KeyEvent.KEYCODE_INFO))
         assertTrue(RemoteButtonJob.SHOW_DETAILS in RemoteButtonMap.jobsFor(KeyEvent.KEYCODE_INFO, RemotePressKind.HOLD))

@@ -41,6 +41,8 @@
     <string name="remote_buttons_job_stats">Playback stats on/off</string>
     <string name="remote_buttons_job_next_audio">Next audio track</string>
     <string name="remote_buttons_job_subtitles_toggle">Subtitles on/off</string>
+    <string name="remote_buttons_job_subtitles_up">Subtitles up</string>
+    <string name="remote_buttons_job_subtitles_down">Subtitles down</string>
     <string name="remote_buttons_job_play_pause">Play/Pause</string>
     <string name="remote_buttons_job_seek_forward">Seek forward</string>
     <string name="remote_buttons_job_seek_back">Seek back</string>

@@ -126,7 +126,7 @@ internal fun PlayerRuntimeController.presentSubtitleCue(cue: Cue): Cue {
     val url = state.selectedAddonSubtitle?.url.orEmpty()
     val ass = codec.contains("ass", true) || codec.contains("ssa", true) ||
         url.contains(".ass", true) || url.contains(".ssa", true)
-    return subtitlePresentation.apply(cue, state.subtitleStyle, state.dimHdrOverlays && state.isHdrVideo, ass || (codec.isBlank() && url.isBlank()))
+    return subtitlePresentation.apply(cue, state.subtitleStyle, state.isEditingHdrSubtitleStyle, ass || (codec.isBlank() && url.isBlank()))
 }
 
 /** Track labels (including SDH) do not identify the rendering format. */
