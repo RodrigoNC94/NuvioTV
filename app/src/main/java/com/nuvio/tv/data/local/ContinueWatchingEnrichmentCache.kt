@@ -40,7 +40,8 @@ data class CachedNextUpItem(
     val seedSeason: Int? = null,
     val seedEpisode: Int? = null,
     val contentLanguage: String? = null,
-    val ratingVisible: Boolean = true
+    /** Null in snapshots from before this field: Gson skips Kotlin defaults, and those showed the rating. */
+    val ratingVisible: Boolean? = null
 )
 
 data class CachedInProgressItem(
@@ -64,7 +65,8 @@ data class CachedInProgressItem(
     val genres: List<String> = emptyList(),
     val releaseInfo: String? = null,
     val contentLanguage: String? = null,
-    val ratingVisible: Boolean = true
+    /** Null in snapshots from before this field: Gson skips Kotlin defaults, and those showed the rating. */
+    val ratingVisible: Boolean? = null
 )
 
 @Singleton

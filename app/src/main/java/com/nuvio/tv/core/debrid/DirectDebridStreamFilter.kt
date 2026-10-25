@@ -56,6 +56,28 @@ object DirectDebridStreamFilter {
         RegexOption.IGNORE_CASE
     )
 
+    // Words release names use for each language besides its code. Short words that are common in
+    // titles ("por", "chi", "fra") are left out so a title is not read as a language.
+    private val languageAliases = mapOf(
+        DebridStreamLanguage.EN to listOf("eng", "english"),
+        DebridStreamLanguage.HI to listOf("hin", "hindi"),
+        DebridStreamLanguage.IT to listOf("ita", "italian", "italiano"),
+        DebridStreamLanguage.ES to listOf("spa", "esp", "spanish", "espanol", "castellano"),
+        DebridStreamLanguage.FR to listOf("fre", "french", "truefrench"),
+        DebridStreamLanguage.DE to listOf("ger", "deu", "german", "deutsch"),
+        DebridStreamLanguage.PT to listOf("portuguese", "portugues"),
+        DebridStreamLanguage.PL to listOf("pol", "polish"),
+        DebridStreamLanguage.CS to listOf("cze", "czech"),
+        DebridStreamLanguage.LA to listOf("latino"),
+        DebridStreamLanguage.JA to listOf("jpn", "japanese"),
+        DebridStreamLanguage.KO to listOf("kor", "korean"),
+        DebridStreamLanguage.ZH to listOf("chinese"),
+        DebridStreamLanguage.HE to listOf("heb", "hebrew")
+    )
+    private val languageRegexes = DebridStreamLanguage.entries.map { language ->
+        language to languageRegex(listOf(language.code) + languageAliases[language].orEmpty())
+    }
+
     fun filterInstant(streams: List<Stream>, settings: DebridSettings? = null): List<Stream> {
         val instantStreams = streams
             .filter { isInstantCandidate(it) }
@@ -262,7 +284,7 @@ object DirectDebridStreamFilter {
         val audioChannels = streamAudioChannels(parsed?.channels.orEmpty(), searchText)
         val encode = streamEncode(parsed?.codec, searchText)
         val languages = parsed?.languages.orEmpty().mapNotNull { languageFor(it) }.ifEmpty {
-            DebridStreamLanguage.entries.filter { searchText.hasToken(it.code) }
+            searchText.lowercase().let { text -> languageRegexes.filter { (_, regex) -> regex.containsMatchIn(text) }.map { it.first } }
         }
         val releaseGroup = releaseGroupOf(stream)
         return StreamFacts(
@@ -378,9 +400,11 @@ object DirectDebridStreamFilter {
     }
 
     private fun languageFor(value: String): DebridStreamLanguage? {
-        val normalized = value.lowercase()
+        val normalized = value.trim().lowercase()
         return DebridStreamLanguage.entries.firstOrNull {
-            normalized == it.code || normalized == it.label.lowercase()
+            normalized == it.code ||
+                normalized == it.label.lowercase() ||
+                normalized in languageAliases[it].orEmpty()
         }
     }
 
@@ -461,6 +485,9 @@ object DirectDebridStreamFilter {
 
     private fun resolutionRegex(vararg tokens: String): Regex =
         Regex("(^|[^a-z0-9])(${tokens.joinToString("|")})([^a-z0-9]|\$)")
+
+    private fun languageRegex(tokens: List<String>): Regex =
+        Regex("(^|[^a-z0-9])(${tokens.joinToString("|") { Regex.escape(it) }})([^a-z0-9]|\$)")
 
     private fun String.hasToken(token: String): Boolean {
         val pattern = "(^|[^a-z0-9])${Regex.escape(token.lowercase())}([^a-z0-9]|\$)"
