@@ -135,7 +135,7 @@ fun V2TopNavigation(
                                     focusedContentColor = Color.White)) {
                                 when {
                                     item.icon != null -> androidx.tv.material3.Icon(item.icon, null, Modifier.size(14.dp))
-                                    item.iconRes != null -> androidx.tv.material3.Icon(com.nuvio.tv.ui.screens.settings.rememberRawSvgPainter(item.iconRes, 14.dp), null, Modifier.size(14.dp))
+                                    item.iconRes != null -> androidx.tv.material3.Icon(com.nuvio.tv.ui.util.rememberRawSvgPainter(item.iconRes, 14.dp), null, Modifier.size(14.dp))
                                 }
                                 Spacer(Modifier.width(7.dp))
                                 Text(item.label, style = androidx.tv.material3.MaterialTheme.typography.labelMedium)

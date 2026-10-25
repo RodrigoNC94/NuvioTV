@@ -184,7 +184,6 @@ internal fun LayoutStreamsSection(
         title = stringResource(R.string.settings_stream_badges_in_player_title),
         subtitle = stringResource(R.string.settings_stream_badges_in_player_description),
         checked = streamBadgeUiState.showInPlayer,
-        enabled = streamBadgeUiState.rules.hasImport,
         onToggle = { onShowInPlayerChange(!streamBadgeUiState.showInPlayer) }
     )
     if (streamBadgeUiState.showInPlayer && streamBadgeUiState.rules.hasImport) {

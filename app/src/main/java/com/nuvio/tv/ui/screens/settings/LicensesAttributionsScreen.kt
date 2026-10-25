@@ -64,6 +64,9 @@ import com.nuvio.tv.R
 import com.nuvio.tv.core.cloud.PremiumizeCloudLibraryPosterUrl
 import com.nuvio.tv.core.cloud.TorboxCloudLibraryPosterUrl
 import com.nuvio.tv.core.cloud.cloudLibraryDisplayArtworkUrl
+import com.nuvio.tv.ui.components.TVDB_NAME
+import com.nuvio.tv.ui.components.TVDB_URL
+import com.nuvio.tv.ui.components.tvdbCreditShown
 import com.nuvio.tv.ui.util.rememberRawSvgPainter
 
 private const val NuvioRepositoryUrl = "https://github.com/ysosrs123/NuvioTV-Fork"
@@ -371,7 +374,7 @@ private fun appLicenseItem() = LicenseAttributionItem(
 )
 
 @Composable
-private fun dataAttributionItems() = listOf(
+private fun dataAttributionItems() = listOfNotNull(
     LicenseAttributionItem(
         title = stringResource(R.string.licenses_attributions_tmdb_title),
         body = stringResource(R.string.licenses_attributions_tmdb_body),
@@ -389,6 +392,16 @@ private fun dataAttributionItems() = listOf(
         body = stringResource(R.string.calendar_credit),
         url = TvMazeUrl
     ),
+    if (tvdbCreditShown) {
+        LicenseAttributionItem(
+            title = TVDB_NAME,
+            body = stringResource(R.string.tvdb_metadata_credit, TVDB_NAME),
+            url = TVDB_URL,
+            logo = LicenseLogo.Drawable(R.drawable.tvdb_logo)
+        )
+    } else {
+        null
+    },
     LicenseAttributionItem(
         title = stringResource(R.string.licenses_attributions_simkl_title),
         body = stringResource(R.string.licenses_attributions_simkl_body),

@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.nuvio.tv.R
+import com.nuvio.tv.core.player.thumbnail.MemoryGovernor
 import com.nuvio.tv.core.player.thumbnail.SeekThumbMode
 import com.nuvio.tv.core.player.thumbnail.SeekThumbnailPreferences
 import com.nuvio.tv.core.player.thumbnail.SeekThumbnails
@@ -35,6 +36,7 @@ import com.nuvio.tv.core.player.thumbnail.ThumbnailCache
 import com.nuvio.tv.data.local.PlayerPreference
 import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.RemoteButtonMap
+import com.nuvio.tv.data.local.SeekingMode
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.components.P2pConsentDialog
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
@@ -143,6 +145,13 @@ private fun PlaybackSectionContent(
         PlaybackSection.UP_NEXT -> PlaybackUpNextSection(playerSettings, onUpdate, onOpenDialog)
         PlaybackSection.SKIP_SEGMENTS -> PlaybackSkipSegmentsSection(playerSettings, onUpdate)
         PlaybackSection.PLAYER_INTERFACE -> {
+            SettingsActionRow(
+                title = stringResource(R.string.playback_seeking),
+                subtitle = null,
+                value = stringResource(seekingLabel(playerSettings.seekingMode)),
+                enabled = playerSettings.playerPreference != PlayerPreference.EXTERNAL,
+                onClick = { onOpenDialog(PlaybackDialog.SEEKING) }
+            )
             PlaybackThumbnailRows(playerSettings, onOpenDialog)
             PlaybackPlayerInterfaceSection(playerSettings, onUpdate)
             SettingsActionRow(
@@ -313,6 +322,7 @@ internal fun PlaybackSettingsDialogs(
         PlaybackDialog.SEEK_THUMBNAILS -> SeekThumbnailModeDialog(onUpdate = onUpdate, onDismiss = onDismiss)
         PlaybackDialog.SEEK_THUMBNAIL_PREPARE -> SeekThumbnailPrepareDialog(onUpdate = onUpdate, onDismiss = onDismiss)
         PlaybackDialog.SEEK_THUMBNAILS_BEFORE_PLAY -> SeekThumbnailBeforePlayDialog(onUpdate = onUpdate, onDismiss = onDismiss)
+        PlaybackDialog.SEEKING -> SeekingDialog(settings.seekingMode, onUpdate = onUpdate, onDismiss = onDismiss)
         else -> {
             AutoPlaySettingsDialogs(dialog, settings, installedAddonNames, enabledPluginNames, onUpdate, onDismiss)
             AudioSettingsDialogs(dialog, settings, onUpdate, onDismiss)
@@ -346,11 +356,15 @@ private fun SeekThumbnailModeDialog(onUpdate: PlaybackSettingsUpdate, onDismiss:
 private fun SeekThumbnailPrepareDialog(onUpdate: PlaybackSettingsUpdate, onDismiss: () -> Unit) {
     val context = LocalContext.current.applicationContext
     val prepare by SeekThumbnailPreferences.prepareModeFlow(context).collectAsState(initial = ThumbPrepareMode.OFF)
+    val smallBox = remember(context) { MemoryGovernor.isSmallHardware(context) }
+    val smallBoxNote = stringResource(R.string.seek_thumbnails_prepare_on_small_desc)
     SettingsSingleChoiceDialog(
         title = stringResource(R.string.seek_thumbnails_prepare_title),
         subtitle = stringResource(R.string.seek_thumbnails_prepare_subtitle),
         options = ThumbPrepareMode.entries.filter { it != ThumbPrepareMode.ASK }.map {
-            SettingsPickerOption(it, stringResource(it.label), stringResource(it.description))
+            val description = stringResource(it.description)
+            SettingsPickerOption(it, stringResource(it.label),
+                if (smallBox && it != ThumbPrepareMode.OFF) "$description $smallBoxNote" else description)
         },
         selectedValue = prepare,
         onOptionSelected = { chosen ->
@@ -374,6 +388,35 @@ private fun SeekThumbnailBeforePlayDialog(onUpdate: PlaybackSettingsUpdate, onDi
         selectedValue = choice,
         onOptionSelected = { chosen ->
             onUpdate { SeekThumbnailPreferences.setBeforePlay(context, chosen) }
+            onDismiss()
+        },
+        onDismiss = onDismiss
+    )
+}
+
+private fun seekingLabel(mode: SeekingMode): Int = when (mode) {
+    SeekingMode.GENTLE -> R.string.playback_seeking_gentle
+    SeekingMode.BALANCED -> R.string.playback_seeking_balanced
+    SeekingMode.FAST -> R.string.playback_seeking_fast
+}
+
+private fun seekingDescription(mode: SeekingMode): Int = when (mode) {
+    SeekingMode.GENTLE -> R.string.playback_seeking_gentle_desc
+    SeekingMode.BALANCED -> R.string.playback_seeking_balanced_desc
+    SeekingMode.FAST -> R.string.playback_seeking_fast_desc
+}
+
+@Composable
+private fun SeekingDialog(current: SeekingMode, onUpdate: PlaybackSettingsUpdate, onDismiss: () -> Unit) {
+    SettingsSingleChoiceDialog(
+        title = stringResource(R.string.playback_seeking),
+        subtitle = stringResource(R.string.playback_seeking_sub),
+        options = SeekingMode.entries.map {
+            SettingsPickerOption(it, stringResource(seekingLabel(it)), stringResource(seekingDescription(it)))
+        },
+        selectedValue = current,
+        onOptionSelected = { chosen ->
+            onUpdate { setSeekingMode(chosen) }
             onDismiss()
         },
         onDismiss = onDismiss
