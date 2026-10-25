@@ -31,6 +31,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import java.io.File
 import java.net.URLEncoder
@@ -106,6 +107,8 @@ class CatalogRepositoryImpl @Inject constructor(
         ioScope.launch { runCatching { diskStore?.warm() } }
     }
 
+    // Mapping, merging and comparing up to a hundred items per row stays off the main thread,
+    // which has the Home to draw while the rows arrive. A caller's ArtworkOnDemand still applies.
     override fun getCatalog(
         addonBaseUrl: String,
         addonId: String,
@@ -253,7 +256,7 @@ class CatalogRepositoryImpl @Inject constructor(
             }
             NetworkResult.Loading -> { /* Already emitted */ }
         }
-    }
+    }.flowOn(Dispatchers.Default)
 
     private fun recordAddonHealth(baseUrl: String, outcome: HealthOutcome, latencyMs: Long) {
         ioScope.launch {
