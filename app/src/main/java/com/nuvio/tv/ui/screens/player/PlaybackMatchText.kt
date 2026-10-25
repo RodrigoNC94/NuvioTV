@@ -124,8 +124,11 @@ private fun dynamicRangeTokens(info: PlayerMediaInfo): List<String> {
         if (dv) addAll(listOf("DV", "DoVi", "Dolby Vision"))
         if (hdr10) addAll(listOf("HDR", "HDR10"))
         if (hlg) addAll(listOf("HDR", "HLG"))
+        // Before mpv decodes a frame it knows DV from the file but not yet HDR10 under it, so
+        // nothing that says what is missing (DV Only, SDR) until the transfer is known.
         when {
             dv && (hdr10 || hlg) -> addAll(listOf("HDR+DV", "DV HDR", "DV.HDR", "HDR.DV", "DV HDR10", "HDR10 DV", "DoVi HDR"))
+            !info.hdrKnown -> Unit
             dv -> add("DV Only")
             hdr10 || hlg -> add("HDR Only")
             // The stats HUD reads SDR for the same frame.

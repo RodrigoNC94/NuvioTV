@@ -134,17 +134,17 @@ class PlaybackMatchTextTest {
 
     @Test
     fun `a dolby vision file shown as hdr10 reads hdr only`() {
-        val info = PlayerMediaInfo(videoCodec = "HEVC", videoWidth = 3840, videoHeight = 2160, audioCodec = "TrueHD", audioChannels = 8, hdr = listOf("HDR10"))
+        val info = PlayerMediaInfo(videoCodec = "HEVC", videoWidth = 3840, videoHeight = 2160, audioCodec = "TrueHD", audioChannels = 8, hdr = listOf("HDR10"), hdrKnown = true)
         assertEquals(
             listOf("TrueHD Atmos", "HDR Only"),
             filenameNames(info, release = "Film.2160p.REMUX.DV.HDR.TrueHD.7.1.Atmos-GRP")
         )
-        assertEquals(listOf("DV Only"), filenameNames(PlayerMediaInfo(hdr = listOf("DV"))))
+        assertEquals(listOf("DV Only"), filenameNames(PlayerMediaInfo(hdr = listOf("DV"), hdrKnown = true)))
     }
 
     @Test
     fun `sdr stereo and the track language`() {
-        val info = PlayerMediaInfo(videoCodec = "AVC", videoWidth = 1920, videoHeight = 800, audioCodec = "AAC", audioChannels = 2)
+        val info = PlayerMediaInfo(videoCodec = "AVC", videoWidth = 1920, videoHeight = 800, audioCodec = "AAC", audioChannels = 2, hdrKnown = true)
         assertEquals(listOf("SDR", "Stereo", "French"), filenameNames(info, "fr"))
     }
 
@@ -228,6 +228,21 @@ class PlaybackMatchTextTest {
         assertEquals(before, reopening.keepingAudioOf(before, audioSelected = true))
         val after = PlayerMediaInfo(videoWidth = 1920, audioCodec = "AC-3", audioTrackId = "4", audioLanguage = "fr")
         assertEquals(after, after.keepingAudioOf(before, audioSelected = true))
+    }
+
+    @Test
+    fun `nothing says sdr or dv only before the transfer is known`() {
+        // mpv before its first frame: size and DV from the file, no transfer yet.
+        val early = PlayerMediaInfo(videoCodec = "HEVC", videoWidth = 3840, videoHeight = 2160, hdr = listOf("DV"))
+        assertEquals(emptyList<String>(), filenameNames(early))
+        assertEquals(emptyList<String>(), filenameNames(early.copy(hdr = emptyList())))
+        assertEquals(listOf("DV HDR"), filenameNames(early.copy(hdr = listOf("DV", "HDR10"), hdrKnown = true)))
+    }
+
+    @Test
+    fun `complete once picture size and audio with channels are in`() {
+        assertEquals(false, PlayerMediaInfo(videoWidth = 1920, audioCodec = "AAC").isComplete)
+        assertEquals(true, PlayerMediaInfo(videoWidth = 1920, audioCodec = "AAC", audioChannels = 2).isComplete)
     }
 
     @Test

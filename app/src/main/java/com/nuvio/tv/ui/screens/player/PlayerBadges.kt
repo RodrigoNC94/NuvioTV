@@ -43,7 +43,9 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
         uiState.internalPlayerEngine,
         selectedAudio?.index
     ) {
-        if (!enabled || !uiState.showControls || uiState.isBuffering) return@LaunchedEffect
+        // Read while it buffers too: the tracks are known before the first frame, so the row is
+        // filled in by the time playback starts. Buffering stays a key so the end of it reads at once.
+        if (!enabled || !uiState.showControls) return@LaunchedEffect
         // Read again while the row shows: adaptive streams change resolution, and mpv knows the picture only once decoded.
         var quickReads = 0
         while (true) {
@@ -51,10 +53,11 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
             if (info != mediaInfo) mediaInfo = info
             val release = viewModel.playingReleaseText()
             if (release != releaseText) releaseText = release
-            // Until the player catches up with a switch, look again sooner so the row follows it; capped
-            // in case a source names its tracks differently from the player and the ids never meet.
+            // Look again sooner while the row is still filling in or the player catches up with a switch;
+            // capped, as a stream with no audio never completes and a source's track ids may never meet.
             val switching = info.audioTrackId != null && selectedAudio?.trackId != null && info.audioTrackId != selectedAudio.trackId
-            delay(if (switching && quickReads++ < MAX_SWITCH_READS) SWITCH_REFRESH_MS else BADGE_REFRESH_MS)
+            val settling = switching || !info.isComplete || !info.hdrKnown
+            delay(if (settling && quickReads++ < MAX_QUICK_READS) QUICK_REFRESH_MS else BADGE_REFRESH_MS)
         }
     }
     if (!enabled) return emptyList()
@@ -122,5 +125,5 @@ internal fun PlayerBadges(
 
 private val PLAYER_BADGE_HEIGHT = 20.dp
 private const val BADGE_REFRESH_MS = 1_000L
-private const val SWITCH_REFRESH_MS = 250L
-private const val MAX_SWITCH_READS = 12
+private const val QUICK_REFRESH_MS = 250L
+private const val MAX_QUICK_READS = 40

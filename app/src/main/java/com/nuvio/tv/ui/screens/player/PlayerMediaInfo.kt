@@ -4,6 +4,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 
 data class PlayerMediaInfo(
@@ -17,40 +18,66 @@ data class PlayerMediaInfo(
     val audioTrackId: String? = null,
     val audioLanguage: String? = null,
     val hdr: List<String> = emptyList(),
+    /** False until the player knows the transfer, as mpv only does once it decodes a frame; until then no SDR. */
+    val hdrKnown: Boolean = false,
     val bitDepth: Int? = null
-)
+) {
+    /** Everything the row shows is in: picture size and the audio format with its channels. */
+    val isComplete: Boolean
+        get() = videoWidth != null && audioCodec != null && audioChannels != null
+}
 
 internal fun PlayerRuntimeController.playerMediaInfo(): PlayerMediaInfo =
     if (isUsingMpvEngine()) {
         mpvView?.readPlayerMediaInfo() ?: PlayerMediaInfo()
     } else {
-        exoMediaInfo(_exoPlayer?.videoFormat, _exoPlayer?.audioFormat)
+        val player = _exoPlayer
+        // The decoders' formats arrive with the first data; the selected tracks are known before that.
+        exoMediaInfo(
+            player?.videoFormat ?: player?.selectedTrackFormat(C.TRACK_TYPE_VIDEO),
+            player?.audioFormat ?: player?.selectedTrackFormat(C.TRACK_TYPE_AUDIO)
+        )
     }
+
+/** The one selected track of [type]; null for an adaptive group, where the variant playing is not known yet. */
+private fun Player.selectedTrackFormat(type: Int): Format? {
+    val group = currentTracks.groups.firstOrNull { it.type == type && it.isSelected } ?: return null
+    val selected = (0 until group.length).filter(group::isTrackSelected)
+    return selected.singleOrNull()?.let(group::getTrackFormat)
+}
 
 /** File name, stream name and description of what is playing, for badges the player cannot read. */
 internal fun PlayerRuntimeController.playingReleaseText(): String =
     listOfNotNull(currentFilename, _uiState.value.currentStreamName, currentStreamDescription)
         .joinToString(" ")
 
-internal fun mpvMediaInfo(property: (String) -> String?): PlayerMediaInfo =
-    PlayerMediaInfo(
+internal fun mpvMediaInfo(property: (String) -> String?): PlayerMediaInfo {
+    val gamma = property("video-params/gamma")
+    return PlayerMediaInfo(
         videoCodec = property("current-tracks/video/codec")?.let(::mpvCodecLabel),
-        videoWidth = property("video-params/w")?.toIntOrNull()?.takeIf { it > 0 },
-        videoHeight = property("video-params/h")?.toIntOrNull()?.takeIf { it > 0 },
+        // Decoded values once there are frames; the file's own track values before that.
+        videoWidth = mpvInt(property, "video-params/w") ?: mpvInt(property, "current-tracks/video/demux-w"),
+        videoHeight = mpvInt(property, "video-params/h") ?: mpvInt(property, "current-tracks/video/demux-h"),
         audioCodec = property("current-tracks/audio/codec")?.let(::mpvCodecLabel),
         audioProfile = property("current-tracks/audio/codec-profile"),
-        audioChannels = property("audio-params/channel-count")?.toIntOrNull()?.takeIf { it > 0 },
+        audioChannels = mpvInt(property, "audio-params/channel-count")
+            ?: mpvInt(property, "current-tracks/audio/demux-channel-count"),
         audioTrackId = property("current-tracks/audio/id"),
         audioLanguage = property("current-tracks/audio/lang"),
         hdr = buildList {
             if (!property("current-tracks/video/dolby-vision-profile").isNullOrBlank()) add("DV")
-            when (property("video-params/gamma")) {
+            when (gamma) {
                 "pq" -> add("HDR10")
                 "hlg" -> add("HLG")
             }
         },
+        hdrKnown = gamma != null,
         bitDepth = property("video-params/pixelformat")?.let(::mpvBitDepth)
     )
+}
+
+private fun mpvInt(property: (String) -> String?, name: String): Int? =
+    property(name)?.toIntOrNull()?.takeIf { it > 0 }
 
 private fun exoMediaInfo(video: Format?, audio: Format?): PlayerMediaInfo =
     PlayerMediaInfo(
@@ -62,6 +89,7 @@ private fun exoMediaInfo(video: Format?, audio: Format?): PlayerMediaInfo =
         audioTrackId = audio?.id,
         audioLanguage = audio?.language,
         hdr = video?.hdrFormats().orEmpty(),
+        hdrKnown = video != null,
         bitDepth = video?.colorInfo?.lumaBitdepth?.takeIf { it > 0 } ?: video?.codecs?.let(::codecsBitDepth)
     )
 
