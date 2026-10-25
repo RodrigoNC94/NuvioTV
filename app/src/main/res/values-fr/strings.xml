@@ -3925,6 +3925,8 @@
     <string name="playback_seeking_balanced_desc">Commence lentement, puis accélère. Attend un instant avant de sauter.</string>
     <string name="playback_seeking_fast">Rapide</string>
     <string name="playback_seeking_fast_desc">Comme l\'application officielle. Grands pas, saute dès que vous relâchez.</string>
+    <string name="playback_seeking_confirm">Confirmer avec OK</string>
+    <string name="playback_seeking_confirm_desc">Gauche et droite ne déplacent que le repère. Le film saute quand vous appuyez sur OK, avec ou sans miniatures. Retour annule.</string>
     <string name="seek_thumbnails_title">Miniatures de navigation</string>
     <string name="seek_thumbnails_subtitle">Miniatures du titre au-dessus de la barre de progression pendant l\'avance ou le retour rapide.</string>
     <string name="seek_thumbnails_mode_off">Désactivé</string>

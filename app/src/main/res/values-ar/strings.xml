@@ -3628,6 +3628,8 @@
     <string name="playback_seeking_balanced_desc">يبدأ ببطء ثم يتسارع. ينتظر لحظة قبل أن يقفز.</string>
     <string name="playback_seeking_fast">سريع</string>
     <string name="playback_seeking_fast_desc">مثل التطبيق الرسمي. خطوات كبيرة، ويقفز فور رفع إصبعك.</string>
+    <string name="playback_seeking_confirm">التأكيد بزر OK</string>
+    <string name="playback_seeking_confirm_desc">اليسار واليمين يحرّكان المؤشر فقط. يقفز الفيلم عند الضغط على OK، مع الصور المصغرة أو بدونها. زر الرجوع يلغي.</string>
     <string name="seek_thumbnails_title">صور التنقل المصغرة</string>
     <string name="seek_thumbnails_subtitle">صور مصغرة للعنوان فوق شريط التقدم أثناء التنقل في الفيديو.</string>
     <string name="seek_thumbnails_mode_off">معطل</string>

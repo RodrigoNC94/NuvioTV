@@ -3915,6 +3915,8 @@
     <string name="playback_seeking_balanced_desc">Começa devagar e depois acelera. Espera um instante antes de pular.</string>
     <string name="playback_seeking_fast">Rápido</string>
     <string name="playback_seeking_fast_desc">Como o app oficial. Passos grandes, pula assim que você solta o botão.</string>
+    <string name="playback_seeking_confirm">Confirmar com OK</string>
+    <string name="playback_seeking_confirm_desc">Esquerda e direita só movem o marcador. O filme pula quando você aperta OK, com ou sem miniaturas. Voltar cancela.</string>
     <string name="seek_thumbnails_title">Miniaturas da barra de progresso</string>
     <string name="seek_thumbnails_subtitle">Miniaturas do título acima da barra de progresso enquanto você avança ou retrocede.</string>
     <string name="seek_thumbnails_mode_off">Desativado</string>

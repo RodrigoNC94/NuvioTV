@@ -3951,6 +3951,8 @@
     <string name="playback_seeking_balanced_desc">Empieza lento y luego acelera. Espera un momento antes de saltar.</string>
     <string name="playback_seeking_fast">Rápido</string>
     <string name="playback_seeking_fast_desc">Como la app oficial. Pasos grandes, salta en cuanto sueltas el botón.</string>
+    <string name="playback_seeking_confirm">Confirmar con OK</string>
+    <string name="playback_seeking_confirm_desc">Izquierda y derecha solo mueven el marcador. La película salta cuando presionas OK, con o sin miniaturas. Atrás cancela.</string>
     <string name="seek_thumbnails_title">Miniaturas al avanzar</string>
     <string name="seek_thumbnails_subtitle">Miniaturas del título sobre la barra de progreso mientras avanzas o retrocedes.</string>
     <string name="seek_thumbnails_mode_off">Desactivado</string>

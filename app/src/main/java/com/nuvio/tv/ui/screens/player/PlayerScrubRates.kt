@@ -35,7 +35,7 @@ object PlayerScrubRates {
     /** Top glide speed; [filmMs] is the title's length (0 when unknown). */
     fun topSpeed(mode: SeekingMode, filmMs: Long, tvRemote: Boolean = false): Double {
         val top = when (mode) {
-            SeekingMode.BALANCED -> (filmMs / BALANCED_CROSS_MS).coerceIn(BALANCED_MIN_TOP, BALANCED_MAX_TOP)
+            SeekingMode.BALANCED, SeekingMode.CONFIRM -> (filmMs / BALANCED_CROSS_MS).coerceIn(BALANCED_MIN_TOP, BALANCED_MAX_TOP)
             else -> GENTLE_MAX_SPEED
         }
         return if (tvRemote) top * TV_REMOTE_SHARE else top
@@ -43,7 +43,7 @@ object PlayerScrubRates {
 
     /** Film ms per ms for a key held for [holdDurationMs]. */
     fun glideSpeed(holdDurationMs: Long, mode: SeekingMode, filmMs: Long = 0L, tvRemote: Boolean = false): Double {
-        val doubling = if (mode == SeekingMode.BALANCED) BALANCED_DOUBLING_MS else GENTLE_DOUBLING_MS
+        val doubling = if (mode == SeekingMode.BALANCED || mode == SeekingMode.CONFIRM) BALANCED_DOUBLING_MS else GENTLE_DOUBLING_MS
         val ramp = START_SPEED * 2.0.pow((holdDurationMs - GLIDE_FROM_MS).coerceAtLeast(0L) / doubling)
         return min(topSpeed(mode, filmMs, tvRemote), ramp)
     }

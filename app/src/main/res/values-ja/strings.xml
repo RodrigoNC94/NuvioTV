@@ -3292,6 +3292,8 @@
     <string name="playback_seeking_balanced_desc">ゆっくり始まり、だんだん速くなります。ジャンプ前に少し待ちます。</string>
     <string name="playback_seeking_fast">高速</string>
     <string name="playback_seeking_fast_desc">公式アプリと同じです。大きく進み、キーを離すとすぐにジャンプします。</string>
+    <string name="playback_seeking_confirm">OKで確定</string>
+    <string name="playback_seeking_confirm_desc">左右キーではマーカーだけが動きます。OKを押すと、サムネイルの有無にかかわらずジャンプします。戻るでキャンセルします。</string>
     <string name="seek_thumbnails_title">シーク用サムネイル</string>
     <string name="seek_thumbnails_subtitle">シーク中、プログレスバーの上にタイトルのサムネイルを表示します。</string>
     <string name="seek_thumbnails_mode_off">オフ</string>

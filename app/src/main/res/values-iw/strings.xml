@@ -3953,6 +3953,8 @@
     <string name="playback_seeking_balanced_desc">מתחיל לאט ואז מאיץ. ממתין רגע לפני הקפיצה.</string>
     <string name="playback_seeking_fast">מהיר</string>
     <string name="playback_seeking_fast_desc">כמו האפליקציה הרשמית. צעדים גדולים, קופץ ברגע שמשחררים.</string>
+    <string name="playback_seeking_confirm">אישור עם OK</string>
+    <string name="playback_seeking_confirm_desc">שמאלה וימינה רק מזיזים את הסמן. הסרט קופץ כשלוחצים OK, עם או בלי תמונות ממוזערות. חזרה מבטלת.</string>
     <string name="seek_thumbnails_title">תמונות ממוזערות בדילוג</string>
     <string name="seek_thumbnails_subtitle">תמונות ממוזערות של הכותר מעל פס ההתקדמות בזמן דילוג.</string>
     <string name="seek_thumbnails_mode_off">כבוי</string>

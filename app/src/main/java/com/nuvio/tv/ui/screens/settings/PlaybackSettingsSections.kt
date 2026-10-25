@@ -398,12 +398,14 @@ private fun seekingLabel(mode: SeekingMode): Int = when (mode) {
     SeekingMode.GENTLE -> R.string.playback_seeking_gentle
     SeekingMode.BALANCED -> R.string.playback_seeking_balanced
     SeekingMode.FAST -> R.string.playback_seeking_fast
+    SeekingMode.CONFIRM -> R.string.playback_seeking_confirm
 }
 
 private fun seekingDescription(mode: SeekingMode): Int = when (mode) {
     SeekingMode.GENTLE -> R.string.playback_seeking_gentle_desc
     SeekingMode.BALANCED -> R.string.playback_seeking_balanced_desc
     SeekingMode.FAST -> R.string.playback_seeking_fast_desc
+    SeekingMode.CONFIRM -> R.string.playback_seeking_confirm_desc
 }
 
 @Composable

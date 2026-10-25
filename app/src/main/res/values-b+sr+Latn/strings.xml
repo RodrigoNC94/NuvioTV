@@ -3766,6 +3766,8 @@
     <string name="playback_seeking_balanced_desc">Počinje sporo, zatim ubrzava. Čeka trenutak pre skoka.</string>
     <string name="playback_seeking_fast">Brzo</string>
     <string name="playback_seeking_fast_desc">Kao zvanična aplikacija. Veliki koraci, skače čim pustite taster.</string>
+    <string name="playback_seeking_confirm">Potvrda tasterom OK</string>
+    <string name="playback_seeking_confirm_desc">Levo i desno samo pomeraju oznaku. Film skače kada pritisnete OK, sa sličicama ili bez njih. Nazad otkazuje.</string>
     <string name="seek_thumbnails_title">Sličice za premotavanje</string>
     <string name="seek_thumbnails_subtitle">Sličice naslova iznad trake napretka dok premotavate.</string>
     <string name="seek_thumbnails_mode_off">Isključeno</string>

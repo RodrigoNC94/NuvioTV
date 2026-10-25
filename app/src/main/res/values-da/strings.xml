@@ -3292,6 +3292,8 @@
     <string name="playback_seeking_balanced_desc">Starter langsomt og tager så fart. Venter et øjeblik, før den springer.</string>
     <string name="playback_seeking_fast">Hurtig</string>
     <string name="playback_seeking_fast_desc">Som den officielle app. Store trin, springer, så snart du slipper.</string>
+    <string name="playback_seeking_confirm">Bekræft med OK</string>
+    <string name="playback_seeking_confirm_desc">Venstre og højre flytter kun markøren. Filmen springer, når du trykker OK, med eller uden miniaturer. Tilbage annullerer.</string>
     <string name="seek_thumbnails_title">Spoleminiaturer</string>
     <string name="seek_thumbnails_subtitle">Miniaturer af titlen over statuslinjen, mens du spoler.</string>
     <string name="seek_thumbnails_mode_off">Fra</string>

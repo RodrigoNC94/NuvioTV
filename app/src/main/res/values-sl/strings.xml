@@ -2767,6 +2767,8 @@
     <string name="playback_seeking_balanced_desc">Začne počasi, nato pospeši. Pred skokom za trenutek počaka.</string>
     <string name="playback_seeking_fast">Hitro</string>
     <string name="playback_seeking_fast_desc">Kot uradna aplikacija. Veliki koraki, skoči takoj, ko spustite tipko.</string>
+    <string name="playback_seeking_confirm">Potrditev s tipko OK</string>
+    <string name="playback_seeking_confirm_desc">Levo in desno samo premikata oznako. Film skoči, ko pritisnete OK, s sličicami ali brez. Nazaj prekliče.</string>
     <string name="seek_thumbnails_title">Sličice pri previjanju</string>
     <string name="seek_thumbnails_subtitle">Sličice naslova nad vrstico napredka med previjanjem.</string>
     <string name="seek_thumbnails_mode_off">Izklopljeno</string>

@@ -4020,6 +4020,8 @@
     <string name="playback_seeking_balanced_desc">Zaczyna powoli, potem przyspiesza. Przed skokiem chwilę czeka.</string>
     <string name="playback_seeking_fast">Szybkie</string>
     <string name="playback_seeking_fast_desc">Jak oficjalna aplikacja. Duże kroki, skacze od razu po puszczeniu przycisku.</string>
+    <string name="playback_seeking_confirm">Potwierdzenie przyciskiem OK</string>
+    <string name="playback_seeking_confirm_desc">Lewo i prawo tylko przesuwają znacznik. Film skacze po naciśnięciu OK, z miniaturami lub bez. Wstecz anuluje.</string>
     <string name="seek_thumbnails_title">Miniatury przewijania</string>
     <string name="seek_thumbnails_subtitle">Miniatury tytułu nad paskiem postępu podczas przewijania.</string>
     <string name="seek_thumbnails_mode_off">Wyłączone</string>

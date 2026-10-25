@@ -533,9 +533,12 @@ enum class VodCacheSizeMode {
     AUTO, MANUAL
 }
 
-/** How a held seek key speeds up and how long a seek waits on the thumbnail while the film plays. */
+/**
+ * How a held seek key speeds up and how long a seek waits on the thumbnail while the film plays. CONFIRM glides like
+ * BALANCED but only seeks on OK, paused or playing, with or without thumbnails.
+ */
 enum class SeekingMode {
-    GENTLE, BALANCED, FAST
+    GENTLE, BALANCED, FAST, CONFIRM
 }
 
 enum class FrameRateMatchingMode {

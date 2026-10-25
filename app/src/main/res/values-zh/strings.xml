@@ -593,6 +593,8 @@
     <string name="playback_seeking_balanced_desc">先慢后快。跳转前稍等片刻。</string>
     <string name="playback_seeking_fast">快速</string>
     <string name="playback_seeking_fast_desc">与官方应用相同。大步前进，松开按键即跳转。</string>
+    <string name="playback_seeking_confirm">按 OK 确认</string>
+    <string name="playback_seeking_confirm_desc">左右键只移动标记。按 OK 后才跳转，无论有没有缩略图。返回键取消。</string>
     <string name="seek_thumbnails_title">跳转缩略图</string>
     <string name="seek_thumbnails_subtitle">跳转时在进度条上方显示标题的缩略图。</string>
     <string name="seek_thumbnails_mode_off">关闭</string>

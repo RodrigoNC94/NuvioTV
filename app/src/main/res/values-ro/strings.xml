@@ -1421,6 +1421,8 @@
     <string name="playback_seeking_balanced_desc">Pornește încet, apoi accelerează. Așteaptă o clipă înainte să sară.</string>
     <string name="playback_seeking_fast">Rapid</string>
     <string name="playback_seeking_fast_desc">Ca aplicația oficială. Pași mari, sare imediat ce eliberați butonul.</string>
+    <string name="playback_seeking_confirm">Confirmare cu OK</string>
+    <string name="playback_seeking_confirm_desc">Stânga și dreapta mută doar marcajul. Filmul sare când apăsați OK, cu sau fără miniaturi. Înapoi anulează.</string>
     <string name="seek_thumbnails_title">Miniaturi de derulare</string>
     <string name="seek_thumbnails_subtitle">Miniaturi ale titlului deasupra barei de progres în timp ce derulezi.</string>
     <string name="seek_thumbnails_mode_off">Dezactivat</string>

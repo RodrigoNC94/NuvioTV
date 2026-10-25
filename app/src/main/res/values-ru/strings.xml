@@ -3710,6 +3710,8 @@
     <string name="playback_seeking_balanced_desc">Начинает медленно, потом ускоряется. Ждёт мгновение перед прыжком.</string>
     <string name="playback_seeking_fast">Быстро</string>
     <string name="playback_seeking_fast_desc">Как официальное приложение. Большие шаги, прыгает сразу, как только вы отпустите кнопку.</string>
+    <string name="playback_seeking_confirm">Подтверждение кнопкой OK</string>
+    <string name="playback_seeking_confirm_desc">Влево и вправо только двигают метку. Фильм прыгает, когда вы нажимаете OK, с миниатюрами или без. Назад отменяет.</string>
     <string name="seek_thumbnails_title">Миниатюры перемотки</string>
     <string name="seek_thumbnails_subtitle">Миниатюры тайтла над полосой прогресса во время перемотки.</string>
     <string name="seek_thumbnails_mode_off">Выкл</string>

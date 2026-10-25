@@ -1663,7 +1663,7 @@ fun PlayerRuntimeController.onEvent(event: PlayerEvent) {
             if (_playbackTimeline.value.isLive) return
             stopScrubGlide()
             scrubHoldClock.release(android.os.SystemClock.uptimeMillis())
-            if (seekSettle.open && !userPausedManually) {
+            if (seekSettle.open && (!userPausedManually || SeekSettle.waitsWhilePaused(seekingMode))) {
                 if (pendingPreviewSeekPosition != null) startSeekSettle() else finishSeekSettle(seek = false, reason = "empty")
                 return
             }
@@ -2434,7 +2434,10 @@ private fun PlayerRuntimeController.commitPendingSeek() {
     }
 }
 
-/** Seek keys while playing settle first ([SeekSettle]); paused, in a party or without thumbnails they seek on release. */
+/**
+ * Seek keys while playing settle first ([SeekSettle]); paused, in a party or without thumbnails they seek on release,
+ * except on Confirm with OK, where only a party seeks on release.
+ */
 private fun PlayerRuntimeController.seekSettleApplies(): Boolean = SeekSettle.applies(
     open = seekSettle.open,
     userPaused = userPausedManually,
@@ -2460,7 +2463,7 @@ private fun PlayerRuntimeController.startSeekSettle() {
     seekSettleJob = scope.launch {
         kotlinx.coroutines.delay(SeekSettle.waitMs(afterHold = scrubHoldClock.releasedAfterHold, mode = seekingMode))
         seekSettleJob = null
-        finishSeekSettle(seek = true, reason = "timeout")
+        finishSeekSettle(seek = SeekSettle.seeksAfterWait(seekingMode), reason = "timeout")
     }
     if (_uiState.value.showControls) showControlsTemporarily() else showSeekOverlayTemporarily()
 }

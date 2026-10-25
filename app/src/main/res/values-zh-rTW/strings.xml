@@ -3824,6 +3824,8 @@
     <string name="playback_seeking_balanced_desc">先慢後快。跳轉前稍等片刻。</string>
     <string name="playback_seeking_fast">快速</string>
     <string name="playback_seeking_fast_desc">與官方應用程式相同。大步前進，放開按鍵即跳轉。</string>
+    <string name="playback_seeking_confirm">按 OK 確認</string>
+    <string name="playback_seeking_confirm_desc">左右鍵只移動標記。按 OK 後才跳轉，無論有沒有縮圖。返回鍵取消。</string>
     <string name="seek_thumbnails_title">跳轉縮圖</string>
     <string name="seek_thumbnails_subtitle">跳轉時在進度列上方顯示標題的縮圖。</string>
     <string name="seek_thumbnails_mode_off">關閉</string>

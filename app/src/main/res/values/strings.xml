@@ -3949,6 +3949,8 @@
     <string name="playback_seeking_balanced_desc">Starts slow, then speeds up. Waits a moment before it jumps.</string>
     <string name="playback_seeking_fast">Fast</string>
     <string name="playback_seeking_fast_desc">Like the official app. Big steps, jumps as soon as you let go.</string>
+    <string name="playback_seeking_confirm">Confirm with OK</string>
+    <string name="playback_seeking_confirm_desc">Left and right only move the marker. The film jumps when you press OK, with or without thumbnails. Back cancels.</string>
     <string name="seek_thumbnails_title">Seek thumbnails</string>
     <string name="seek_thumbnails_subtitle">Thumbnails of the title above the progress bar while you seek.</string>
     <string name="seek_thumbnails_mode_off">Off</string>

@@ -1590,6 +1590,8 @@
     <string name="playback_seeking_balanced_desc">धीरे शुरू होता है, फिर तेज़ होता है। कूदने से पहले थोड़ा रुकता है।</string>
     <string name="playback_seeking_fast">तेज़</string>
     <string name="playback_seeking_fast_desc">आधिकारिक ऐप जैसा। बड़े कदम, बटन छोड़ते ही कूद जाता है।</string>
+    <string name="playback_seeking_confirm">OK से पुष्टि करें</string>
+    <string name="playback_seeking_confirm_desc">बाएँ और दाएँ सिर्फ़ निशान को खिसकाते हैं। OK दबाने पर ही फ़िल्म कूदती है, थंबनेल हों या न हों। बैक रद्द करता है।</string>
     <string name="seek_thumbnails_title">सीक थंबनेल</string>
     <string name="seek_thumbnails_subtitle">सीक करते समय प्रोग्रेस बार के ऊपर टाइटल के थंबनेल।</string>
     <string name="seek_thumbnails_mode_off">बंद</string>

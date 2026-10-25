@@ -3964,6 +3964,8 @@
     <string name="playback_seeking_balanced_desc">Yavaş başlar, sonra hızlanır. Atlamadan önce kısa bir an bekler.</string>
     <string name="playback_seeking_fast">Hızlı</string>
     <string name="playback_seeking_fast_desc">Resmi uygulama gibi. Büyük adımlar, tuşu bırakır bırakmaz atlar.</string>
+    <string name="playback_seeking_confirm">OK ile onayla</string>
+    <string name="playback_seeking_confirm_desc">Sol ve sağ yalnızca işaretçiyi taşır. Film, küçük resim olsun ya da olmasın, OK tuşuna bastığınızda atlar. Geri iptal eder.</string>
     <string name="seek_thumbnails_title">Sarma küçük resimleri</string>
     <string name="seek_thumbnails_subtitle">Sararken ilerleme çubuğunun üstünde içeriğin küçük resimleri.</string>
     <string name="seek_thumbnails_mode_off">Kapalı</string>

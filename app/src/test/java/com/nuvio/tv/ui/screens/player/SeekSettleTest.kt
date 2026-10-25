@@ -142,4 +142,30 @@ class SeekSettleTest {
         assertTrue(SeekSettle.applies(open = false, userPaused = false, inParty = false, playing = true,
             thumbnails = true, mode = SeekingMode.GENTLE))
     }
+
+    @Test
+    fun confirm_waitsForOkPausedOrPlayingWithOrWithoutThumbnails() {
+        for (paused in listOf(false, true)) for (playing in listOf(false, true)) for (thumbs in listOf(false, true)) {
+            assertTrue(SeekSettle.applies(open = false, userPaused = paused, inParty = false, playing = playing,
+                thumbnails = thumbs, mode = SeekingMode.CONFIRM))
+        }
+        assertTrue(SeekSettle.waitsWhilePaused(SeekingMode.CONFIRM))
+        assertFalse(SeekSettle.waitsWhilePaused(SeekingMode.BALANCED))
+    }
+
+    @Test
+    fun confirm_inAPartyStillSeeksOnRelease() {
+        assertFalse(SeekSettle.applies(open = false, userPaused = false, inParty = true, playing = true,
+            thumbnails = true, mode = SeekingMode.CONFIRM))
+    }
+
+    @Test
+    fun confirm_aForgottenRunEndsWithoutASeek() {
+        assertEquals(SeekSettle.CONFIRM_IDLE_MS, SeekSettle.waitMs(afterHold = false, mode = SeekingMode.CONFIRM))
+        assertEquals(SeekSettle.CONFIRM_IDLE_MS, SeekSettle.waitMs(afterHold = true, mode = SeekingMode.CONFIRM))
+        assertFalse(SeekSettle.seeksAfterWait(SeekingMode.CONFIRM))
+        for (mode in listOf(SeekingMode.GENTLE, SeekingMode.BALANCED, SeekingMode.FAST)) {
+            assertTrue(SeekSettle.seeksAfterWait(mode))
+        }
+    }
 }

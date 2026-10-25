@@ -3855,6 +3855,8 @@
     <string name="playback_seeking_balanced_desc">Ξεκινά αργά και μετά επιταχύνει. Περιμένει μια στιγμή πριν πηδήξει.</string>
     <string name="playback_seeking_fast">Γρήγορη</string>
     <string name="playback_seeking_fast_desc">Όπως η επίσημη εφαρμογή. Μεγάλα βήματα, πηδά μόλις αφήσετε το πλήκτρο.</string>
+    <string name="playback_seeking_confirm">Επιβεβαίωση με OK</string>
+    <string name="playback_seeking_confirm_desc">Αριστερά και δεξιά μετακινούν μόνο τον δείκτη. Η ταινία πηδά όταν πατήσετε OK, με ή χωρίς μικρογραφίες. Το Πίσω ακυρώνει.</string>
     <string name="seek_thumbnails_title">Μικρογραφίες μετακίνησης</string>
     <string name="seek_thumbnails_subtitle">Μικρογραφίες του τίτλου πάνω από τη γραμμή προόδου κατά τη μετακίνηση.</string>
     <string name="seek_thumbnails_mode_off">Απενεργοποιημένο</string>

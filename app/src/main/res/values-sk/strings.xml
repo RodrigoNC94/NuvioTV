@@ -3959,6 +3959,8 @@
     <string name="playback_seeking_balanced_desc">Začne pomaly, potom zrýchli. Pred skokom chvíľu počká.</string>
     <string name="playback_seeking_fast">Rýchle</string>
     <string name="playback_seeking_fast_desc">Ako oficiálna aplikácia. Veľké kroky, skočí hneď, ako tlačidlo pustíte.</string>
+    <string name="playback_seeking_confirm">Potvrdenie tlačidlom OK</string>
+    <string name="playback_seeking_confirm_desc">Vľavo a vpravo len posúvajú značku. Film skočí, keď stlačíte OK, s miniatúrami aj bez nich. Späť zruší.</string>
     <string name="seek_thumbnails_title">Miniatúry pri pretáčaní</string>
     <string name="seek_thumbnails_subtitle">Miniatúry titulu nad ukazovateľom priebehu pri pretáčaní.</string>
     <string name="seek_thumbnails_mode_off">Vypnuté</string>

@@ -3037,6 +3037,8 @@
     <string name="playback_seeking_balanced_desc">Mulai pelan, lalu makin cepat. Menunggu sebentar sebelum melompat.</string>
     <string name="playback_seeking_fast">Cepat</string>
     <string name="playback_seeking_fast_desc">Seperti aplikasi resmi. Langkah besar, melompat begitu tombol dilepas.</string>
+    <string name="playback_seeking_confirm">Konfirmasi dengan OK</string>
+    <string name="playback_seeking_confirm_desc">Kiri dan kanan hanya menggeser penanda. Film melompat saat tombol OK ditekan, dengan atau tanpa thumbnail. Kembali membatalkan.</string>
     <string name="seek_thumbnails_title">Thumbnail seek</string>
     <string name="seek_thumbnails_subtitle">Thumbnail judul di atas bilah progres saat Anda melakukan seek.</string>
     <string name="seek_thumbnails_mode_off">Nonaktif</string>

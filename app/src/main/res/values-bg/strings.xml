@@ -3281,6 +3281,8 @@
     <string name="playback_seeking_balanced_desc">Започва бавно, после ускорява. Изчаква за момент, преди да скочи.</string>
     <string name="playback_seeking_fast">Бързо</string>
     <string name="playback_seeking_fast_desc">Като официалното приложение. Големи стъпки, скача веднага щом пуснете бутона.</string>
+    <string name="playback_seeking_confirm">Потвърждаване с OK</string>
+    <string name="playback_seeking_confirm_desc">Наляво и надясно само местят маркера. Филмът скача, когато натиснете OK, със или без миниатюри. Назад отменя.</string>
     <string name="seek_thumbnails_title">Миниатюри при превъртане</string>
     <string name="seek_thumbnails_subtitle">Миниатюри от заглавието над лентата за прогрес, докато превърташ.</string>
     <string name="seek_thumbnails_mode_off">Изкл</string>

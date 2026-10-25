@@ -2863,6 +2863,8 @@
     <string name="playback_seeking_balanced_desc">Startet langsam, wird dann schneller. Wartet kurz vor dem Sprung.</string>
     <string name="playback_seeking_fast">Schnell</string>
     <string name="playback_seeking_fast_desc">Wie die offizielle App. Große Schritte, springt sofort beim Loslassen.</string>
+    <string name="playback_seeking_confirm">Mit OK bestätigen</string>
+    <string name="playback_seeking_confirm_desc">Links und rechts verschieben nur die Markierung. Der Film springt erst beim Drücken von OK, mit oder ohne Miniaturbilder. Zurück bricht ab.</string>
     <string name="seek_thumbnails_title">Miniaturbilder zum Spulen</string>
     <string name="seek_thumbnails_subtitle">Miniaturbilder des Titels über der Fortschrittsleiste, während Sie spulen.</string>
     <string name="seek_thumbnails_mode_off">Aus</string>

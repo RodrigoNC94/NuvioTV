@@ -1596,6 +1596,8 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="playback_seeking_balanced_desc">Pradeda lėtai, tada greitėja. Prieš peršokdamas trumpai palaukia.</string>
     <string name="playback_seeking_fast">Greitas</string>
     <string name="playback_seeking_fast_desc">Kaip oficiali programėlė. Dideli žingsniai, peršoka vos atleidus mygtuką.</string>
+    <string name="playback_seeking_confirm">Patvirtinti mygtuku OK</string>
+    <string name="playback_seeking_confirm_desc">Kairėn ir dešinėn tik perkelia žymeklį. Filmas peršoka, kai paspaudžiate OK, su miniatiūromis ar be jų. Atgal atšaukia.</string>
     <string name="seek_thumbnails_title">Persukimo miniatiūros</string>
     <string name="seek_thumbnails_subtitle">Pavadinimo miniatiūros virš eigos juostos, kol persukate.</string>
     <string name="seek_thumbnails_mode_off">Išjungta</string>

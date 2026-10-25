@@ -3916,6 +3916,8 @@
     <string name="playback_seeking_balanced_desc">Parte lento, poi accelera. Aspetta un attimo prima di saltare.</string>
     <string name="playback_seeking_fast">Veloce</string>
     <string name="playback_seeking_fast_desc">Come l\'app ufficiale. Passi grandi, salta appena rilasci il tasto.</string>
+    <string name="playback_seeking_confirm">Conferma con OK</string>
+    <string name="playback_seeking_confirm_desc">Sinistra e destra spostano solo l\'indicatore. Il film salta quando premi OK, con o senza miniature. Indietro annulla.</string>
     <string name="seek_thumbnails_title">Miniature di scorrimento</string>
     <string name="seek_thumbnails_subtitle">Miniature del titolo sopra la barra di avanzamento mentre scorri il video.</string>
     <string name="seek_thumbnails_mode_off">Disattivato</string>

@@ -6,7 +6,8 @@ import com.nuvio.tv.data.local.SeekingMode
  * A run of seek keys while the video plays. Playback holds where it is and every key goes on from the pending
  * target, so quick presses add up. The run ends with one seek [waitMs] after the last key, at once on OK, or
  * without a seek on Back. Only while thumbnails run for this playback: without one to look at the seek goes on
- * release. Gentle waits [HOLD_SETTLE_MS] after a tap too; Fast never waits.
+ * release. Gentle waits [HOLD_SETTLE_MS] after a tap too; Fast never waits. Confirm with OK opens a run paused too
+ * and without thumbnails, and only OK seeks: after [CONFIRM_IDLE_MS] without a key the run ends without one.
  */
 internal class SeekSettle {
     /** Playback position when the run began; null while no run is open. */
@@ -44,9 +45,12 @@ internal class SeekSettle {
         const val TAP_SETTLE_MS = 800L
         /** After a hold there was a run of thumbnails to look at. */
         const val HOLD_SETTLE_MS = 2_000L
+        /** Confirm with OK: a run left this long is dropped, so playback never stays held on a forgotten target. */
+        const val CONFIRM_IDLE_MS = 15_000L
 
         fun waitMs(afterHold: Boolean, mode: SeekingMode = SeekingMode.BALANCED): Long = when {
             mode == SeekingMode.FAST -> 0L
+            mode == SeekingMode.CONFIRM -> CONFIRM_IDLE_MS
             afterHold || mode == SeekingMode.GENTLE -> HOLD_SETTLE_MS
             else -> TAP_SETTLE_MS
         }
@@ -58,7 +62,17 @@ internal class SeekSettle {
             playing: Boolean,
             thumbnails: Boolean,
             mode: SeekingMode = SeekingMode.BALANCED
-        ): Boolean = open || (mode != SeekingMode.FAST && !userPaused && !inParty && playing && thumbnails)
+        ): Boolean = open || when (mode) {
+            SeekingMode.FAST -> false
+            SeekingMode.CONFIRM -> !inParty
+            else -> !userPaused && !inParty && playing && thumbnails
+        }
+
+        /** Whether a run that waits out [waitMs] ends with the seek; on Confirm with OK only OK seeks. */
+        fun seeksAfterWait(mode: SeekingMode): Boolean = mode != SeekingMode.CONFIRM
+
+        /** Whether a key release while paused goes on waiting rather than seeking at once. */
+        fun waitsWhilePaused(mode: SeekingMode): Boolean = mode == SeekingMode.CONFIRM
 
         /**
          * Where a step of [deltaMs] lands: from the pending target while one is open, else from where playback is.

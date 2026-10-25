@@ -3326,6 +3326,8 @@
     <string name="playback_seeking_balanced_desc">Починає повільно, потім прискорюється. Чекає мить перед стрибком.</string>
     <string name="playback_seeking_fast">Швидко</string>
     <string name="playback_seeking_fast_desc">Як офіційний застосунок. Великі кроки, стрибає одразу, щойно ви відпустите кнопку.</string>
+    <string name="playback_seeking_confirm">Підтвердження кнопкою OK</string>
+    <string name="playback_seeking_confirm_desc">Ліворуч і праворуч лише рухають позначку. Фільм стрибає, коли ви натискаєте OK, з мініатюрами чи без. Назад скасовує.</string>
     <string name="seek_thumbnails_title">Мініатюри перемотування</string>
     <string name="seek_thumbnails_subtitle">Мініатюри тайтлу над смугою прогресу під час перемотування.</string>
     <string name="seek_thumbnails_mode_off">Вимк</string>

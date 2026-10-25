@@ -1715,6 +1715,8 @@
     <string name="playback_seeking_balanced_desc">Starter sakte, så øker farten. Venter et øyeblikk før den hopper.</string>
     <string name="playback_seeking_fast">Rask</string>
     <string name="playback_seeking_fast_desc">Som den offisielle appen. Store steg, hopper så snart du slipper.</string>
+    <string name="playback_seeking_confirm">Bekreft med OK</string>
+    <string name="playback_seeking_confirm_desc">Venstre og høyre flytter bare markøren. Filmen hopper når du trykker OK, med eller uten miniatyrer. Tilbake avbryter.</string>
     <string name="seek_thumbnails_title">Spoleminiatyrer</string>
     <string name="seek_thumbnails_subtitle">Miniatyrer av tittelen over fremdriftslinjen mens du spoler.</string>
     <string name="seek_thumbnails_mode_off">Av</string>

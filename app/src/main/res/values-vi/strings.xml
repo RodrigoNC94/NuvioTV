@@ -3943,6 +3943,8 @@
     <string name="playback_seeking_balanced_desc">Bắt đầu chậm rồi nhanh dần. Chờ một chút trước khi nhảy.</string>
     <string name="playback_seeking_fast">Nhanh</string>
     <string name="playback_seeking_fast_desc">Như ứng dụng chính thức. Bước lớn, nhảy ngay khi bạn thả nút.</string>
+    <string name="playback_seeking_confirm">Xác nhận bằng OK</string>
+    <string name="playback_seeking_confirm_desc">Trái và phải chỉ di chuyển điểm đánh dấu. Phim chỉ nhảy khi bạn nhấn OK, dù có ảnh thu nhỏ hay không. Quay lại để hủy.</string>
     <string name="seek_thumbnails_title">Ảnh thu nhỏ khi tua</string>
     <string name="seek_thumbnails_subtitle">Ảnh thu nhỏ của nội dung phía trên thanh tiến trình khi bạn tua.</string>
     <string name="seek_thumbnails_mode_off">Tắt</string>

@@ -3733,6 +3733,8 @@
     <string name="playback_seeking_balanced_desc">Begint langzaam en versnelt dan. Wacht even voordat hij springt.</string>
     <string name="playback_seeking_fast">Snel</string>
     <string name="playback_seeking_fast_desc">Zoals de officiële app. Grote stappen, springt zodra je loslaat.</string>
+    <string name="playback_seeking_confirm">Bevestigen met OK</string>
+    <string name="playback_seeking_confirm_desc">Links en rechts verplaatsen alleen de markering. De film springt pas als je op OK drukt, met of zonder miniaturen. Terug annuleert.</string>
     <string name="seek_thumbnails_title">Miniaturen bij spoelen</string>
     <string name="seek_thumbnails_subtitle">Miniaturen van de titel boven de voortgangsbalk terwijl je spoelt.</string>
     <string name="seek_thumbnails_mode_off">Uit</string>

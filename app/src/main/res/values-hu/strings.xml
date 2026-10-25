@@ -3723,6 +3723,8 @@
     <string name="playback_seeking_balanced_desc">Lassan indul, aztán gyorsul. Ugrás előtt vár egy pillanatot.</string>
     <string name="playback_seeking_fast">Gyors</string>
     <string name="playback_seeking_fast_desc">Mint a hivatalos alkalmazás. Nagy lépések, azonnal ugrik, amint elengedi a gombot.</string>
+    <string name="playback_seeking_confirm">Megerősítés OK gombbal</string>
+    <string name="playback_seeking_confirm_desc">A bal és jobb gomb csak a jelölőt mozgatja. A film akkor ugrik, amikor megnyomja az OK gombot, miniatűrökkel vagy nélkülük. A Vissza megszakítja.</string>
     <string name="seek_thumbnails_title">Tekerési miniatűrök</string>
     <string name="seek_thumbnails_subtitle">Miniatűrök a címből a folyamatsáv felett, amíg tekersz.</string>
     <string name="seek_thumbnails_mode_off">Ki</string>

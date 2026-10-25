@@ -2205,6 +2205,8 @@
     <string name="playback_seeking_balanced_desc">Börjar långsamt och ökar sedan farten. Väntar ett ögonblick innan den hoppar.</string>
     <string name="playback_seeking_fast">Snabb</string>
     <string name="playback_seeking_fast_desc">Som den officiella appen. Stora steg, hoppar så fort du släpper.</string>
+    <string name="playback_seeking_confirm">Bekräfta med OK</string>
+    <string name="playback_seeking_confirm_desc">Vänster och höger flyttar bara markören. Filmen hoppar när du trycker på OK, med eller utan miniatyrer. Bakåt avbryter.</string>
     <string name="seek_thumbnails_title">Spolningsminiatyrer</string>
     <string name="seek_thumbnails_subtitle">Miniatyrer av titeln ovanför förloppsfältet medan du spolar.</string>
     <string name="seek_thumbnails_mode_off">Av</string>
