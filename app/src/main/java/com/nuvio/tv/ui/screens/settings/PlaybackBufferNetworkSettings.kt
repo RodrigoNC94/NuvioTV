@@ -572,6 +572,7 @@ private val PARALLEL_CHUNK_SIZES = listOf(
     2048 to "2 MB",
     4096 to "4 MB",
     8192 to "8 MB",
+    12288 to "12 MB",
     16384 to "16 MB",
     24576 to "24 MB",
     32768 to "32 MB",

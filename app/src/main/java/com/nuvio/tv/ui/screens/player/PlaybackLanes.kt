@@ -53,6 +53,20 @@ internal data class PlaybackLanes(val connections: Int, val chunkBytes: Long, va
             return "${lanes.connections.coerceAtLeast(1)} × ${chunkSizeLabel(lanes.chunkBytes)}$auto"
         }
 
+        /**
+         * The Requests row: requests running now of what the server takes at once, what one request carries while data
+         * flows and its wait for the first byte; null without Automatic.
+         */
+        fun requestsText(hud: AutoSpeedup.Hud?): String? {
+            if (hud == null) return null
+            val parts = mutableListOf("${hud.requests} of ${hud.budget}")
+            if (hud.perRequestBps > 0L) {
+                parts += String.format(Locale.US, "%.1f Mbit/s each", hud.perRequestBps * 8 / 1_000_000.0)
+            }
+            if (hud.firstByteMs >= 0L) parts += "first byte ${hud.firstByteMs} ms"
+            return parts.joinToString(" · ")
+        }
+
         fun chunkSizeLabel(bytes: Long): String = when {
             bytes < MB -> "${(bytes + KB / 2) / KB} KB"
             bytes % MB == 0L -> "${bytes / MB} MB"

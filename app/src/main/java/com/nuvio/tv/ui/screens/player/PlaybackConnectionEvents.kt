@@ -60,6 +60,7 @@ internal class PlaybackConnectionEventListener(
     private var headersMs = -1L
 
     private var opens = 0
+    private var hopOpens = 0
     private var range: String? = null
     private var host: String? = null
     private var proto: String? = null
@@ -92,6 +93,7 @@ internal class PlaybackConnectionEventListener(
 
     override fun connectStart(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy) {
         opens += 1
+        hopOpens += 1
         connT0 = now()
     }
 
@@ -131,6 +133,11 @@ internal class PlaybackConnectionEventListener(
     override fun connectionAcquired(call: Call, connection: Connection) {
         acqT = now()
         if (proto == null) proto = connection.protocol().toString()
+        if (PlaybackConnectionEvents.trackPieces) {
+            val request = call.request()
+            request.header("Range")?.let { PlaybackConnectionEvents.notePiece(request.url.toString(), it, hopOpens == 0) }
+        }
+        hopOpens = 0
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
@@ -235,6 +242,24 @@ internal object PlaybackConnectionEvents : EventListener.Factory {
     }
 
     fun recentEvents(): List<String> = recentLogs.toList()
+
+    /** While on, range calls note whether their last hop reused a pooled connection, for [takePiece]. */
+    @Volatile var trackPieces = false
+        set(value) {
+            field = value
+            if (!value) pieceReuse.clear()
+        }
+
+    private val pieceReuse = ConcurrentHashMap<String, Boolean>()
+    private const val MAX_PIECES = 64
+
+    fun notePiece(url: String, range: String, reused: Boolean) {
+        if (pieceReuse.size >= MAX_PIECES) pieceReuse.clear()
+        pieceReuse["$url|$range"] = reused
+    }
+
+    /** Whether the range request for [url] and [range] reused a connection; null when it was not seen. */
+    fun takePiece(url: String, range: String): Boolean? = pieceReuse.remove("$url|$range")
 
     fun clear() {
         recentLogs.clear()

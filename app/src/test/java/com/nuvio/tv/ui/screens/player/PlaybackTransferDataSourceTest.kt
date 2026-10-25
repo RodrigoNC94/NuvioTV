@@ -1,12 +1,14 @@
 package com.nuvio.tv.ui.screens.player
 
 import android.net.Uri
+import androidx.media3.common.ByteBufferDataReader
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
 import io.mockk.*
 import org.junit.Assert.*
 import org.junit.Test
+import java.nio.ByteBuffer
 
 class PlaybackTransferDataSourceTest {
     private fun uri(text: String): Uri {
@@ -39,6 +41,37 @@ class PlaybackTransferDataSourceTest {
         assertEquals(100L, sample.contentLength)
         assertEquals(8443, sample.endpoint?.port)
         verify(exactly = 1) { upstream.addTransferListener(any()); upstream.close() }
+    }
+
+    private interface BufferSource : DataSource, ByteBufferDataReader
+
+    @Test fun `buffer reads pass through and are counted once by the leaf listener`() {
+        val url = "https://source.example/movie"
+        val owner = PlaybackTransferSession(url, PlaybackTransferCoverage.PROGRESSIVE)
+        val upstream = mockk<BufferSource>()
+        val listener = slot<TransferListener>()
+        every { upstream.addTransferListener(capture(listener)) } just Runs
+        every { upstream.uri } returns uri("https://cdn.example/movie")
+        every { upstream.responseHeaders } returns emptyMap()
+        every { upstream.supportsByteBufferRead() } returns true
+        val spec = DataSpec.Builder().setUri(uri(url)).build()
+        every { upstream.open(spec) } answers { listener.captured.onTransferStart(upstream, spec, true); 100L }
+        every { upstream.read(any<ByteBuffer>(), any()) } answers {
+            listener.captured.onBytesTransferred(upstream, spec, true, 40); 40
+        }
+        val counted = CountingDataSourceFactory(DataSource.Factory { upstream }, owner).createDataSource()
+        assertTrue((counted as ByteBufferDataReader).supportsByteBufferRead())
+        counted.open(spec)
+        assertEquals(40, counted.read(ByteBuffer.allocateDirect(64), 64))
+        assertEquals(40L, owner.snapshot { 100 }.readBytes)
+        verify(exactly = 0) { upstream.read(any<ByteArray>(), any(), any()) }
+    }
+
+    @Test fun `a source without buffer reads is reported as such`() {
+        val upstream = mockk<DataSource>(relaxed = true)
+        val owner = PlaybackTransferSession("https://source.example/movie", PlaybackTransferCoverage.PROGRESSIVE)
+        val counted = CountingDataSourceFactory(DataSource.Factory { upstream }, owner).createDataSource()
+        assertFalse((counted as ByteBufferDataReader).supportsByteBufferRead())
     }
 
     @Test fun `late listener cannot update replacement source and local reads do not change endpoint`() {

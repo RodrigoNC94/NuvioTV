@@ -295,6 +295,37 @@ class ParallelRangeChunkLeaseTest {
     }
 
     @Test
+    fun `a piece size no longer used gives its spare buffers back and pools no late ones`() {
+        val first = source()
+        releaseSessionBuffer(first, pooledBuffer(memory.allocate(CHUNK.toInt())), 4)
+        assertEquals(1, pooled(first))
+        call(owned, "retireChunkSize", CHUNK)
+        assertEquals(0, pooled(first))
+        assertEquals(1, memory.freed.get())
+        // A download that finishes after the change hands its buffer back to memory, not to the pool.
+        releaseSessionBuffer(first, pooledBuffer(memory.allocate(CHUNK.toInt())), 4)
+        assertEquals(0, pooled(first))
+        assertEquals(2, memory.freed.get())
+        // A session of that size again pools as before.
+        call(owned, "obtainPendingSession", uriOf("http://127.0.0.1/file"), emptyMap<String, String>(), CHUNK, 4, 4, 3)
+        releaseSessionBuffer(first, pooledBuffer(memory.allocate(CHUNK.toInt())), 4)
+        assertEquals(1, pooled(first))
+        assertEquals(0, memory.badFrees.get())
+    }
+
+    @Test
+    fun `a pre-started session for another link is kept, one for this link can be dropped`() {
+        val next = uriOf("http://127.0.0.1/next")
+        val film = uriOf("http://127.0.0.1/film")
+        call(owned, "obtainPendingSession", next, emptyMap<String, String>(), CHUNK, 4, 4, 3)
+        assertTrue(call(owned, "otherPendingSession", film) as Boolean)
+        call(owned, "dropPendingSession", film)
+        assertTrue(call(owned, "otherPendingSession", film) as Boolean)
+        call(owned, "dropPendingSession", next)
+        assertFalse(call(owned, "otherPendingSession", film) as Boolean)
+    }
+
+    @Test
     fun `a chunk that outlives its session is freed, and the pool is freed when playback ends`() {
         val first = source()
         val session = call(owned, "obtainPendingSession", uriOf("http://127.0.0.1/file"),

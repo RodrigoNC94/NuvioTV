@@ -65,4 +65,12 @@ class PlaybackLanesTest {
         PlaybackLanes.clear()
         assertNull(PlaybackLanes.current())
     }
+
+    @Test fun `the requests row shows requests, budget, rate and wait`() {
+        assertEquals("6 of 8 · 31.0 Mbit/s each · first byte 330 ms",
+            PlaybackLanes.requestsText(AutoSpeedup.Hud(6, 8, 3_875_000L, 330L)))
+        assertEquals("1 of 8", PlaybackLanes.requestsText(AutoSpeedup.Hud(1, 8, 0L, -1L)))
+        assertNull(PlaybackLanes.requestsText(null))
+        assertEquals("0 of 5 · first byte 0 ms", PlaybackLanes.requestsText(AutoSpeedup.Hud(0, 5, 0L, 0L)))
+    }
 }

@@ -10,7 +10,7 @@ class AutoSpeedupLimitsTest {
 
     @Test
     fun `two gigabyte boxes go up to six`() {
-        assertEquals(AutoSpeedup.Limits(6, 16L * mb, 8L * mb, smallBox = true), AutoSpeedup.limitsFor(1_900L * mb))
+        assertEquals(AutoSpeedup.Limits(6, 16L * mb, 8L * mb, smallBox = true, pieceBudgetBytes = 64L * mb), AutoSpeedup.limitsFor(1_900L * mb))
         assertEquals(6, AutoSpeedup.limitsFor(2_559L * mb).maxDownloads)
         assertEquals(true, AutoSpeedup.limitsFor(1_900L * mb).smallBox)
         assertEquals(false, AutoSpeedup.limitsFor(2_900L * mb).smallBox)
@@ -18,14 +18,16 @@ class AutoSpeedupLimitsTest {
 
     @Test
     fun `three gigabyte boxes go up to eight`() {
-        val three = AutoSpeedup.Limits(8, 16L * mb, 8L * mb, readAheadMaxBytes = 192L * mb)
+        val three = AutoSpeedup.Limits(8, 16L * mb, 8L * mb, readAheadMaxBytes = 192L * mb,
+            pieceBudgetBytes = 144L * mb)
         assertEquals(three, AutoSpeedup.limitsFor(2_560L * mb))
         assertEquals(three, AutoSpeedup.limitsFor(2_900L * mb))
     }
 
     @Test
     fun `four gigabyte boxes and up go up to ten`() {
-        val four = AutoSpeedup.Limits(10, 24L * mb, 8L * mb, readAheadMaxBytes = 256L * mb)
+        val four = AutoSpeedup.Limits(10, 24L * mb, 8L * mb, readAheadMaxBytes = 256L * mb,
+            pieceBudgetBytes = 256L * mb)
         assertEquals(four, AutoSpeedup.limitsFor(3_584L * mb))
         assertEquals(four, AutoSpeedup.limitsFor(3_800L * mb))
         assertEquals(four, AutoSpeedup.limitsFor(8_000L * mb))

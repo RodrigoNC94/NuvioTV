@@ -279,7 +279,7 @@ object MemoryBudget {
     fun maxConnections(nativeMemory: Boolean): Int = PlayerSettings.maxParallelConnectionCount(nativeMemory)
 
     /** The chunk sizes from 8 MB up that the Chunk size setting offers. */
-    val CHUNK_STEPS_MB = listOf(8, 16, 24, 32, 48, 64, 96, 128)
+    val CHUNK_STEPS_MB = listOf(8, 12, 16, 24, 32, 48, 64, 96, 128)
 
     /** The largest offered chunk size at or below [mb], never below [MIN_CHUNK_MB]. */
     fun chunkStepAtOrBelow(mb: Int): Int = CHUNK_STEPS_MB.lastOrNull { it <= mb } ?: MIN_CHUNK_MB

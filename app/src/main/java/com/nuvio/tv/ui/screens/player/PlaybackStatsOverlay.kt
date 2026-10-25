@@ -82,7 +82,7 @@ private val STATS_GROUP_BY_LABEL: Map<String, StatsGroup> = buildMap {
         .forEach { put(it, StatsGroup.VIDEO) }
     listOf("Audio", "A bitrate", "Underruns", "Route", "A jitter")
         .forEach { put(it, StatsGroup.AUDIO) }
-    listOf("Buffer", "Back buffer", "Speed", "Connections", "Ping", "Request", "Rate limit", "Hedge", "Load errors", "Loaded", "Rebuffers", "Pos. freeze", "Server latency", "Mux estimate")
+    listOf("Buffer", "Back buffer", "Speed", "Connections", "Requests", "Ping", "Request", "Rate limit", "Hedge", "Load errors", "Loaded", "Rebuffers", "Pos. freeze", "Server latency", "Mux estimate")
         .forEach { put(it, StatsGroup.NETWORK) }
     listOf("App CPU", "Memory", CHIP_TEMP_LABEL, DEVICE_TEMP_LABEL, "CPU clock")
         .forEach { put(it, StatsGroup.SYSTEM) }

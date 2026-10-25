@@ -144,6 +144,7 @@ class MemoryBudgetTest {
         assertEquals(32, MemoryBudget.chunkStepAtOrBelow(33))
         assertEquals(64, MemoryBudget.chunkStepAtOrBelow(95))
         assertEquals(8, MemoryBudget.chunkStepAtOrBelow(3))
+        assertEquals(12, MemoryBudget.chunkStepAtOrBelow(15))
         assertEquals(128, MemoryBudget.chunkStepAtOrBelow(500))
     }
 

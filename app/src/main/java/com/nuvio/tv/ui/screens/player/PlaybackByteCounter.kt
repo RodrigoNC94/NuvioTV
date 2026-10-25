@@ -1,11 +1,13 @@
 package com.nuvio.tv.ui.screens.player
 
 import android.os.SystemClock
+import androidx.media3.common.ByteBufferDataReader
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.TransferListener
+import java.nio.ByteBuffer
 
 /** Active owner only. Factories capture a session rather than writing to resettable global totals. */
 internal object PlaybackByteCounter {
@@ -36,7 +38,8 @@ internal class PlaybackTransferListener(private val owner: PlaybackTransferSessi
 
 /** Counts forwarded leaf reads once; does not add a second counter to read(). */
 @UnstableApi
-internal class CountingDataSource(private val upstream: DataSource, private val owner: PlaybackTransferSession) : DataSource by upstream {
+internal class CountingDataSource(private val upstream: DataSource, private val owner: PlaybackTransferSession) :
+    DataSource by upstream, ByteBufferDataReader {
     @Volatile private var isMediaRequest = false
     init { upstream.addTransferListener(PlaybackTransferListener(owner) { isMediaRequest }) }
     override fun open(dataSpec: DataSpec): Long {
@@ -49,6 +52,9 @@ internal class CountingDataSource(private val upstream: DataSource, private val 
             dataSpec.length == C.LENGTH_UNSET.toLong(), encoding.isNullOrEmpty() || encoding.all { it.equals("identity", true) })
         return length
     }
+    override fun supportsByteBufferRead(): Boolean =
+        upstream is ByteBufferDataReader && upstream.supportsByteBufferRead()
+    override fun read(buffer: ByteBuffer, length: Int): Int = (upstream as ByteBufferDataReader).read(buffer, length)
     override fun close() = upstream.close()
 }
 

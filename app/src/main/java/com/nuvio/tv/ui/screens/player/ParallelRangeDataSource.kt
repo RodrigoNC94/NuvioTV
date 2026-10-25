@@ -7,9 +7,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.HttpUtil
 import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import java.io.InterruptedIOException
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -66,7 +68,15 @@ internal class ParallelRangeDataSource(
     // Live limit on downloads at once (Automatic speed-up); null keeps the configured depth.
     private val depthLimit: (() -> Int)? = null,
     // Counts bytes as they arrive from the network, before the reader gets to them.
-    private val receivedBytes: java.util.concurrent.atomic.AtomicLong? = null
+    private val receivedBytes: java.util.concurrent.atomic.AtomicLong? = null,
+    // Each finished piece request: its wait for the first byte and how fast the rest came.
+    private val onPiece: ((PieceTiming) -> Unit)? = null,
+    // Counts the piece requests really running.
+    private val requestMeter: RequestMeter? = null,
+    // Closes idle pooled connections the server may have dropped during a long pause.
+    private val dropStaleConnections: (() -> Unit)? = null,
+    // A piece request answered "too many requests": the server and the requests running there with it.
+    private val onRateLimited: ((Uri?, Int) -> Unit)? = null
 ) : DataSource, androidx.media3.common.ByteBufferDataReader {
 
     companion object {
@@ -197,9 +207,42 @@ internal class ParallelRangeDataSource(
         /** Drops retained pieces outside reader..reader+[keepAhead] and the idle buffers behind them. */
         internal fun trimRetainedSession(keepAhead: Int) = playbackResources.trimRetainedSession(keepAhead)
         internal fun drainIdleBuffers(chunkSize: Long) = playbackResources.drainIdleBuffers(chunkSize)
+        /** A piece size no session uses any more: its idle buffers are freed now and late ones are never pooled. */
+        internal fun retireChunkSize(chunkSize: Long) = playbackResources.retireChunkSize(chunkSize)
+        /** A pre-started session for another link (the next episode) is waiting; a new live session would drop it. */
+        internal fun otherPendingSession(uri: Uri): Boolean = playbackResources.otherPendingSession(uri)
+        /** Drops a pre-started session for [uri] that is no longer wanted; one for another link stays. */
+        internal fun dropPendingSession(uri: Uri) = playbackResources.dropPendingSession(uri)
 
         // Most downloads an isolated test session runs at once.
         internal const val MAX_DIAGNOSTIC_DOWNLOADS = 32
+
+        /** Idle this long, a CDN has likely closed the pooled connections (keep-alive is often 60 to 75 s). */
+        internal const val STALE_IDLE_MS = 60_000L
+
+        @Volatile private var userSeekAtMs = 0L
+        private const val USER_SEEK_OPEN_MS = 3_000L
+
+        /** The player seeks on the user's word: the next open far from the reader drops the pieces left behind. */
+        internal fun noteUserSeek() {
+            userSeekAtMs = SystemClock.uptimeMillis()
+        }
+
+        private fun takeUserSeek(): Boolean {
+            val at = userSeekAtMs
+            if (at == 0L || SystemClock.uptimeMillis() - at > USER_SEEK_OPEN_MS) return false
+            userSeekAtMs = 0L
+            return true
+        }
+
+        /**
+         * The pieces of [held] a long seek leaves behind: all outside [target]..[target]+[window] when the seek lands
+         * outside the reader's own window ([reader]-1..[reader]+[window]+1); null for a short seek or no reader yet.
+         */
+        internal fun leftBySeek(held: Collection<Long>, reader: Long, target: Long, window: Int): List<Long>? {
+            if (reader < 0L || target in (reader - 1)..(reader + window + 1)) return null
+            return held.filter { it < target || it > target + window }
+        }
 
         /** Chunks in flight ahead of the reader, never below connections+1 (what it takes to saturate the connections). */
         internal fun prefetchDepth(prefetchDepthChunks: Int, parallelConnections: Int): Int =
@@ -253,6 +296,26 @@ internal class ParallelRangeDataSource(
 
         val activeInstances = java.util.concurrent.atomic.AtomicInteger(0)
         val globalBufferPool = ConcurrentHashMap<Long, ConcurrentLinkedDeque<PooledBuffer>>()
+        val retiredChunkSizes: MutableSet<Long> = ConcurrentHashMap.newKeySet()
+
+        fun retireChunkSize(chunkSize: Long) {
+            retiredChunkSizes.add(chunkSize)
+            drainIdleBuffers(chunkSize)
+        }
+
+        fun otherPendingSession(uri: Uri): Boolean = synchronized(sessionLock) {
+            val pending = pendingChunkSession
+            pending != null && !pending.abandoned.get() && pending.requestUri != uri
+        }
+
+        fun dropPendingSession(uri: Uri) {
+            synchronized(sessionLock) {
+                val pending = pendingChunkSession ?: return
+                if (pending.requestUri != uri) return
+                teardownSessionLocked(pending, poolCap = 0)
+                pendingChunkSession = null
+            }
+        }
 
         fun freeDirectBuffer(buffer: ByteBuffer) {
             if (!buffer.isDirect) return
@@ -530,7 +593,7 @@ internal class ParallelRangeDataSource(
         }
 
         @Synchronized private fun recycleBuffer(buffer: PooledBuffer, chunkSz: Long, poolCap: Int) {
-            if (poolCap > 0 && !released) {
+            if (poolCap > 0 && !released && chunkSz !in retiredChunkSizes) {
                 val pool = globalBufferPool.computeIfAbsent(chunkSz) { ConcurrentLinkedDeque() }
                 if (pool.size < poolCap) {
                     pool.offerLast(buffer)
@@ -598,6 +661,7 @@ internal class ParallelRangeDataSource(
         ): ChunkSession {
             synchronized(sessionLock) {
                 check(!released) { "Diagnostic session is closed" }
+                retiredChunkSizes.remove(chunkSz)
                 val existing = currentChunkSession
                 if (existing != null) {
                     val fresh = SystemClock.uptimeMillis() - existing.lastUsedAtMs <= RETAINED_SESSION_TTL_MS
@@ -731,6 +795,7 @@ internal class ParallelRangeDataSource(
         ): ChunkSession? {
             synchronized(sessionLock) {
                 check(!released) { "Diagnostic session is closed" }
+                retiredChunkSizes.remove(chunkSz)
                 val live = currentChunkSession
                 if (live != null && !live.abandoned.get() && live.requestUri == requestUri &&
                     live.chunkSize == chunkSz && live.requestHeaders == requestHeaders
@@ -883,7 +948,13 @@ internal class ParallelRangeDataSource(
         }
     }
 
-    private class DownloadedChunk(val buffer: PooledBuffer, val size: Int)
+    private class DownloadedChunk(
+        val buffer: PooledBuffer,
+        val size: Int,
+        val firstByteAtMs: Long = -1L,
+        val firstReadBytes: Int = 0,
+        val doneAtMs: Long = -1L
+    )
 
     private class LookUpTurn(val result: CompletableFuture<Uri>, val asks: Boolean)
 
@@ -1045,6 +1116,7 @@ internal class ParallelRangeDataSource(
         // session teardown on TTL.
         val attachedSession = resources.obtainSession(dataSpec.uri, dataSpec.httpRequestHeaders, chunkSize, sessionChunkCap, maxPoolSize, effectivePrefetchDepth)
         session = attachedSession
+        if (!isolateSession && takeUserSeek()) dropLeftBySeek(attachedSession, dataSpec.position / chunkSize)
         val warmLength = attachedSession.totalLength
         if (warmLength > 0L && dataSpec.position in 0 until warmLength) {
             resolvedUri = attachedSession.requestTarget()
@@ -1378,8 +1450,7 @@ internal class ParallelRangeDataSource(
                 // landed. The count and highest pos logged before
                 // first_frame_rendered show whether this gates the first frame.
                 // preDone separates a real stall from an already-complete chunk.
-                // site= distinguishes the two read() overloads; ExoPlayer's
-                // progressive path uses the ByteArray one.
+                // site= distinguishes the two read() overloads.
                 val blockT0 = SystemClock.elapsedRealtime()
                 val preDone = future.isDone
                 currentChunk = future.get(60, TimeUnit.SECONDS)
@@ -1703,6 +1774,20 @@ internal class ParallelRangeDataSource(
         }
     }
 
+    /** A long seek: the old position's pieces stop downloading and give their memory back now. */
+    private fun dropLeftBySeek(activeSession: Resources.ChunkSession, target: Long) {
+        synchronized(activeSession) {
+            val victims = leftBySeek(activeSession.futures.keys.toList(), activeSession.lastReadChunkIndex, target,
+                activeSession.prefetchWindow) ?: return
+            if (victims.isEmpty()) return
+            val running = victims.count { activeSession.futures[it]?.isDone == false }
+            victims.forEach { resources.evictFuture(activeSession, it, maxPoolSize) }
+            Log.i(TAG, "SEEK: dropped ${victims.size} pieces left behind (running=$running) " +
+                "from=${activeSession.lastReadChunkIndex} to=$target")
+        }
+        resources.drainIdleBuffers(activeSession.chunkSize)
+    }
+
     private fun liveDepthLimit(): Int = depthLimit?.invoke()?.coerceAtLeast(1) ?: Int.MAX_VALUE
 
     private fun ensureChunkScheduled(chunkIndex: Long) {
@@ -1805,6 +1890,11 @@ internal class ParallelRangeDataSource(
         transferListeners.forEach { ds.addTransferListener(it) }
         activeSession.activeSources.add(ds)
         val slot = runCatching { ConnectionLedger.app.playback(activeSession.requestTarget().toString()) }.getOrNull()
+        if (dropStaleConnections != null && requestMeter?.takeStale(STALE_IDLE_MS) == true) {
+            runCatching { dropStaleConnections?.invoke() }
+            Log.i(TAG, "POOL: idle ${STALE_IDLE_MS / 1000} s or more, pooled connections dropped before the next piece")
+        }
+        requestMeter?.started()
         try {
             val uri = activeSession.requestTarget()
             val spec = DataSpec.Builder()
@@ -1815,7 +1905,7 @@ internal class ParallelRangeDataSource(
 
             if (future.isDone || activeSession.abandoned.get()) throw IOException("Cancelled")
             Log.d(TAG, "Starting chunk download: idx=$chunkIndex, range=$start-$end")
-            openTarget(activeSession, ds, spec, sessionLength) { future.isDone || activeSession.abandoned.get() }
+            val sent = openTarget(activeSession, ds, spec, sessionLength) { future.isDone || activeSession.abandoned.get() }
             slot?.moveTo(runCatching { ds.uri?.toString() }.getOrNull())
             // Short-chunk rejection: with a known session length the
             // requested range is exact, so a chunk that comes back short must
@@ -1823,15 +1913,39 @@ internal class ParallelRangeDataSource(
             val expectedBytes = if (sessionLength > 0L) end - start else -1L
             val chunk = readIntoChunk(activeSession, chunkIndex, ds, future, expectedBytes, allowStallRestart)
             Log.d(TAG, "Successfully downloaded chunk $chunkIndex, size=${chunk.size} bytes")
+            reportPiece(sent, chunk, ds.uri)
             return chunk
         } catch (e: Exception) {
             slot?.failed(e)
             throw e
         } finally {
+            requestMeter?.ended()
             slot?.close()
             activeSession.activeSources.remove(ds)
             try { ds.close() } catch (_: Exception) {}
         }
+    }
+
+    private class Sent(val spec: DataSpec, val atMs: Long)
+
+    private fun reportPiece(sent: Sent, chunk: DownloadedChunk, served: Uri?) {
+        val report = onPiece ?: return
+        val spec = sent.spec
+        if (chunk.firstByteAtMs < 0L || chunk.doneAtMs < chunk.firstByteAtMs) return
+        val reused = runCatching {
+            val url = spec.uri.toString().toHttpUrlOrNull()?.toString()
+            val range = HttpUtil.buildRangeRequestHeader(spec.position, spec.length)
+            if (url != null && range != null) PlaybackConnectionEvents.takePiece(url, range) else null
+        }.getOrNull()
+        val timing = PieceTiming(
+            atMs = chunk.doneAtMs,
+            ttfbMs = chunk.firstByteAtMs - sent.atMs,
+            transferMs = chunk.doneAtMs - chunk.firstByteAtMs,
+            bytes = (chunk.size - chunk.firstReadBytes).toLong(),
+            reused = reused,
+            redirected = served != null && served != spec.uri
+        )
+        runCatching { report(timing) }
     }
 
     /**
@@ -1845,7 +1959,7 @@ internal class ParallelRangeDataSource(
         requested: DataSpec,
         sessionLength: Long,
         cancelled: () -> Boolean
-    ) {
+    ): Sent {
         var spec = requested
         val turn = if (spec.uri == activeSession.requestUri) activeSession.lookUpTurn() else null
         if (turn != null && !turn.asks) {
@@ -1861,6 +1975,7 @@ internal class ParallelRangeDataSource(
         }
         val asking = turn?.takeIf { it.asks }?.result
         var failure: Throwable? = null
+        val sent = Sent(spec, SystemClock.elapsedRealtime())
         try {
             try {
                 ds.open(spec)
@@ -1874,15 +1989,16 @@ internal class ParallelRangeDataSource(
             }
             // Checked against the address this request used, not the session's current one: a
             // parallel download may adopt its own fresh answer while this one is still opening.
-            if (sessionLength <= 0L || spec.uri != activeSession.requestUri || spec.uri == activeSession.resolvedUri) return
+            if (sessionLength <= 0L || spec.uri != activeSession.requestUri || spec.uri == activeSession.resolvedUri) return sent
             val served = parseContentRangeTotal(ds.responseHeaders)
             if (served != C.LENGTH_UNSET.toLong() && served != sessionLength) {
                 throw IOException("Fresh link serves a different file ($served of $sessionLength bytes)")
             }
-            val fresh = ds.uri ?: return
+            val fresh = ds.uri ?: return sent
             if (activeSession.adoptResolvedUri(fresh) && fresh.host != activeSession.requestUri.host) {
                 Log.i(TAG, "LINK_LOOKUP adopt host=${fresh.host}")
             }
+            return sent
         } catch (e: Throwable) {
             failure = e
             throw e
@@ -1998,6 +2114,13 @@ internal class ParallelRangeDataSource(
      * budget is spent it throws and the normal failure handling /
      * auto-recovery takes over.
      */
+    /** The refused request has ended already, so the requests running at the refusal are those left plus it. */
+    private fun noteRateLimited(activeSession: Resources.ChunkSession) {
+        val callback = onRateLimited ?: return
+        val running = requestMeter?.running() ?: return
+        runCatching { callback(activeSession.requestTarget(), running + 1) }
+    }
+
     private fun downloadChunkWithRateLimitBackoff(
         activeSession: Resources.ChunkSession,
         chunkIndex: Long,
@@ -2007,6 +2130,7 @@ internal class ParallelRangeDataSource(
         var rl: HttpDataSource.InvalidResponseCodeException = firstError
         var lastException: Exception = firstError
         if (future.isDone || activeSession.abandoned.get()) throw IOException("Chunk already retired")
+        noteRateLimited(activeSession)
         val escalation = activeSession.beginRateLimitEpisode(effectivePrefetchDepth)
         var attempt = 0
         while (attempt < RATE_LIMIT_MAX_BACKOFF_RETRIES) {
@@ -2023,6 +2147,7 @@ internal class ParallelRangeDataSource(
                 // A non-rate-limit error after a 429 is a different failure: surface it.
                 rl = e.findRateLimitException() ?: throw e
                 activeSession.noteRateLimitHit()
+                noteRateLimited(activeSession)
                 attempt++
             }
         }
@@ -2121,6 +2246,8 @@ internal class ParallelRangeDataSource(
         val hedgeStallRateBps = if (hedgeIsUsenet) HEDGE_STALL_RATE_USENET else HEDGE_STALL_RATE_CDN
         val hedgeWindowsRequired = if (hedgeIsUsenet) HEDGE_WINDOWS_USENET else HEDGE_WINDOWS_CDN
         var hedgeConsecutiveStalled = 0
+        var firstByteAtMs = -1L
+        var firstReadBytes = 0
         try {
             val byteBufferReader = if (isEffectiveNative && ds is androidx.media3.common.ByteBufferDataReader && ds.supportsByteBufferRead()) {
                 ds
@@ -2163,6 +2290,10 @@ internal class ParallelRangeDataSource(
                     }
                 } else {
                     consecutiveZeroReads = 0
+                }
+                if (firstByteAtMs < 0L && read > 0) {
+                    firstByteAtMs = SystemClock.elapsedRealtime()
+                    firstReadBytes = read
                 }
                 totalRead += read
                 receivedBytes?.addAndGet(read.toLong())
@@ -2216,7 +2347,7 @@ internal class ParallelRangeDataSource(
         // the in-flight view is retired (ownership-gated).
         activeSession.inFlight.remove(chunkIndex, inFlight)
         buffer.byteBuffer.flip()
-        return DownloadedChunk(buffer, totalRead)
+        return DownloadedChunk(buffer, totalRead, firstByteAtMs, firstReadBytes, SystemClock.elapsedRealtime())
     }
 
     /** Read only a small startup window from an already-opened DataSource. */
@@ -2441,8 +2572,7 @@ internal class ParallelRangeDataSource(
                 // landed. The count and highest pos logged before
                 // first_frame_rendered show whether this gates the first frame.
                 // preDone separates a real stall from an already-complete chunk.
-                // site= distinguishes the two read() overloads; ExoPlayer's
-                // progressive path uses the ByteArray one.
+                // site= distinguishes the two read() overloads.
                 val blockT0 = SystemClock.elapsedRealtime()
                 val preDone = future.isDone
                 currentChunk = future.get(60, TimeUnit.SECONDS)
@@ -2537,6 +2667,30 @@ internal class ParallelRangeDataSource(
     }
 
     /**
+     * Schedules the piece that starts at [position] onto a pending session, so a chunk session with another piece size
+     * can take over there without waiting. False when another link's pre-start is waiting and must be kept.
+     */
+    internal fun prestartChunkAt(uri: Uri, position: Long): Boolean {
+        try {
+            if (resources.otherPendingSession(uri)) return false
+            val pending = resources.obtainPendingSession(
+                uri, emptyMap(), chunkSize, sessionChunkCap, maxPoolSize, effectivePrefetchDepth
+            ) ?: return true
+            session = pending
+            try {
+                ensureChunkScheduled(position / chunkSize)
+            } finally {
+                session = null
+            }
+            Log.i(TAG, "PRESTART: scheduled chunk ${position / chunkSize} for a piece size change " +
+                "chunkSize=${chunkSize / 1024L}KB host=${uri.host}")
+            return true
+        } finally {
+            close()
+        }
+    }
+
+    /**
      * Factory for creating ParallelRangeDataSource instances.
      */
     class Factory(
@@ -2550,7 +2704,11 @@ internal class ParallelRangeDataSource(
         private val allowContinuationReopen: Boolean = true,
         private val defaultRequestHeaders: Map<String, String> = emptyMap(),
         private val depthLimit: (() -> Int)? = null,
-        private val receivedBytes: java.util.concurrent.atomic.AtomicLong? = null
+        private val receivedBytes: java.util.concurrent.atomic.AtomicLong? = null,
+        private val onPiece: ((PieceTiming) -> Unit)? = null,
+        private val requestMeter: RequestMeter? = null,
+        private val dropStaleConnections: (() -> Unit)? = null,
+        private val onRateLimited: ((Uri?, Int) -> Unit)? = null
     ) : DataSource.Factory {
         @Volatile
         private var startupBootstrapCache: BootstrapCacheEntry? = null
@@ -2563,6 +2721,9 @@ internal class ParallelRangeDataSource(
         fun prestartChunk0(uri: Uri) {
             (createDataSource() as ParallelRangeDataSource).prestartChunk0(uri)
         }
+
+        fun prestartAt(uri: Uri, position: Long): Boolean =
+            (createDataSource() as ParallelRangeDataSource).prestartChunkAt(uri, position)
 
         override fun createDataSource(): DataSource {
             return ParallelRangeDataSource(
@@ -2577,6 +2738,10 @@ internal class ParallelRangeDataSource(
                 defaultRequestHeaders = defaultRequestHeaders,
                 depthLimit = depthLimit,
                 receivedBytes = receivedBytes,
+                onPiece = onPiece,
+                requestMeter = requestMeter,
+                dropStaleConnections = dropStaleConnections,
+                onRateLimited = onRateLimited,
                 consumeBootstrapCache = { dataSpec ->
                     val cached = startupBootstrapCache ?: return@ParallelRangeDataSource null
                     val isFresh = SystemClock.uptimeMillis() - cached.createdAtUptimeMs <= 15_000L
