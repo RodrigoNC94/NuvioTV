@@ -37,7 +37,14 @@ private const val SORT_SOURCE_ORDER = "Source order"
 private const val SORT_BEST_FIRST = "Best quality first"
 private val THUMBNAIL_PREPARE: Pattern = Pattern.compile("Generating thumbnails|Thumbnails ready")
 
-private val keepRule: (String) -> Boolean = { it.contains("Lcom/nuvio/tv/") || it.contains("Landroidx/media3/") }
+// The libraries every cold start runs through are kept too. Most of them (OkHttp, Moshi, Retrofit) ship
+// no profile of their own, so without these rules the Home loads through JIT-only code for its first seconds.
+// Keep in step with the baselineProfile filter in app/build.gradle.kts.
+private val KEPT_PACKAGES = listOf(
+    "Lcom/nuvio/tv/", "Landroidx/", "Lkotlin/", "Lkotlinx/coroutines/", "Lokhttp3/", "Lokio/",
+    "Lretrofit2/", "Lcom/squareup/moshi/", "Lcoil3/", "Ldagger/"
+)
+private val keepRule: (String) -> Boolean = { rule -> KEPT_PACKAGES.any { rule.contains(it) } }
 
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {

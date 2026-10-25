@@ -406,9 +406,18 @@ baselineProfile {
     saveInSrc = true
     mergeIntoMain = true
     baselineProfileOutputDir = "generated/baselineProfiles"
+    // Keep in step with KEPT_PACKAGES in BaselineProfileGenerator.kt.
     filter {
         include("com.nuvio.tv.**")
-        include("androidx.media3.**")
+        include("androidx.**")
+        include("kotlin.**")
+        include("kotlinx.coroutines.**")
+        include("okhttp3.**")
+        include("okio.**")
+        include("retrofit2.**")
+        include("com.squareup.moshi.**")
+        include("coil3.**")
+        include("dagger.**")
     }
 }
 
