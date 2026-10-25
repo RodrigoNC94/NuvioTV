@@ -1200,6 +1200,8 @@ private fun HomeViewModel.reconcileFullyWatchedFromLocalItems(
 
 private const val CATALOG_SWEEP_CONCURRENCY = 2
 private const val CATALOG_SWEEP_YIELD_POLL_MS = 150L
+/** The first seconds after the visible rows land belong to the user's first moves, not to off-screen rows. */
+private const val CATALOG_SWEEP_START_DELAY_MS = 5_000L
 
 // Reserved-headroom background sweep.
 // Once the eager catalogue batch is dispatched, this drains the remaining
@@ -1210,10 +1212,15 @@ private const val CATALOG_SWEEP_YIELD_POLL_MS = 150L
 // loads are already in flight, leaving at least three of the shared five
 // catalogLoadSemaphore permits free so a scrolled-to row never queues behind
 // background work. Aborts if the catalogue generation changes (refresh / layout
-// switch).
+// switch). It starts CATALOG_SWEEP_START_DELAY_MS after the eager batch is done, and
+// its rows reach the screen in batches (see scheduleUpdateCatalogRows).
 internal fun HomeViewModel.startReservedHeadroomSweep(generation: Long) {
     catalogSweepJob?.cancel()
     catalogSweepJob = viewModelScope.launch {
+        while (isActive && generation == catalogLoadGeneration && pendingCatalogLoads > catalogSweepInFlight.get()) {
+            delay(CATALOG_SWEEP_YIELD_POLL_MS)
+        }
+        delay(CATALOG_SWEEP_START_DELAY_MS)
         while (isActive && generation == catalogLoadGeneration) {
             val nonSweepPending = pendingCatalogLoads > catalogSweepInFlight.get()
             val atSweepCap = catalogSweepInFlight.get() >= CATALOG_SWEEP_CONCURRENCY

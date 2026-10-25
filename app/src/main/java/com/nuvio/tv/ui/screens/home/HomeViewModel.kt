@@ -103,6 +103,8 @@ class HomeViewModel @Inject constructor(
     companion object {
         internal const val TAG = "HomeViewModel"
         internal const val STARTUP_GRACE_PERIOD_MS = 1_500L
+        /** Off-screen rows from the background sweep reach the screen at most this often. */
+        private const val CATALOG_SWEEP_UPDATE_BATCH_MS = 1_000L
         internal const val CONTINUE_WATCHING_ENRICHMENT_GRACE_PERIOD_MS = 1_000L
         private const val CONTINUE_WATCHING_WINDOW_MS = 30L * 24 * 60 * 60 * 1000
         private const val MAX_RECENT_PROGRESS_ITEMS = 300
@@ -377,6 +379,8 @@ class HomeViewModel @Inject constructor(
     internal var customCatalogTitles: Map<String, String> = emptyMap()
     internal var currentHeroCatalogKeys: List<String> = emptyList()
     internal var catalogUpdateJob: Job? = null
+    /** When the waiting [catalogUpdateJob] runs its pass. */
+    private var catalogUpdateDueAtMs = 0L
     internal var hasRenderedFirstCatalog = false
     internal val catalogLoadSemaphore = Semaphore(MAX_CATALOG_LOAD_CONCURRENCY)
     internal var pendingCatalogLoads = 0
@@ -1110,6 +1114,12 @@ class HomeViewModel @Inject constructor(
         loadMoreCatalogItemsPipeline(catalogId, addonId, type)
 
     internal fun scheduleUpdateCatalogRows() {
+        // Only the background sweep is loading: its off-screen rows are batched into one pass rather than a
+        // rebuild of the whole Home per row while the user scrolls. A pass still waiting takes this row too.
+        val sweepOnly = pendingCatalogLoads > 0 && pendingCatalogLoads <= catalogSweepInFlight.get()
+        if (sweepOnly && catalogUpdateJob?.isActive == true &&
+            android.os.SystemClock.uptimeMillis() < catalogUpdateDueAtMs
+        ) return
         catalogUpdateJob?.cancel()
         catalogUpdateJob = viewModelScope.launch {
             val debounceMs = when {
@@ -1120,6 +1130,7 @@ class HomeViewModel @Inject constructor(
                     StartupLatencyTrace.mark("first_catalog_rendered")
                     150L
                 }
+                sweepOnly -> CATALOG_SWEEP_UPDATE_BATCH_MS
                 // During bulk loading, batch aggressively — placeholders are
                 // already visible so the user won't notice the delay.
                 pendingCatalogLoads > 8 -> 300L
@@ -1127,6 +1138,7 @@ class HomeViewModel @Inject constructor(
                 pendingCatalogLoads > 0 -> 200L
                 else -> 80L
             }
+            catalogUpdateDueAtMs = android.os.SystemClock.uptimeMillis() + debounceMs
             delay(debounceMs)
             updateCatalogRows()
         }
