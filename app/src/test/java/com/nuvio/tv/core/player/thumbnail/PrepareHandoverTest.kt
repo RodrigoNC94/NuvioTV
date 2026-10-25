@@ -57,6 +57,17 @@ class PrepareHandoverTest {
         assertTrue(PrepareHandover.waitsForBuffering(buffering = true, screenUp = true, playWhenReady = false, small4K = true))
     }
 
+    @Test fun aSmallBoxLetsTheHeldPlayerGoBeforeA4KDecode() {
+        assertTrue(PrepareHandover.letsPlayerGo(smallBox4K = true, screenUp = true, heldByScreen = true, letGo = false))
+    }
+
+    @Test fun bigBoxesAUserPauseAndAPlayerAlreadyLetGoAreLeftAlone() {
+        assertFalse(PrepareHandover.letsPlayerGo(smallBox4K = false, screenUp = true, heldByScreen = true, letGo = false))
+        assertFalse(PrepareHandover.letsPlayerGo(smallBox4K = true, screenUp = true, heldByScreen = false, letGo = false))
+        assertFalse(PrepareHandover.letsPlayerGo(smallBox4K = true, screenUp = false, heldByScreen = true, letGo = false))
+        assertFalse(PrepareHandover.letsPlayerGo(smallBox4K = true, screenUp = true, heldByScreen = true, letGo = true))
+    }
+
     @Test fun aDolbyVisionStartRefusedBeforeItsFirstFrameIsAskedAgain() {
         // The Mummy: refused at 0 s, first frame 0.6 s later, then a 2 s display switch hold with nothing played.
         assertTrue(PrepareHandover.retriesHold(sinceRefusedMs = 600L, playedMs = 0L))

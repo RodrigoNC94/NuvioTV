@@ -36,6 +36,17 @@ class ThumbFetchLanesTest {
         assertEquals(3, refused(FetchPhase.PLAYBACK, torBox = true))
     }
 
+    @Test fun whilePlayingTheSurplusDecidesTheLanes() {
+        fun surplus(torBox: Boolean = false, small: Boolean = false, refused: Boolean = false, budget: Int = ThumbFetchLanes.MAX) =
+            ThumbFetchLanes.limit(FetchPhase.PLAYBACK, false, small, budget, torBox = torBox, refused = refused, surplus = true)
+        assertEquals(8, surplus())
+        assertEquals(8, surplus(torBox = true))
+        assertEquals(3, surplus(budget = 3))
+        assertEquals(1, surplus(small = true))
+        assertEquals(1, surplus(refused = true))
+        assertEquals(1, ThumbFetchLanes.limit(FetchPhase.PLAYBACK, true, false, surplus = true))
+    }
+
     @Test fun theLedgerBudgetCapsEveryPhase() {
         assertEquals(4, lanes(FetchPhase.GENERATING, budget = 4))
         assertEquals(4, lanes(FetchPhase.PLAYER_CLOSED, budget = 4))

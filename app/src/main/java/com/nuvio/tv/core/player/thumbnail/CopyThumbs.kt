@@ -33,8 +33,8 @@ internal interface CopySources {
     suspend fun offers(): CopyOffers?
 
     /**
-     * A link to read [offer] from, or null. Only a cached TorBox copy may be added to the user's list, and it is
-     * removed again through [CopyLink.done].
+     * A link to read [offer] from, or null. A cached TorBox copy added to the user's list is removed again through
+     * [CopyLink.done]; a debrid resolve link ([CopyKind.RESOLVE]) may leave the title in that account.
      */
     suspend fun open(offer: CopyOffer): CopyLink?
 }
@@ -45,7 +45,14 @@ internal class CopyOffers(val playingText: String, val offers: List<CopyOffer>)
  * Never logged: [url] and [headers] may carry tokens. [via] says how it was reached, for the log. [done] is called once
  * the pass no longer reads it.
  */
-internal class CopyLink(val url: String, val headers: Map<String, String>, val via: String, val done: () -> Unit = {})
+internal class CopyLink(
+    val url: String,
+    val headers: Map<String, String>,
+    val via: String,
+    /** Requests at once at most, on top of the usual lane rules. */
+    val maxLanes: Int = Int.MAX_VALUE,
+    val done: () -> Unit = {},
+)
 
 /** The playing title as the copy pass needs it. */
 internal class CopyOwn(
@@ -127,6 +134,7 @@ internal class CopyPass(
         val result: Deferred<Result<ByteArray?>>,
     )
     private class Halt(why: String) : Exception(why)
+    private class GaveWay : Exception("gave way to playback")
 
     @Volatile var state = State.LOOKING
         private set
@@ -159,6 +167,10 @@ internal class CopyPass(
     private var lastPlaying = false
     private var stopWhy: String? = null
     private val headroom = PlaybackHeadroom()
+    /** Bumped when playback takes lanes back: reads started before it are cancelled and fetched again later. */
+    @Volatile private var givenWay = 0
+    @Volatile private var watchJob: Job? = null
+    @Volatile private var laneCap = Int.MAX_VALUE
     @Volatile private var ledgerUrl: String? = null
     private var lanesLogged = ""
 
@@ -175,6 +187,7 @@ internal class CopyPass(
                 state = State.STOPPED
             }
         }
+        watchJob = scope.launch { watchWhileFetching() }.also { w -> job?.invokeOnCompletion { w.cancel() } }
     }
 
     fun stop(why: String) {
@@ -183,6 +196,7 @@ internal class CopyPass(
         if (!ended) Log.i(TAG, "stopped: $why ($made thumbnails from copies)")
         reader?.close()
         job?.cancel()
+        watchJob?.cancel()
         if (!ended) state = State.STOPPED
     }
 
@@ -322,6 +336,7 @@ internal class CopyPass(
             return Outcome.UNUSABLE
         }
         ledgerUrl = link.url
+        laneCap = link.maxLanes.coerceAtLeast(1)
         if (!awaitReady(null, host)) return Outcome.STOP
         val r = HttpRangeReader(link.url, link.headers, thumbnailHttpClient(link.headers),
             slotWaitMs = ConnectionLedger.START_SLOT_WAIT_MS)
@@ -459,7 +474,7 @@ internal class CopyPass(
                             Log.i(TAG, "byte limit reached (${bytesRead() / (1024 * 1024)} MB)")
                             break@work
                         }
-                        val lanes = lanes(r.resolvedUrl, smallBox)
+                        val lanes = minOf(lanes(r.resolvedUrl, smallBox), laneCap)
                         if (lanes == 1 && pending.size > 1 && !refused.get()) {
                             // Back to one at a time (the screen went down, or playback's buffer ran low): the queued
                             // pictures are fetched again later.
@@ -473,7 +488,8 @@ internal class CopyPass(
                             r.cancel()
                         }
                         while (!refused.get() && pending.size < lanes && bytesRead() < MAX_BYTES &&
-                            (!lastPlaying || pending.size < headroom.lanes.coerceAtLeast(1))) {
+                            (!lastPlaying || (pending.size < headroom.lanes.coerceAtLeast(1) &&
+                                pending.count { it.result.isCompleted } < PlaybackHeadroom.DECODE_AHEAD))) {
                             val retried = again.isNotEmpty()
                             val m = if (retried) again.first() else order.getOrNull(next) ?: break
                             val kf = kfOf[m]
@@ -489,8 +505,9 @@ internal class CopyPass(
                             attempts[kf] = (attempts[kf] ?: 0) + 1
                             val ex = spare.removeFirstOrNull() ?: KeyframeExtractor(idx, r).also { extractors += it }
                             underWay += kf
+                            val way = givenWay
                             pending += Fetch(m, kf, ex, shared = lanes > 1, async(Dispatchers.IO) {
-                                runCatching { fetchKeyframe(ex, kf, host) }.also { if (it.exceptionOrNull() is Halt) refused.set(true) }
+                                runCatching { fetchKeyframe(ex, kf, host, way) }.also { if (it.exceptionOrNull() is Halt) refused.set(true) }
                             })
                         }
                         val f = pending.removeFirstOrNull() ?: break@work
@@ -498,6 +515,11 @@ internal class CopyPass(
                         underWay -= f.kf
                         spare += f.extractor
                         val failure = got.exceptionOrNull()
+                        if (failure is GaveWay) {
+                            attempts[f.kf] = ((attempts[f.kf] ?: 1) - 1).coerceAtLeast(0)
+                            again.addFirst(f.m)
+                            continue@work
+                        }
                         if (failure != null) {
                             if (failure is CancellationException) throw failure
                             if (failure is Halt && isRejected()) {
@@ -573,7 +595,7 @@ internal class CopyPass(
         val screen = screenUp() && !lastPlaying
         val n = UsenetCopy.fetches(screenUp(), lastPlaying, ledger.thumbnailRoom(url), smallBox,
             rateLimited = RateLimitedHosts.appSession.contains(url), torBox = LedgerKey.of(url) == LedgerKey.TORBOX,
-            refused = ledger.refusedLately(url), headroom = headroom.lanes)
+            refused = ledger.refusedLately(url), headroom = headroom.lanes, surplus = lastPlaying && headroom.surplus)
         val key = "$n/$screen/$lastPlaying"
         if (key != lanesLogged) {
             lanesLogged = key
@@ -631,7 +653,7 @@ internal class CopyPass(
         }
     }
 
-    private suspend fun fetchKeyframe(ex: KeyframeExtractor, kf: Int, host: String?): ByteArray? {
+    private suspend fun fetchKeyframe(ex: KeyframeExtractor, kf: Int, host: String?, way: Int): ByteArray? {
         var failures = 0
         var noSlot = 0
         while (true) {
@@ -639,10 +661,12 @@ internal class CopyPass(
                 return request(host) { ex.extract(kf) }
             } catch (e: ConnectionLedger.NoSlotException) {
                 if (stopping) throw Halt("stopped")
+                if (way != givenWay) throw GaveWay()
                 if (++noSlot >= NO_SLOT_TRIES) throw Halt("no connection free on that server")
                 delay(2_000L)
             } catch (e: IOException) {
                 if (stopping || isRejected()) throw Halt("stopped")
+                if (way != givenWay) throw GaveWay()
                 if (++failures >= READ_TRIES) throw Unusable("reads keep failing (${e.javaClass.simpleName})")
                 delay(2_000L * failures)
             }
@@ -695,10 +719,7 @@ internal class CopyPass(
                 (ParallelRangeDataSource.hudClampLastHitAtMs > 0 &&
                     SystemClock.uptimeMillis() - ParallelRangeDataSource.hudClampLastHitAtMs < PLAYBACK_429_QUIET_MS)
             val refusalQuietMs = ConnectionLedger.app.refusalQuietMs(ledgerUrl)
-            if (s != null && headroom.note(now, s.playing, s.buffering, s.loading, s.aheadMs, s.toEnd)) {
-                Log.i(TAG, if (headroom.lanes == 0) "lanes=0 (paused: ${headroom.why})"
-                    else "lanes up to ${headroom.lanes} (${headroom.why})")
-            }
+            if (s != null) noteHeadroom(now, s)
             var memory = false
             val why = when {
                 now < quietUntil -> "a quiet minute after a playback stall"
@@ -708,7 +729,7 @@ internal class CopyPass(
                 s == null -> null
                 s.buffering -> "playback buffering"
                 s.playing && headroom.lanes == 0 -> "playback's buffer to recover"
-                s.playing && !(s.aheadMs >= ConnectionLedger.HEALTHY_AHEAD_MS || s.toEnd ||
+                s.playing && !headroom.surplus && !(s.aheadMs >= ConnectionLedger.HEALTHY_AHEAD_MS || s.toEnd ||
                     (s.aheadMs >= FULL_AHEAD_MS && !s.loading)) -> "a healthy playback buffer"
                 pacer != null && s.playing && !synchronized(pacer) { pacer.allows(settleTarget = false) } ->
                     "a pause (dropped frames or a stall stopped copy decodes while playing)"
@@ -734,6 +755,29 @@ internal class CopyPass(
                 waitingFor = why
             }
             delay(if (memory) 5_000L else 2_000L)
+        }
+    }
+
+    private fun noteHeadroom(now: Long, s: Sample) {
+        headroom.source = ledgerUrl ?: reader?.resolvedUrl
+        val before = headroom.gaveWay
+        if (!headroom.note(now, s.playing, s.buffering, s.loading, s.aheadMs, s.toEnd)) return
+        Log.i(TAG, if (headroom.lanes == 0) "lanes=0 (paused: ${headroom.why})"
+            else "lanes up to ${headroom.lanes} (${headroom.why})")
+        if (headroom.gaveWay != before && headroom.surplus && state == State.FILLING) {
+            givenWay++
+            reader?.cancel()
+            Log.i(TAG, "gave way: copy reads cancelled (${headroom.why})")
+        }
+    }
+
+    /** While copy reads run during playback, playback is looked at every second so they give way at once. */
+    private suspend fun watchWhileFetching() {
+        while (true) {
+            delay(1_000L)
+            if (stopping || !lastPlaying || state != State.FILLING) continue
+            val s = sample() ?: continue
+            noteHeadroom(SystemClock.elapsedRealtime(), s)
         }
     }
 

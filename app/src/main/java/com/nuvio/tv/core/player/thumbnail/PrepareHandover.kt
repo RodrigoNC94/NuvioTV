@@ -29,6 +29,13 @@ internal object PrepareHandover {
         buffering && (!screenUp || playWhenReady || small4K)
 
     /**
+     * Small boxes, 4K: before the screen's first decode the player it holds lets go of its decoders and buffer, and
+     * loads again when the screen ends. Never a player the user paused, and only once.
+     */
+    fun letsPlayerGo(smallBox4K: Boolean, screenUp: Boolean, heldByScreen: Boolean, letGo: Boolean): Boolean =
+        smallBox4K && screenUp && heldByScreen && !letGo
+
+    /**
      * Thumbnails still to make before every slot on the screen's grid ([stride]) is done, in the pass's own [order]: the
      * pass also makes the finer slots it meets on the way, so those count as work too.
      */

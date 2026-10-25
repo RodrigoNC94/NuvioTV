@@ -9,8 +9,8 @@ import kotlin.math.sqrt
  * on small contrast-normalised greyscale signatures.
  */
 internal object ReleaseMatch {
-    /** Lengths this close share the picture timing as is. */
-    const val SAME_LENGTH_MS = 2_000L
+    /** Lengths this close share the picture timing as is: less than one 10 s thumbnail step apart. */
+    const val SAME_LENGTH_MS = 8_000L
     /** 25 fps against 23.976 fps, either way round. */
     const val PAL_MIN = 0.956
     const val PAL_MAX = 0.963
@@ -39,6 +39,10 @@ internal object ReleaseMatch {
         val r = otherMs.toDouble() / ownMs
         return if (r in PAL_MIN..PAL_MAX || 1.0 / r in PAL_MIN..PAL_MAX) r else null
     }
+
+    /** Another release's saved set is worth trying: enough pictures, the same length or PAL timing, never found different. */
+    fun reusable(ownMs: Long, otherMs: Long, pictures: Int, minPictures: Int, verdict: Boolean?): Boolean =
+        verdict != false && pictures >= minPictures && ratio(ownMs, otherMs) != null
 
     /** The candidate's slot holding the same moment as own [slot] (slot centres), -1 outside it. */
     fun mapSlot(slot: Int, ratio: Double, otherSlotCount: Int): Int {

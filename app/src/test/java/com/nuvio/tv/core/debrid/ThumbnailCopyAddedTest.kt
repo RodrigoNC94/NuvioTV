@@ -182,17 +182,11 @@ class ThumbnailCopyAddedTest {
         assertEquals(CopyRoute.Torbox, CopyRoute.of(tb, hasHash = true, torboxKey = true, premiumizeKey = false))
         assertTrue(CopyRoute.of(tb, hasHash = true, torboxKey = false, premiumizeKey = true) is CopyRoute.LeftOut)
         assertEquals(CopyRoute.Premiumize, CopyRoute.of(pm, hasHash = true, torboxKey = true, premiumizeKey = true))
-        assertEquals(
-            CopyRoute.LeftOut("Real-Debrid copies are off"),
-            CopyRoute.of(rd, hasHash = true, torboxKey = true, premiumizeKey = true),
-        )
-        assertTrue(CopyRoute.of("alldebrid", hasHash = true, torboxKey = true, premiumizeKey = true) is CopyRoute.LeftOut)
+        assertEquals(CopyRoute.Resolve, CopyRoute.of(rd, hasHash = true, torboxKey = true, premiumizeKey = true))
+        assertEquals(CopyRoute.Resolve, CopyRoute.of("alldebrid", hasHash = true, torboxKey = true, premiumizeKey = true))
         assertEquals(CopyRoute.Torbox, CopyRoute.of(null, hasHash = true, torboxKey = true, premiumizeKey = true))
         assertEquals(CopyRoute.Premiumize, CopyRoute.of(null, hasHash = true, torboxKey = false, premiumizeKey = true))
-        assertEquals(
-            CopyRoute.LeftOut("add-on debrid link"),
-            CopyRoute.of(null, hasHash = true, torboxKey = false, premiumizeKey = false),
-        )
+        assertNull(CopyRoute.of(null, hasHash = true, torboxKey = false, premiumizeKey = false))
         assertNull(CopyRoute.of(null, hasHash = false, torboxKey = true, premiumizeKey = true))
     }
 }

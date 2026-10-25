@@ -52,15 +52,30 @@ class SeekThumbnailPreferencesTest {
     }
 
     @Test
-    fun `untouched store is on with 4 GB of RAM and off below`() {
+    fun `untouched store is on with 3 GB of RAM and off with 2 GB`() {
         val mb = 1024L * 1024
-        val am9 = SeekThumbnailPreferences.defaultMode(3_712 * mb)
-        val shield = SeekThumbnailPreferences.defaultMode(2_900 * mb)
-        val fireStick = SeekThumbnailPreferences.defaultMode(1_669 * mb)
-        assertEquals(SeekThumbMode.ALL, SeekThumbnailPreferences.modeOf(emptyPreferences(), am9))
-        assertEquals(SeekThumbMode.OFF, SeekThumbnailPreferences.modeOf(emptyPreferences(), shield))
-        assertEquals(SeekThumbMode.OFF, SeekThumbnailPreferences.modeOf(emptyPreferences(), fireStick))
+        mapOf(
+            1_669L to SeekThumbMode.OFF,
+            1_946L to SeekThumbMode.OFF,
+            2_048L to SeekThumbMode.OFF,
+            2_867L to SeekThumbMode.ALL,
+            2_900L to SeekThumbMode.ALL,
+            3_174L to SeekThumbMode.ALL,
+            3_712L to SeekThumbMode.ALL,
+            4_096L to SeekThumbMode.ALL,
+        ).forEach { (totalMb, expected) ->
+            val default = SeekThumbnailPreferences.defaultMode(totalMb * mb)
+            assertEquals("$totalMb MB", expected, SeekThumbnailPreferences.modeOf(emptyPreferences(), default))
+        }
         assertEquals(SeekThumbMode.ALL, SeekThumbnailPreferences.defaultMode(0L))
+    }
+
+    @Test
+    fun `a 3 GB box keeps a stored Off`() {
+        val default = SeekThumbnailPreferences.defaultMode(2_900L * 1024 * 1024)
+        assertEquals(SeekThumbMode.OFF, SeekThumbnailPreferences.modeOf(prefs { this[modeKey] = SeekThumbMode.OFF.name }, default))
+        assertEquals(SeekThumbMode.OFF, SeekThumbnailPreferences.modeOf(prefs { this[legacyEnabledKey] = false }, default))
+        assertEquals(SeekThumbMode.HD, SeekThumbnailPreferences.modeOf(prefs { this[modeKey] = SeekThumbMode.HD.name }, default))
     }
 
     @Test

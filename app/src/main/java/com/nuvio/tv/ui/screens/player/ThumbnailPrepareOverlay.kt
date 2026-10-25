@@ -246,6 +246,13 @@ private fun GeneratingScreen(ui: PrepareUi.Generating?, ready: PrepareUi.Ready?)
                     },
                     style = type.bodyMedium, color = colors.TextSecondary
                 )
+                if (ui?.filmLoadsAfter == true) {
+                    Text(
+                        stringResource(R.string.seek_thumbnails_film_loads_after),
+                        style = type.bodyMedium, color = colors.TextSecondary,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
             }
         }
         Spacer(Modifier.weight(0.45f))

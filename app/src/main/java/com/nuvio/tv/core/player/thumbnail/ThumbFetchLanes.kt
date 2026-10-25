@@ -17,6 +17,7 @@ internal object ThumbFetchLanes {
      * [ledgerCap] is the most thumbnail requests the server's [ConnectionLedger] entry allows at once; the ledger also
      * holds each request until playback leaves it room. A rate limit or dropped connection seen in the session means
      * one at a time from then on, and so does a server other than TorBox that [refused] lately while playing.
+     * [surplus]: while playing, the lanes come from what the film leaves ([PlaybackHeadroom]), not a fixed number.
      */
     fun limit(
         phase: FetchPhase,
@@ -25,6 +26,7 @@ internal object ThumbFetchLanes {
         ledgerCap: Int = MAX,
         torBox: Boolean = false,
         refused: Boolean = false,
+        surplus: Boolean = false,
     ): Int {
         if (rateLimited) return 1
         val lanes = when (phase) {
@@ -32,8 +34,9 @@ internal object ThumbFetchLanes {
             // Small boxes pace 4K decodes while playing: a second fetch would only wait.
             FetchPhase.PLAYBACK -> when {
                 smallBox4K -> 1
+                refused && !torBox -> 1
+                surplus -> MAX
                 torBox -> TORBOX_PLAYBACK_MAX
-                refused -> 1
                 else -> PLAYBACK_MAX
             }
         }

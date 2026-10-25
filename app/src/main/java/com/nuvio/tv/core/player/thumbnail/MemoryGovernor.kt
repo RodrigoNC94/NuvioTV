@@ -12,6 +12,8 @@ import java.io.File
 internal enum class DecodeTier(val rssMb: Int, val addressSpaceMb: Int) {
     SW_UP_TO_1080P(rssMb = 35, addressSpaceMb = 45),
     SW_4K(rssMb = 80, addressSpaceMb = 85),
+    /** Two strip decoders of about 10 MB each (StripDecode). */
+    SW_4K_STRIPS(rssMb = 25, addressSpaceMb = 30),
 }
 
 /** [swapFreeMb] >= 0 when the refusal was for swap. */
@@ -120,6 +122,12 @@ internal object MemoryGovernor {
     val isStrongHardware: Boolean get() = strongHardware
     @Volatile private var strongHardware = false
     @Volatile private var registered = false
+
+    /** A 2 GB class box (or a 32-bit app or a small Java heap): 4K films load after the generating screen. */
+    fun isSmallHardware(context: Context): Boolean {
+        init(context)
+        return !strongHardware
+    }
 
     /** Listeners told to drop decoder contexts / caches (the active session registers itself). */
     private val trimListeners = java.util.concurrent.CopyOnWriteArraySet<(Int) -> Unit>()
@@ -280,7 +288,7 @@ internal object MemoryGovernor {
      * second decoder next to the session's also checks the 32-bit address space.
      */
     fun allow(
-        tier: DecodeTier, decoderWarm: Boolean = false, funded: Boolean = false, addressSpace: Boolean = tier == DecodeTier.SW_4K,
+        tier: DecodeTier, decoderWarm: Boolean = false, funded: Boolean = false, addressSpace: Boolean = tier != DecodeTier.SW_UP_TO_1080P,
     ): GovernorVerdict {
         // When 4K may decode is the scheduler's rule, this only checks that it is affordable.
         if (addressSpace && !is64Bit && !decoderWarm) {

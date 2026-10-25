@@ -20,6 +20,9 @@ extern "C" {
 #include "thumbcolor.h"
 #include "thumbdovi.h"
 }
+#include <thread>
+
+#include "hevc_strips.h"
 #include "thumb_backend.h"
 
 #define BACKEND_NAME "ff60"

@@ -104,6 +104,7 @@ add_library(
     nuviothumb
     SHARED
     thumb_shim.cpp
+    hevc_strips.cpp
     thumb_backend_mpv.cpp
     thumb_backend_ff60.cpp
     thumbcolor.c

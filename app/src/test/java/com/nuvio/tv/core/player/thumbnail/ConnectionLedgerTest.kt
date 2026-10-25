@@ -166,6 +166,20 @@ class ConnectionLedgerTest {
         assertEquals(8, l.playbackRoom(tb, 9))
     }
 
+    @Test fun aNextEpisodeStartingEarlyCountsAgainstPlaybacksRoom() {
+        val l = ledger()
+        // Six playback requests on the account, four of them the playing stream's: two belong to another stream.
+        val playback = (1..6).map { l.playback(tb) }
+        assertEquals(6, l.playbackRoom(tb, 8, own = 4))
+        assertEquals(8, l.playbackRoom(tb, 8))
+        val t = l.acquire(tb, maxWaitMs = 0)
+        assertEquals(5, l.playbackRoom(tb, 8, own = 4))
+        // The stream's own requests never count twice.
+        assertEquals(7, l.playbackRoom(tb, 8, own = 6))
+        t.close()
+        playback.forEach { it?.close() }
+    }
+
     @Test fun playbackRoomAsksForAtLeastOne() {
         val l = ledger()
         l.notePlaybackConnections(1)

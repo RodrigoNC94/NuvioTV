@@ -24,7 +24,8 @@ class CopyChoiceTest {
         container: String? = "mkv",
         durationMs: Long? = null,
         text: String = "Film.2019.1080p.WEB-DL.H264-GRP",
-    ) = CopyOffer(id, id, kind, height, codec, hdr, web, size, container, durationMs, text)
+        remote: Boolean = false,
+    ) = CopyOffer(id, id, kind, height, codec, hdr, web, size, container, durationMs, text, remote)
 
     @Test
     fun editionWordsMustMatch() {
@@ -37,6 +38,22 @@ class CopyChoiceTest {
         assertNotNull(CopyChoice.rejection(offer("c"), "Film.2019.2160p.Unrated.REMUX", ownMs))
         assertNull(CopyChoice.rejection(offer("d", text = "Film.Extended.1080p"), "Film.EXTENDED.2160p.REMUX", ownMs))
         assertNull(CopyChoice.rejection(offer("e"), playing, ownMs))
+    }
+
+    @Test
+    fun editionWordsAreIgnoredWhenTheLengthMatches() {
+        val remux = "Film.2019.2160p.Extended.REMUX"
+        assertNull(CopyChoice.rejection(offer("a", durationMs = ownMs + 3_000), remux, ownMs))
+        assertNull(CopyChoice.rejection(offer("b", text = "Film.IMAX.1080p", durationMs = ownMs), playing, ownMs))
+        assertNull(CopyChoice.rejection(offer("c", durationMs = (ownMs * 0.959).toLong()), remux, ownMs))
+        assertNotNull(CopyChoice.rejection(offer("d", text = "Film.Extended.1080p", durationMs = ownMs + 600_000), playing, ownMs))
+    }
+
+    @Test
+    fun editionWordsStillCountWhenTheLengthIsUnknown() {
+        assertNotNull(CopyChoice.rejection(offer("a", durationMs = null), "Film.2019.2160p.Extended.REMUX", ownMs))
+        assertNotNull(CopyChoice.rejection(offer("b", text = "Film.Directors.Cut.1080p", durationMs = null), playing, ownMs))
+        assertNull(CopyChoice.rejection(offer("c", text = "Film.Extended.1080p", durationMs = null), "Film.EXTENDED.2160p", ownMs))
     }
 
     @Test
@@ -55,9 +72,12 @@ class CopyChoiceTest {
     }
 
     @Test
-    fun lengthWithinTwoSecondsOrPalRatio() {
+    fun lengthWithinEightSecondsOrPalRatio() {
         assertNull(CopyChoice.rejection(offer("a", durationMs = ownMs + 1_900), playing, ownMs))
-        assertNotNull(CopyChoice.rejection(offer("b", durationMs = ownMs + 5_000), playing, ownMs))
+        assertNull(CopyChoice.rejection(offer("a5", durationMs = ownMs + 5_000), playing, ownMs))
+        assertNull(CopyChoice.rejection(offer("a8", durationMs = ownMs - 8_000), playing, ownMs))
+        assertNotNull(CopyChoice.rejection(offer("b", durationMs = ownMs + 8_001), playing, ownMs))
+        assertNotNull(CopyChoice.rejection(offer("b12", durationMs = ownMs - 12_000), playing, ownMs))
         assertNull(CopyChoice.rejection(offer("c", durationMs = (ownMs * 0.959).toLong()), playing, ownMs))
         assertNotNull(CopyChoice.rejection(offer("d", durationMs = (ownMs * 0.9).toLong()), playing, ownMs))
         assertEquals(7_200_000L, CopyChoice.parsedDurationMs(7_200L))
@@ -118,7 +138,7 @@ class CopyChoiceTest {
         assertEquals("another Usenet link",
             CopyChoice.rejection(offer("nzb", kind = CopyKind.USENET), hd, ownMs, maxHeight = 1080, usenet = true))
         assertNotNull(CopyChoice.rejection(offer("cut", text = "Film.Extended.1080p"), hd, ownMs, maxHeight = 1080, usenet = true))
-        assertNotNull(CopyChoice.rejection(offer("long", durationMs = ownMs + 5_000), hd, ownMs, maxHeight = 1080, usenet = true))
+        assertNotNull(CopyChoice.rejection(offer("long", durationMs = ownMs + 9_000), hd, ownMs, maxHeight = 1080, usenet = true))
         // A 4K title from Usenet keeps the smaller-copy rule.
         assertNotNull(CopyChoice.rejection(offer("4k", height = 2160), playing, ownMs, maxHeight = 2160, usenet = true))
         assertNull(CopyChoice.rejection(offer("hd"), playing, ownMs, maxHeight = 2160, usenet = true))
@@ -234,17 +254,90 @@ class CopyChoiceTest {
     }
 
     @Test
-    fun onlyPlainFileLinksAndLocalUsenetStreamsAreRead() {
+    fun plainLinksUsenetAndCachedDebridLinksAreRead() {
         assertNull(CopyChoice.linkRejection("https://cdn.example.org/files/Film.2019.1080p.WEB.mkv", "Film 1080p"))
         assertNull(CopyChoice.linkRejection("http://192.168.1.10:3000/api/v1/usenet/stream/abc/Film.mkv", "[TB+] Film"))
-        assertNotNull(CopyChoice.linkRejection("https://torrentio.strem.fun/resolve/realdebrid/key/hash/1/Film.mkv", "Film"))
+        assertNull(CopyChoice.linkRejection("https://torrentio.strem.fun/resolve/realdebrid/key/hash/1/Film.mkv", "[RD+] Film"))
+        assertNull(CopyChoice.linkRejection("https://aio.example.org/api/v1/playback/abc", "[TB\u26a1] Film 1080p"))
+        assertNull(CopyChoice.linkRejection("https://comet.example.org/cfg/playback/abc/0/Film.mkv", "[AD\u26a1] Comet"))
+        assertNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "TB+ cached"))
+        assertNull(CopyChoice.linkRejection("https://x.example.org/torbox/abc/Film.mkv", "Film", cached = true))
+        assertEquals(CopyKind.RESOLVE, CopyChoice.linkKind("https://aio.example.org/api/v1/playback/abc", "[TB\u26a1] Film"))
+        assertEquals(CopyKind.RESOLVE, CopyChoice.linkKind("https://x.example.org/Film.mkv", "[RD+] Film"))
+        assertEquals(CopyKind.LINK, CopyChoice.linkKind("https://cdn.example.org/Film.mkv", "Film 1080p"))
+        assertEquals(CopyKind.USENET, CopyChoice.linkKind("http://192.168.1.10:3000/api/v1/usenet/stream/abc", "[TB+] Film"))
+    }
+
+    @Test
+    fun debridLinksNotCachedOrWithoutACachedMarkAreLeftOut() {
+        assertNotNull(CopyChoice.linkRejection("https://torrentio.strem.fun/resolve/realdebrid/key/hash/1/Film.mkv", "[RD download] Film"))
+        assertNotNull(CopyChoice.linkRejection("https://aio.example.org/api/v1/playback/abc", "[TB\u23f3] Film"))
+        assertNotNull(CopyChoice.linkRejection("https://comet.example.org/cfg/playback/abc", "[TB\u2b07\ufe0f] Film"))
+        assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "[RD] uncached Film"))
         assertNotNull(CopyChoice.linkRejection("https://aio.example.org/api/v1/debrid/playback/abc", "Film"))
         assertNotNull(CopyChoice.linkRejection("https://x.example.org/torbox/abc/Film.mkv", "Film"))
-        assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "[RD+] Film 1080p"))
-        assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "TB+ cached"))
         assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "[PM] Film"))
-        assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "\u2b07 Film"))
-        assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "Film (download)"))
+        assertNotNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "[RD+] Film", cached = false))
+    }
+
+    @Test
+    fun aServerAwayFromHomeComesAfterTheCopiesThatCostNothing() {
+        val ordered = CopyChoice.order(listOf(
+            offer("added", kind = CopyKind.TORBOX_ADD),
+            offer("remote", kind = CopyKind.SERVER, remote = true),
+            offer("home", kind = CopyKind.SERVER, codec = CopyCodec.HEVC),
+            offer("resolve", kind = CopyKind.RESOLVE),
+        )).map { it.id }
+        assertEquals(listOf("home", "remote", "added", "resolve"), ordered)
+    }
+
+    @Test
+    fun httpProviderLinksAreReadWhateverTheirNamesSay() {
+        assertNull(CopyChoice.linkRejection("https://cdn.example.org/v/Film.1080p.mkv", "HDHub Download 1080p"))
+        assertNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "⬇ ShowBox 1080p"))
+        assertNull(CopyChoice.linkRejection("https://x.example.org/Film.mkv", "Film (download)"))
+        assertEquals(CopyKind.LINK, CopyChoice.linkKind("https://cdn.example.org/v/Film.1080p.mkv", "HDHub Download 1080p"))
+        assertNotNull(CopyChoice.rejection(offer("hls", container = "m3u8"), playing, ownMs))
+    }
+
+    @Test
+    fun aDebridLinkNamingItsTorrentGivesTheHash() {
+        val hash = "0123456789abcdef0123456789abcdef01234567"
+        assertEquals(hash, CopyChoice.linkHash("https://torrentio.strem.fun/resolve/torbox/key/${hash.uppercase()}/null/1/F.mkv", "[TB+]"))
+        assertNull(CopyChoice.linkHash("https://cdn.example.org/$hash/Film.mkv", "Film 1080p"))
+        assertNull(CopyChoice.linkHash("https://aio.example.org/api/v1/playback/abc", "[TB\u26a1] Film"))
+        assertNull(CopyChoice.linkHash(null, "[TB+]"))
+    }
+
+    @Test
+    fun aDebridResolveLinkComesAfterTheAddThenRemoveCopyAndPremiumize() {
+        val ordered = CopyChoice.order(listOf(
+            offer("resolve", kind = CopyKind.RESOLVE, size = 1_000_000_000L),
+            offer("usenet", kind = CopyKind.USENET, size = 1_000_000_000L),
+            offer("premiumize", kind = CopyKind.PREMIUMIZE, codec = CopyCodec.HEVC, hdr = true),
+            offer("added", kind = CopyKind.TORBOX_ADD, codec = CopyCodec.HEVC, hdr = true),
+            offer("link", hdr = true),
+            offer("resolve720", kind = CopyKind.RESOLVE, height = 720),
+            offer("resolveHevc", kind = CopyKind.RESOLVE, codec = CopyCodec.HEVC),
+            offer("resolveHdr", kind = CopyKind.RESOLVE, hdr = true),
+        )).map { it.id }
+        assertEquals(
+            listOf("link", "added", "premiumize", "resolve", "resolve720", "resolveHevc", "resolveHdr", "usenet"),
+            ordered,
+        )
+        val usenet = CopyChoice.order(listOf(
+            offer("resolve", kind = CopyKind.RESOLVE),
+            offer("added", kind = CopyKind.TORBOX_ADD),
+            offer("link"),
+        ), usenet = true).map { it.id }
+        assertEquals(listOf("link", "added", "resolve"), usenet)
+    }
+
+    @Test
+    fun aDebridResolveCopyStillFollowsTheResolutionRules() {
+        assertNotNull(CopyChoice.rejection(offer("a", kind = CopyKind.RESOLVE, height = 2160), playing, ownMs))
+        assertNotNull(CopyChoice.rejection(offer("b", kind = CopyKind.RESOLVE, height = 1080), playing, ownMs, maxHeight = 720))
+        assertNull(CopyChoice.rejection(offer("c", kind = CopyKind.RESOLVE, height = 720), playing, ownMs, maxHeight = 720))
     }
 
     @Test fun aSmallerBoxWaitsForTheCopyLookBeforeDecodingThe4KFilm() {

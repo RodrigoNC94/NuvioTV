@@ -66,6 +66,21 @@ struct Handle {
     bool have_dovi = false;       // current frame has Dolby Vision IPT metadata (profile 5)
     td_params dovi{};
     float dovi_peak_nits = 0;
+    // Multi-slice HEVC keyframes are decoded a strip at a time (hevc_strips.h), by up to two strip decoders.
+    bool hevc = false;
+    bool split = false;
+    bool told_whole = false;      // why a keyframe decodes whole, logged once per handle
+    thumb::Strips strips;
+    AVCodecContext *strip_ctx[2] = {};
+    AVPacket *strip_pkt[2] = {};
+    AVFrame *strip_frame[2] = {};
+};
+
+/** Output of one render: straight to the bitmap (SDR), or through a 16-bit scratch for the HDR / Dolby Vision steps. */
+struct Target {
+    enum { SDR, HDR, DOVI } mode = SDR;
+    uint8_t *dst[4] = {};
+    int dst_ls[4] = {};
 };
 
 /** Copies FFmpeg's parsed Dolby Vision metadata of an IPT frame into td_params. */
@@ -105,9 +120,61 @@ bool read_dovi(const AVFrame *f, td_params *p, float *peak_nits) {
     return true;
 }
 
+void free_strips(Handle *h) {
+    for (int k = 0; k < 2; k++) {
+        if (h->strip_frame[k]) g_api.av_frame_free(&h->strip_frame[k]);
+        if (h->strip_pkt[k]) g_api.av_packet_free(&h->strip_pkt[k]);
+        if (h->strip_ctx[k]) g_api.avcodec_free_context(&h->strip_ctx[k]);
+    }
+}
+
+/** Strip decoder k: one thread, loop filter skipped (strips only match the whole picture without it). */
+bool open_strip_decoder(Handle *h, int k) {
+    if (h->strip_ctx[k]) return true;
+    const AVCodec *c = g_api.avcodec_find_decoder_by_name("hevc");
+    if (!c) return false;
+    if (!h->strip_pkt[k]) h->strip_pkt[k] = g_api.av_packet_alloc();
+    if (!h->strip_frame[k]) h->strip_frame[k] = g_api.av_frame_alloc();
+    h->strip_ctx[k] = g_api.avcodec_alloc_context3(c);
+    if (!h->strip_ctx[k] || !h->strip_pkt[k] || !h->strip_frame[k]) {
+        if (h->strip_ctx[k]) g_api.avcodec_free_context(&h->strip_ctx[k]);
+        return false;
+    }
+    h->strip_ctx[k]->thread_count = 1;
+    h->strip_ctx[k]->skip_loop_filter = AVDISCARD_ALL;
+    if (g_api.avcodec_open2(h->strip_ctx[k], c, nullptr) < 0) {
+        g_api.avcodec_free_context(&h->strip_ctx[k]);
+        return false;
+    }
+    return true;
+}
+
+/** Decodes strip i of the current picture with strip decoder k. 0 or a negative AVERROR. */
+int decode_strip(Handle *h, int k, size_t i) {
+    const thumb::Strip &s = h->strips.pieces[i];
+    AVCodecContext *ctx = h->strip_ctx[k];
+    AVPacket *pkt = h->strip_pkt[k];
+    AVFrame *f = h->strip_frame[k];
+    g_api.av_frame_unref(f);
+    g_api.avcodec_flush_buffers(ctx);
+    g_api.av_packet_unref(pkt);
+    if (g_api.av_new_packet(pkt, static_cast<int>(s.packet.size())) < 0) return AVERROR(ENOMEM);
+    memcpy(pkt->data, s.packet.data(), s.packet.size());
+    pkt->flags |= AV_PKT_FLAG_KEY;
+    int r = g_api.avcodec_send_packet(ctx, pkt);
+    g_api.av_packet_unref(pkt);
+    if (r < 0) return r;
+    g_api.avcodec_send_packet(ctx, nullptr);
+    r = g_api.avcodec_receive_frame(ctx, f);
+    if (r < 0) return r;
+    if (f->width != h->strips.width || f->height != s.rows) return AVERROR_INVALIDDATA;
+    return 0;
+}
+
 void b_release(void *handle) {
     auto *h = static_cast<Handle *>(handle);
     if (!h) return;
+    free_strips(h);
     if (h->frame) g_api.av_frame_free(&h->frame);
     if (h->pkt) g_api.av_packet_free(&h->pkt);
     if (h->ctx) g_api.avcodec_free_context(&h->ctx);
@@ -122,6 +189,7 @@ void *b_open(const char *decoder, const uint8_t *extradata, int extradata_len, i
     const AVCodec *c = g_api.avcodec_find_decoder_by_name(decoder);
     if (!c) return nullptr;
     auto *h = new Handle();
+    h->hevc = strcmp(decoder, "hevc") == 0;
     h->ctx = g_api.avcodec_alloc_context3(c);
     h->pkt = g_api.av_packet_alloc();
     h->frame = g_api.av_frame_alloc();
@@ -139,6 +207,8 @@ void *b_open(const char *decoder, const uint8_t *extradata, int extradata_len, i
     }
     h->ctx->thread_count = threads < 1 ? 1 : threads;
     h->ctx->thread_type = FF_THREAD_SLICE;
+    // Deblocking and SAO change nothing visible once a 4K picture is shrunk to thumbnail size; smaller sources keep it.
+    if (h->hevc && (width >= 3200 || height >= 2000)) h->ctx->skip_loop_filter = AVDISCARD_ALL;
     if (g_api.avcodec_open2(h->ctx, c, nullptr) < 0) { b_release(h); return nullptr; }
     return h;
 }
@@ -147,6 +217,7 @@ uint8_t *b_packet(void *handle, int len) {
     auto *h = static_cast<Handle *>(handle);
     if (!h || len <= 0) return nullptr;
     if (h->have_frame) { g_api.av_frame_unref(h->frame); h->have_frame = false; }
+    h->split = false;
     g_api.avcodec_flush_buffers(h->ctx);            // reset after the previous drain
     g_api.av_packet_unref(h->pkt);
     if (g_api.av_new_packet(h->pkt, len) < 0) return nullptr;
@@ -156,20 +227,36 @@ uint8_t *b_packet(void *handle, int len) {
 int b_decode(void *handle, int32_t *out) {
     auto *h = static_cast<Handle *>(handle);
     if (!h || !h->pkt->data) return AVERROR(EINVAL);
-    h->pkt->flags |= AV_PKT_FLAG_KEY;
-    int r = g_api.avcodec_send_packet(h->ctx, h->pkt);
-    g_api.av_packet_unref(h->pkt);
-    if (r < 0) return r;
-    g_api.avcodec_send_packet(h->ctx, nullptr);      // drain to get this picture now
-    r = g_api.avcodec_receive_frame(h->ctx, h->frame);
-    if (r < 0) return r;
+    // Strip 0 now, for the frame's details; the others while rendering.
+    const char *why = nullptr;
+    if (h->hevc && thumb::split_hevc(h->pkt->data, static_cast<size_t>(h->pkt->size), &h->strips, &why)) {
+        if (!open_strip_decoder(h, 0)) why = "strip decoder did not open";
+        else if (decode_strip(h, 0, 0) != 0) why = "strip 0 did not decode";
+        else h->split = true;
+    }
+    if (h->split) {
+        g_api.av_packet_unref(h->pkt);
+    } else if (h->hevc && why && !h->told_whole) {
+        h->told_whole = true;
+        __android_log_print(ANDROID_LOG_INFO, "ThumbDecode", "keyframe decodes whole: %s", why);
+    }
+    if (!h->split) {
+        h->pkt->flags |= AV_PKT_FLAG_KEY;
+        int r = g_api.avcodec_send_packet(h->ctx, h->pkt);
+        g_api.av_packet_unref(h->pkt);
+        if (r < 0) return r;
+        g_api.avcodec_send_packet(h->ctx, nullptr);      // drain to get this picture now
+        r = g_api.avcodec_receive_frame(h->ctx, h->frame);
+        if (r < 0) return r;
+    }
     h->have_frame = true;
 
     memset(out, 0, sizeof(int32_t) * thumb::INFO_COUNT);
-    AVFrame *f = h->frame;
+    AVFrame *f = h->split ? h->strip_frame[0] : h->frame;
     const AVPixFmtDescriptor *d = g_api.av_pix_fmt_desc_get(static_cast<AVPixelFormat>(f->format));
     out[thumb::INFO_WIDTH] = f->width;
-    out[thumb::INFO_HEIGHT] = f->height;
+    out[thumb::INFO_HEIGHT] = h->split ? h->strips.height : f->height;
+    out[thumb::INFO_STRIPS] = h->split ? static_cast<int32_t>(h->strips.pieces.size()) : 0;
     out[thumb::INFO_BIT_DEPTH] = d ? d->comp[0].depth : 8;
     out[thumb::INFO_SAR_NUM] = f->sample_aspect_ratio.num;
     out[thumb::INFO_SAR_DEN] = f->sample_aspect_ratio.den;
@@ -190,92 +277,92 @@ int b_decode(void *handle, int32_t *out) {
     return 0;
 }
 
-/**
- * Dolby Vision profile 5: scale the IPT base layer to the output size at 4:4:4, reshape and convert to PQ BT.2020
- * (thumbdovi.c), then the HDR10 tone-map.
- */
-int render_dovi(Handle *h, const uint8_t *const src[4], const int src_ls[4], int src_h, uint8_t *pixels, int stride,
-                int dw, int dh, bool rgb565) {
-    if (!h->have_dovi) return AVERROR(EINVAL);
-    AVFrame *f = h->frame;
-    h->sws = g_api.sws_getCachedContext(h->sws, f->width, src_h, static_cast<AVPixelFormat>(f->format),
-                                        dw, dh, AV_PIX_FMT_YUV444P16LE, SWS_BICUBIC, nullptr, nullptr, nullptr);
-    if (!h->sws) return AVERROR(ENOMEM);
-    const size_t plane = static_cast<size_t>(dw) * dh;
-    const size_t need = plane * 2 * 6;                     // YUV444P16 in + GBRP16 out
+/** Grows the 16-bit scratch to at least need bytes. */
+bool scratch(Handle *h, size_t need) {
     if (h->g16_size < need) {
         free(h->g16);
         h->g16 = static_cast<uint8_t *>(malloc(need));
         h->g16_size = h->g16 ? need : 0;
     }
-    if (!h->g16) return AVERROR(ENOMEM);
-    auto *base = reinterpret_cast<uint16_t *>(h->g16);
-    uint16_t *yp = base, *up = base + plane, *vp = base + 2 * plane;
-    uint16_t *gp = base + 3 * plane, *bp = base + 4 * plane, *rp = base + 5 * plane;
-    uint8_t *dst[4] = {reinterpret_cast<uint8_t *>(yp), reinterpret_cast<uint8_t *>(up), reinterpret_cast<uint8_t *>(vp), nullptr};
-    int dst_ls[4] = {dw * 2, dw * 2, dw * 2, 0};
-    g_api.sws_scale(h->sws, src, src_ls, 0, src_h, dst, dst_ls);
-    td_convert(&h->dovi, yp, up, vp, dw, dw, dh, gp, bp, rp, dw);
-    tc_params want{};
-    want.transfer = TC_TRANSFER_PQ;
-    want.source_peak_nits = h->dovi_peak_nits;
-    want.target_white_nits = 0;
-    want.bt2020_primaries = 1;
-    if (!h->tone || memcmp(&want, &h->tone_params, sizeof want) != 0) {
-        tc_free(h->tone);
-        h->tone = tc_create(&want);
-        h->tone_params = want;
-    }
-    if (!h->tone) return AVERROR(ENOMEM);
-    tc_convert(h->tone, gp, dw, bp, dw, rp, dw, dw, dh, pixels, stride, rgb565 ? 1 : 0);
-    return 0;
+    return h->g16 != nullptr;
 }
 
-int b_render(void *handle, uint8_t *pixels, int stride, int dw, int dh, bool rgb565, int transfer, bool bt2020,
-           bool fullRange, float peakNits, bool rowSkip) {
-    auto *h = static_cast<Handle *>(handle);
-    if (!h || !h->have_frame) return AVERROR(EINVAL);
-    AVFrame *f = h->frame;
-
-    // Row pre-decimation: every other row of every plane.
-    const uint8_t *src[4] = {f->data[0], f->data[1], f->data[2], f->data[3]};
-    int src_ls[4] = {f->linesize[0], f->linesize[1], f->linesize[2], f->linesize[3]};
-    int src_h = f->height;
-    if (rowSkip && src_h >= 4 * dh) {
-        for (int p = 0; p < 4; p++) src_ls[p] *= 2;
-        src_h /= 2;
+/**
+ * Sets up the scaler for a src_w x src_h source and the output of one render. Dolby Vision profile 5 scales the IPT
+ * base layer to the output size at 4:4:4; finish_render reshapes it to PQ BT.2020 (thumbdovi.c) and tone-maps.
+ */
+int begin_render(Handle *h, Target *t, AVPixelFormat fmt, int src_w, int src_h, int full_h, uint8_t *pixels,
+                 int stride, int dw, int dh, bool rgb565, int transfer, bool bt2020, bool fullRange) {
+    if (transfer == 3) {
+        if (!h->have_dovi) return AVERROR(EINVAL);
+        h->sws = g_api.sws_getCachedContext(h->sws, src_w, src_h, fmt, dw, dh, AV_PIX_FMT_YUV444P16LE, SWS_BICUBIC,
+                                            nullptr, nullptr, nullptr);
+        if (!h->sws) return AVERROR(ENOMEM);
+        const size_t plane = static_cast<size_t>(dw) * dh;
+        if (!scratch(h, plane * 2 * 6)) return AVERROR(ENOMEM);     // YUV444P16 in + GBRP16 out
+        auto *base = reinterpret_cast<uint16_t *>(h->g16);
+        t->mode = Target::DOVI;
+        for (int p = 0; p < 3; p++) {
+            t->dst[p] = reinterpret_cast<uint8_t *>(base + p * plane);
+            t->dst_ls[p] = dw * 2;
+        }
+        return 0;
     }
-    if (transfer == 3) return render_dovi(h, src, src_ls, src_h, pixels, stride, dw, dh, rgb565);
     const bool hdr = transfer == 1 || transfer == 2;
     const AVPixelFormat dst_fmt = hdr ? AV_PIX_FMT_GBRP16LE : (rgb565 ? AV_PIX_FMT_RGB565LE : AV_PIX_FMT_RGBA);
-    h->sws = g_api.sws_getCachedContext(h->sws, f->width, src_h, static_cast<AVPixelFormat>(f->format),
-                                        dw, dh, dst_fmt, SWS_BICUBIC, nullptr, nullptr, nullptr);
+    h->sws = g_api.sws_getCachedContext(h->sws, src_w, src_h, fmt, dw, dh, dst_fmt, SWS_BICUBIC, nullptr, nullptr,
+                                        nullptr);
     if (!h->sws) return AVERROR(ENOMEM);
-    const int cs = bt2020 ? SWS_CS_BT2020 : (f->height > 576 ? SWS_CS_ITU709 : SWS_CS_ITU601);
+    const int cs = bt2020 ? SWS_CS_BT2020 : (full_h > 576 ? SWS_CS_ITU709 : SWS_CS_ITU601);
     g_api.sws_setColorspaceDetails(h->sws, g_api.sws_getCoefficients(cs), fullRange ? 1 : 0,
                                    g_api.sws_getCoefficients(SWS_CS_DEFAULT), 1, 0, 1 << 16, 1 << 16);
     if (!hdr) {
-        uint8_t *dst[4] = {pixels, nullptr, nullptr, nullptr};
-        int dst_ls[4] = {stride, 0, 0, 0};
-        g_api.sws_scale(h->sws, src, src_ls, 0, src_h, dst, dst_ls);
+        t->mode = Target::SDR;
+        t->dst[0] = pixels;
+        t->dst_ls[0] = stride;
         return 0;
     }
-    const size_t need = static_cast<size_t>(dw) * dh * 2 * 3;
-    if (h->g16_size < need) {
-        free(h->g16);
-        h->g16 = static_cast<uint8_t *>(malloc(need));
-        h->g16_size = h->g16 ? need : 0;
+    const size_t plane = static_cast<size_t>(dw) * dh * 2;
+    if (!scratch(h, plane * 3)) return AVERROR(ENOMEM);
+    t->mode = Target::HDR;
+    for (int p = 0; p < 3; p++) {
+        t->dst[p] = h->g16 + p * plane;
+        t->dst_ls[p] = dw * 2;
     }
-    if (!h->g16) return AVERROR(ENOMEM);
-    uint8_t *dst[4] = {h->g16, h->g16 + static_cast<size_t>(dw) * dh * 2,
-                       h->g16 + static_cast<size_t>(dw) * dh * 4, nullptr};
-    int dst_ls[4] = {dw * 2, dw * 2, dw * 2, 0};
-    g_api.sws_scale(h->sws, src, src_ls, 0, src_h, dst, dst_ls);
+    return 0;
+}
+
+/** Feeds source rows [y, y + rows), top to bottom across calls. rs 2 skips every other row. */
+void scale_rows(Handle *h, const Target &t, const AVFrame *f, int y, int rows, int rs) {
+    const uint8_t *src[4] = {f->data[0], f->data[1], f->data[2], f->data[3]};
+    int ls[4] = {f->linesize[0], f->linesize[1], f->linesize[2], f->linesize[3]};
+    for (int p = 0; p < 4; p++) ls[p] *= rs;
+    g_api.sws_scale(h->sws, src, ls, y / rs, rows / rs, t.dst, t.dst_ls);
+}
+
+int finish_render(Handle *h, const Target &t, uint8_t *pixels, int stride, int dw, int dh, bool rgb565, int transfer,
+                  bool bt2020, float peakNits) {
+    if (t.mode == Target::SDR) return 0;
     tc_params want{};
-    want.transfer = transfer == 2 ? TC_TRANSFER_HLG : TC_TRANSFER_PQ;
-    want.source_peak_nits = peakNits;
     want.target_white_nits = 0;   // default 203 (BT.2408)
-    want.bt2020_primaries = bt2020 ? 1 : 0;
+    uint16_t *g = reinterpret_cast<uint16_t *>(t.dst[0]);
+    uint16_t *b = reinterpret_cast<uint16_t *>(t.dst[1]);
+    uint16_t *r = reinterpret_cast<uint16_t *>(t.dst[2]);
+    if (t.mode == Target::DOVI) {
+        const size_t plane = static_cast<size_t>(dw) * dh;
+        auto *base = reinterpret_cast<uint16_t *>(h->g16);
+        g = base + 3 * plane;
+        b = base + 4 * plane;
+        r = base + 5 * plane;
+        td_convert(&h->dovi, base, base + plane, base + 2 * plane, dw, dw, dh, g, b, r, dw);
+        want.transfer = TC_TRANSFER_PQ;
+        want.source_peak_nits = h->dovi_peak_nits;
+        want.bt2020_primaries = 1;
+    } else {
+        want.transfer = transfer == 2 ? TC_TRANSFER_HLG : TC_TRANSFER_PQ;
+        want.source_peak_nits = peakNits;
+        want.bt2020_primaries = bt2020 ? 1 : 0;
+    }
     if (!h->tone || memcmp(&want, &h->tone_params, sizeof want) != 0) {
         tc_free(h->tone);
         h->tone = tc_create(&want);
@@ -283,9 +370,58 @@ int b_render(void *handle, uint8_t *pixels, int stride, int dw, int dh, bool rgb
     }
     if (!h->tone) return AVERROR(ENOMEM);
     // GBRP plane order: [0]=G [1]=B [2]=R
-    tc_convert(h->tone, reinterpret_cast<uint16_t *>(dst[0]), dw, reinterpret_cast<uint16_t *>(dst[1]), dw,
-               reinterpret_cast<uint16_t *>(dst[2]), dw, dw, dh, pixels, stride, rgb565 ? 1 : 0);
+    tc_convert(h->tone, g, dw, b, dw, r, dw, dw, dh, pixels, stride, rgb565 ? 1 : 0);
     return 0;
+}
+
+/** Decodes the other strips, two at a time when a second decoder opens, and feeds them to the scaler in order. */
+int scale_strips(Handle *h, const Target &t, int rs) {
+    const size_t n = h->strips.pieces.size();
+    const bool pairs = n > 2 && open_strip_decoder(h, 1);
+    for (size_t i = 0; i < n; i += pairs ? 2 : 1) {
+        const bool both = pairs && i + 1 < n;
+        int other = 0;
+        std::thread worker;
+        if (both) {
+            try {
+                worker = std::thread([h, i, &other] { other = decode_strip(h, 1, i + 1); });
+            } catch (...) {
+                other = decode_strip(h, 1, i + 1);
+            }
+        }
+        const int r = i == 0 ? 0 : decode_strip(h, 0, i);
+        if (worker.joinable()) worker.join();
+        if (r < 0) return r;
+        const thumb::Strip &s = h->strips.pieces[i];
+        scale_rows(h, t, h->strip_frame[0], s.y, s.rows, rs);
+        if (both) {
+            if (other < 0) return other;
+            const thumb::Strip &next = h->strips.pieces[i + 1];
+            scale_rows(h, t, h->strip_frame[1], next.y, next.rows, rs);
+        }
+    }
+    return 0;
+}
+
+int b_render(void *handle, uint8_t *pixels, int stride, int dw, int dh, bool rgb565, int transfer, bool bt2020,
+           bool fullRange, float peakNits, bool rowSkip) {
+    auto *h = static_cast<Handle *>(handle);
+    if (!h || !h->have_frame) return AVERROR(EINVAL);
+    const AVFrame *f = h->split ? h->strip_frame[0] : h->frame;
+    const int full_h = h->split ? h->strips.height : f->height;
+    // Row pre-decimation: every other row of every plane.
+    const int rs = rowSkip && full_h >= 4 * dh ? 2 : 1;
+    Target t;
+    int r = begin_render(h, &t, static_cast<AVPixelFormat>(f->format), f->width, full_h / rs, full_h, pixels, stride,
+                         dw, dh, rgb565, transfer, bt2020, fullRange);
+    if (r < 0) return r;
+    if (h->split) {
+        r = scale_strips(h, t, rs);
+        if (r < 0) return r;
+    } else {
+        scale_rows(h, t, f, 0, full_h, rs);
+    }
+    return finish_render(h, t, pixels, stride, dw, dh, rgb565, transfer, bt2020, peakNits);
 }
 
 void b_trim(void *handle) {
@@ -293,6 +429,12 @@ void b_trim(void *handle) {
     if (!h) return;
     if (h->have_frame) { g_api.av_frame_unref(h->frame); h->have_frame = false; }
     g_api.avcodec_flush_buffers(h->ctx);
+    h->split = false;
+    h->strips = thumb::Strips();
+    for (int k = 0; k < 2; k++) {
+        if (h->strip_frame[k]) g_api.av_frame_unref(h->strip_frame[k]);
+        if (h->strip_ctx[k]) g_api.avcodec_flush_buffers(h->strip_ctx[k]);
+    }
     free(h->g16); h->g16 = nullptr; h->g16_size = 0;
     if (h->sws) { g_api.sws_freeContext(h->sws); h->sws = nullptr; }
 }

@@ -14,7 +14,10 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <sched.h>
+#include <thread>
 
+#include "hevc_strips.h"
 #include "thumb_backend.h"
 
 #define TAG "ThumbDecode"
@@ -48,6 +51,29 @@ const thumb::Backend *backend() {
     const thumb::Backend *b = g_backend;
     pthread_mutex_unlock(&g_lock);
     return b;
+}
+
+/**
+ * Runs a decode or render on a short-lived thread in the idle scheduling class, below every playback thread; the strip
+ * decoders it starts inherit the class. The caller's pool thread keeps its own scheduling.
+ */
+int run_idle(int (*work)(void *), void *arg) {
+    int r = 0;
+    try {
+        std::thread t([&] {
+            sched_param none{};
+            static bool warned = false;
+            if (sched_setscheduler(0, SCHED_IDLE, &none) != 0 && !warned) {
+                warned = true;
+                LOGW("idle scheduling refused (errno %d), decoding at the caller's priority", errno);
+            }
+            r = work(arg);
+        });
+        t.join();
+    } catch (...) {
+        r = work(arg);
+    }
+    return r;
 }
 
 struct JHandle {
@@ -131,7 +157,8 @@ Java_com_nuvio_tv_core_player_thumbnail_ThumbNative_nativeDecode(JNIEnv *env, jc
     if (!buf) return -ENOMEM;
     env->GetByteArrayRegion(data, 0, len, reinterpret_cast<jbyte *>(buf));
     int32_t out[thumb::INFO_COUNT];
-    int r = j->b->decode(j->h, out);
+    struct Call { JHandle *j; int32_t *out; } call{j, out};
+    int r = run_idle([](void *a) { auto *c = static_cast<Call *>(a); return c->j->b->decode(c->j->h, c->out); }, &call);
     if (r == 0) env->SetIntArrayRegion(info, 0, thumb::INFO_COUNT, reinterpret_cast<jint *>(out));
     return r;
 }
@@ -148,7 +175,8 @@ Java_com_nuvio_tv_core_player_thumbnail_ThumbNative_nativeDecodeDirect(JNIEnv *e
     if (!buf) return -ENOMEM;
     memcpy(buf, src, static_cast<size_t>(len));
     int32_t out[thumb::INFO_COUNT];
-    int r = j->b->decode(j->h, out);
+    struct Call { JHandle *j; int32_t *out; } call{j, out};
+    int r = run_idle([](void *a) { auto *c = static_cast<Call *>(a); return c->j->b->decode(c->j->h, c->out); }, &call);
     if (r == 0) env->SetIntArrayRegion(info, 0, thumb::INFO_COUNT, reinterpret_cast<jint *>(out));
     return r;
 }
@@ -169,10 +197,31 @@ Java_com_nuvio_tv_core_player_thumbnail_ThumbNative_nativeRender(JNIEnv *env, jc
     if (!rgb565 && bi.format != ANDROID_BITMAP_FORMAT_RGBA_8888) return -EINVAL;
     void *pixels = nullptr;
     if (AndroidBitmap_lockPixels(env, bitmap, &pixels) != ANDROID_BITMAP_RESULT_SUCCESS) return -EINVAL;
-    int r = j->b->render(j->h, static_cast<uint8_t *>(pixels), static_cast<int>(bi.stride), static_cast<int>(bi.width),
-                         static_cast<int>(bi.height), rgb565, transfer, bt2020, fullRange, peakNits, rowSkip);
+    struct Call {
+        JHandle *j; uint8_t *pixels; int stride, w, h; bool rgb565; int transfer; bool bt2020, fullRange; float peak;
+        bool rowSkip;
+    } call{j, static_cast<uint8_t *>(pixels), static_cast<int>(bi.stride), static_cast<int>(bi.width),
+           static_cast<int>(bi.height), rgb565, transfer, bt2020 == JNI_TRUE, fullRange == JNI_TRUE, peakNits,
+           rowSkip == JNI_TRUE};
+    int r = run_idle([](void *a) {
+        auto *c = static_cast<Call *>(a);
+        return c->j->b->render(c->j->h, c->pixels, c->stride, c->w, c->h, c->rgb565, c->transfer, c->bt2020,
+                               c->fullRange, c->peak, c->rowSkip);
+    }, &call);
     AndroidBitmap_unlockPixels(env, bitmap);
     return r;
+}
+
+/** Strips an HEVC keyframe access unit (Annex B) would be decoded in, 0 when it decodes whole. No FFmpeg needed. */
+JNIEXPORT jint JNICALL
+Java_com_nuvio_tv_core_player_thumbnail_ThumbNative_nativeStripCount(JNIEnv *env, jclass, jbyteArray data, jint len) {
+    if (!data || len <= 0 || env->GetArrayLength(data) < len) return 0;
+    jbyte *b = env->GetByteArrayElements(data, nullptr);
+    if (!b) return 0;
+    thumb::Strips s;
+    const bool ok = thumb::split_hevc(reinterpret_cast<const uint8_t *>(b), static_cast<size_t>(len), &s);
+    env->ReleaseByteArrayElements(data, b, JNI_ABORT);
+    return ok ? static_cast<jint>(s.pieces.size()) : 0;
 }
 
 JNIEXPORT void JNICALL

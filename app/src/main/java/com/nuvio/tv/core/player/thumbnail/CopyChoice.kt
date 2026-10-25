@@ -17,6 +17,8 @@ internal enum class CopyKind {
     PREMIUMIZE,
     /** A Usenet link streamed by a local AIOStreams (each open may count as a grab at the indexer). */
     USENET,
+    /** A cached debrid copy through its resolve link or the app's key: the title may stay in that debrid account. */
+    RESOLVE,
 }
 
 internal enum class CopyCodec { H264, HEVC, OTHER, UNKNOWN }
@@ -37,6 +39,8 @@ internal class CopyOffer(
     val durationMs: Long?,
     /** Names, description and file name: the edition words are read from it. */
     val text: String,
+    /** A media server away from the home network. */
+    val remote: Boolean = false,
 )
 
 /** Which copy of a 4K title, or of a title playing from Usenet, its thumbnails are made from. */
@@ -68,22 +72,46 @@ internal object CopyChoice {
 
     private val RESOLVE_SEGMENTS = setOf(
         "resolve", "playback", "debrid", "realdebrid", "alldebrid", "torbox", "premiumize", "debridlink",
+        "easydebrid", "offcloud", "pikpak",
     )
-    private val PROVIDER_TAGS = listOf("[rd", "[tb", "[ad", "[pm", "rd+", "tb+", "download", "⬇")
+    private const val SERVICES = "rd|tb|ad|pm|dl|ed|oc|pkp"
+    private val DEBRID_TAG = Regex("""\[($SERVICES)(?![a-z])|(?<![a-z])($SERVICES)\+""")
+    private val CACHED_MARK = Regex("""⚡|(?<![a-z])($SERVICES)\+|(?<![a-z])(cached|instant)(?![a-z])""")
+    private val UNCACHED_MARK = Regex("""⏳|⬇|(?<![a-z])uncached(?![a-z])|\[($SERVICES)(?![a-z])[^\]]*download""")
+    private val HASH = Regex("[0-9a-f]{40}")
+
+    private fun pathOf(url: String): String =
+        url.substringAfter("://", url).substringAfter('/', "").substringBefore('?').substringBefore('#').lowercase()
+
+    /** A link that resolves through a debrid service: by its path or by the add-on's service tag. */
+    private fun debridLink(url: String, text: String): Boolean =
+        pathOf(url).split('/').any { it in RESOLVE_SEGMENTS } || DEBRID_TAG.containsMatchIn(text.lowercase())
 
     /**
-     * Why a ready link may not be read for a copy, null when it may. Only a plain file link qualifies, or a Usenet
-     * link streamed by a local AIOStreams; a link that may resolve through a debrid service (and add to its account)
-     * does not.
+     * Why a ready link may not be read for a copy, null when it may: a plain file link (HTTP providers too, whatever
+     * their names say about downloads), a Usenet link streamed by a local AIOStreams, or a debrid resolve link marked
+     * as cached ([cached]: the add-on's or the app's cache answer).
      */
-    fun linkRejection(url: String, text: String): String? {
-        val path = url.substringAfter("://", url).substringAfter('/', "").substringBefore('?').substringBefore('#')
-            .lowercase()
+    fun linkRejection(url: String, text: String, cached: Boolean? = null): String? {
         if (isUsenet(url)) return null
-        path.split('/').firstOrNull { it in RESOLVE_SEGMENTS }?.let { return "a resolve link (/$it/)" }
         val t = text.lowercase()
-        PROVIDER_TAGS.firstOrNull { it in t }?.let { return "a debrid or download entry ($it)" }
+        if (!debridLink(url, t)) return null
+        if (cached == false || UNCACHED_MARK.containsMatchIn(t)) return "a debrid link that is not cached"
+        if (cached != true && !CACHED_MARK.containsMatchIn(t)) return "a debrid link with no cached mark"
         return null
+    }
+
+    /** How a ready link that [linkRejection] lets through is read. */
+    fun linkKind(url: String, text: String): CopyKind = when {
+        isUsenet(url) -> CopyKind.USENET
+        debridLink(url, text) -> CopyKind.RESOLVE
+        else -> CopyKind.LINK
+    }
+
+    /** The torrent a debrid resolve link names in its path, lower case; null for any other link. */
+    fun linkHash(url: String?, text: String): String? {
+        if (url == null || isUsenet(url) || !debridLink(url, text)) return null
+        return pathOf(url).split('/').firstOrNull { HASH.matches(it) }
     }
 
     /** A Usenet link streamed by a local AIOStreams. */
@@ -126,7 +154,7 @@ internal object CopyChoice {
     /**
      * Why [offer] cannot stand in for the playing title, null when it can. Nothing is opened for this. [maxHeight]: the
      * playing picture's height class. [usenet]: the title plays from Usenet, so another Usenet link (another grab) is
-     * never used.
+     * never used. Edition words count only when the copy's length is not known: a matching length settles it.
      */
     fun rejection(offer: CopyOffer, playingText: String, ownMs: Long, maxHeight: Int = 2160, usenet: Boolean = false): String? {
         if (usenet && offer.kind == CopyKind.USENET) return "another Usenet link"
@@ -137,27 +165,29 @@ internal object CopyChoice {
             offer.height > HEIGHTS.first() -> return "${offer.height}p is not a smaller copy"
             offer.height !in HEIGHTS -> return "${offer.height}p is too small"
         }
+        offer.durationMs?.let { ms ->
+            return if (ReleaseMatch.ratio(ownMs, ms) == null) "length ${ms / 1000} s against ${ownMs / 1000} s" else null
+        }
         val own = editions(playingText)
         val theirs = editions(offer.text)
         if (own != theirs) {
             val diff = (own - theirs) + (theirs - own)
             return "another edition (${diff.joinToString { it.name.lowercase() }})"
         }
-        offer.durationMs?.let { ms ->
-            if (ReleaseMatch.ratio(ownMs, ms) == null) return "length ${ms / 1000} s against ${ownMs / 1000} s"
-        }
         return null
     }
 
     /**
-     * Copies with no account side effects first (TorBox list, server versions, ready links), then a TorBox copy added
-     * and removed again, then Premiumize, then Usenet (an indexer grab); within that SDR before HDR, H.264 before HEVC
+     * Copies with no account side effects first (TorBox list, server versions, ready links), then a version on a media
+     * server away from home, then a TorBox copy added
+     * and removed again, then Premiumize, then a debrid resolve link (may stay in that account), then Usenet (an
+     * indexer grab); within that SDR before HDR, H.264 before HEVC
      * (a thumbnail is 480 wide, so a 720p H.264 copy gives the same picture faster than a 1080p HEVC one), 1080p before
      * 720p, WEB first, smaller files first, and by source cost last (TorBox list before server versions and links). For a title playing from Usenet ([usenet]) the source comes first: server versions, the TorBox list,
-     * Premiumize, ready links, then a TorBox copy added and removed again.
+     * Premiumize, ready links, a TorBox copy added and removed again, then a debrid resolve link.
      */
     fun order(offers: List<CopyOffer>, usenet: Boolean = false): List<CopyOffer> = offers.sortedWith(
-        compareBy<CopyOffer> { if (usenet) usenetRank(it.kind) else sideEffects(it.kind) }
+        compareBy<CopyOffer> { if (usenet) usenetRank(it.kind) else sideEffects(it) }
             .thenBy { if (it.hdr) 1 else 0 }
             .thenBy { codecRank(it.codec) }
             .thenBy { HEIGHTS.indexOf(it.height).let { i -> if (i < 0) HEIGHTS.size else i } }
@@ -166,11 +196,13 @@ internal object CopyChoice {
             .thenBy { if (it.kind == CopyKind.DEBRID) 0 else 1 }
     )
 
-    private fun sideEffects(k: CopyKind): Int = when (k) {
-        CopyKind.DEBRID, CopyKind.SERVER, CopyKind.LINK -> 0
-        CopyKind.TORBOX_ADD -> 1
-        CopyKind.PREMIUMIZE -> 2
-        CopyKind.USENET -> 3
+    private fun sideEffects(o: CopyOffer): Int = when (o.kind) {
+        CopyKind.SERVER -> if (o.remote) 1 else 0
+        CopyKind.DEBRID, CopyKind.LINK -> 0
+        CopyKind.TORBOX_ADD -> 2
+        CopyKind.PREMIUMIZE -> 3
+        CopyKind.RESOLVE -> 4
+        CopyKind.USENET -> 5
     }
 
     private fun usenetRank(k: CopyKind): Int = when (k) {
@@ -179,7 +211,8 @@ internal object CopyChoice {
         CopyKind.PREMIUMIZE -> 2
         CopyKind.LINK -> 3
         CopyKind.TORBOX_ADD -> 4
-        CopyKind.USENET -> 5
+        CopyKind.RESOLVE -> 5
+        CopyKind.USENET -> 6
     }
 
     private fun codecRank(c: CopyCodec): Int = when (c) {

@@ -1,6 +1,7 @@
 package com.nuvio.tv.core.player.thumbnail
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -54,10 +55,28 @@ class ReleaseMatchTest {
     private fun corr(a: FloatArray?, b: FloatArray?): Float? =
         if (a == null || b == null) null else ReleaseMatch.correlation(a, b)
 
-    @Test fun lengthsWithinTwoSecondsShareTheTiming() {
+    @Test fun anotherReleaseOfTheSameLengthIsWorthReadingTheIndexFor() {
+        // No Country for Old Men: 7333 s, the other release 1.5 s longer, 123 pictures saved.
+        assertTrue(ReleaseMatch.reusable(7_333_000L, 7_334_500L, 123, 12, null))
+        assertTrue(ReleaseMatch.reusable(7_333_000L, 7_334_500L, 123, 12, true))
+        assertTrue(ReleaseMatch.reusable(7_333_000L, (7_333_000L * 0.959).toLong(), 40, 12, null))
+    }
+
+    @Test fun anotherCutTooFewPicturesOrAKnownMismatchIsNot() {
+        assertFalse(ReleaseMatch.reusable(7_333_000L, 7_342_000L, 123, 12, null))
+        assertFalse(ReleaseMatch.reusable(7_333_000L, 8_100_000L, 123, 12, null))
+        assertFalse(ReleaseMatch.reusable(7_333_000L, 7_333_000L, 11, 12, null))
+        assertFalse(ReleaseMatch.reusable(7_333_000L, 7_333_000L, 123, 12, false))
+    }
+
+    @Test fun lengthsWithinEightSecondsShareTheTiming() {
         assertEquals(1.0, ReleaseMatch.ratio(7_200_000L, 7_201_900L)!!, 0.0)
-        assertEquals(1.0, ReleaseMatch.ratio(7_200_000L, 7_198_000L)!!, 0.0)
-        assertNull(ReleaseMatch.ratio(7_200_000L, 7_202_500L))
+        assertEquals(1.0, ReleaseMatch.ratio(7_200_000L, 7_205_000L)!!, 0.0)
+        assertEquals(1.0, ReleaseMatch.ratio(7_200_000L, 7_208_000L)!!, 0.0)
+        assertEquals(1.0, ReleaseMatch.ratio(7_200_000L, 7_192_000L)!!, 0.0)
+        assertNull(ReleaseMatch.ratio(7_200_000L, 7_208_001L))
+        assertNull(ReleaseMatch.ratio(7_200_000L, 7_191_999L))
+        assertEquals(1.0, ReleaseMatch.ratio(1_320_000L, 1_327_500L)!!, 0.0)
         assertNull(ReleaseMatch.ratio(7_200_000L, 7_260_000L))
         assertNull(ReleaseMatch.ratio(0L, 7_200_000L))
     }

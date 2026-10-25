@@ -338,13 +338,30 @@ internal class ConnectionLedger(
     /**
      * How many of [wanted] playback downloads fit on [url]'s server next to the thumbnail requests in use now:
      * [wanted] where the server has no known total, else what the total leaves, never below 1. Playback still never
-     * waits; this only lets it ask for fewer.
+     * waits; this only lets it ask for fewer. [own] = the requests of the stream asking that run now: playback
+     * requests beyond them (a next episode starting early) count against the total too; -1 leaves them out.
      */
-    fun playbackRoom(url: String?, wanted: Int): Int {
+    fun playbackRoom(url: String?, wanted: Int, own: Int = -1): Int {
         val want = wanted.coerceAtLeast(1)
         val key = LedgerKey.of(url) ?: return want
         val total = LedgerKey.knownTotal(key) ?: return want
-        return lock.withLock { minOf(want, total - (entries[key]?.thumbs ?: 0)).coerceAtLeast(1) }
+        return lock.withLock {
+            val e = entries[key]
+            val others = if (own >= 0 && e != null) (e.playback - e.streams - own).coerceAtLeast(0) else 0
+            minOf(want, total - (e?.thumbs ?: 0) - others).coerceAtLeast(1)
+        }
+    }
+
+    /** Playback requests on [url]'s server besides the [own] ones of the stream asking: a next episode starting early. */
+    fun otherPlayback(url: String?, own: Int): Int {
+        val key = LedgerKey.of(url) ?: return 0
+        return lock.withLock { entries[key]?.let { (it.playback - it.streams - own).coerceAtLeast(0) } ?: 0 }
+    }
+
+    /** Playback requests open on [url]'s server now. */
+    fun playbackInUse(url: String?): Int {
+        val key = LedgerKey.of(url) ?: return 0
+        return lock.withLock { entries[key]?.playback ?: 0 }
     }
 
     /** Ms left of [REFUSAL_QUIET_MS] after the last "too many requests" on [url]'s server, 0 when none. */

@@ -3,6 +3,7 @@ package com.nuvio.tv.core.debrid
 import android.os.SystemClock
 import android.util.Log
 import com.nuvio.tv.core.player.thumbnail.ConnectionLedger
+import com.nuvio.tv.core.player.thumbnail.CopyChoice
 import com.nuvio.tv.data.local.DebridSettingsDataStore
 import com.nuvio.tv.data.remote.api.PremiumizeApi
 import com.nuvio.tv.data.remote.api.TorboxApi
@@ -43,8 +44,8 @@ internal class DebridCopy(val url: String, val torrentId: Int?)
  * Debrid links for 4K thumbnails made from a smaller copy. TorBox: a copy already in the user's list is read from
  * there and never removed; otherwise a cached copy is added (never one that is not cached), recorded on disk at once,
  * and removed again when the copy pass is done with it, only when TorBox confirms it created that item during the add
- * and playback did not claim it. Premiumize: a direct download link, nothing is added to the account. Real-Debrid is
- * not used.
+ * and playback did not claim it. Premiumize: a direct download link, nothing is added to the account. Other services
+ * are reached through their resolve links.
  */
 @Singleton
 class ThumbnailCopyDebrid @Inject constructor(
@@ -538,6 +539,7 @@ class ThumbnailCopyDebrid @Inject constructor(
 
     private fun hashOf(stream: Stream): String? =
         AddedCopyRecords.normal(stream.clientResolve?.infoHash ?: stream.getEffectiveInfoHash())
+            ?: AddedCopyRecords.normal(CopyChoice.linkHash(stream.getStreamUrl(), streamText(stream)))
 
     private fun resolveOf(stream: Stream, season: Int?, episode: Int?, service: String): StreamClientResolve =
         stream.clientResolve?.takeIf { stream.isDirectDebrid() } ?: StreamClientResolve(
@@ -583,3 +585,6 @@ class ThumbnailCopyDebrid @Inject constructor(
 internal interface ThumbnailCopyDebridEntryPoint {
     fun thumbnailCopyDebrid(): ThumbnailCopyDebrid
 }
+
+internal fun streamText(stream: Stream): String =
+    listOfNotNull(stream.name, stream.title, stream.description).joinToString(" ")

@@ -59,10 +59,10 @@ object SeekThumbnailPreferences {
     internal fun hasChosenMode(prefs: Preferences): Boolean = modeKey in prefs || legacyEnabledKey in prefs
 
     /**
-     * Thumbnails start on only on boxes with 4 GB of RAM or more. Android reports less than the nominal size, 4 GB boxes
-     * well above this, 3 GB boxes below 3 GiB.
+     * Thumbnails start on only on boxes with 3 GB of RAM or more. Android reports less than the nominal size, 3 GB boxes
+     * from about 2.7 GiB, 2 GB boxes below 2 GiB.
      */
-    internal const val DEFAULT_ON_MIN_TOTAL_MB = 3_300L
+    internal const val DEFAULT_ON_MIN_TOTAL_MB = 2_600L
 
     /** The mode of an install that never chose one. [totalMemBytes] <= 0: not known. */
     internal fun defaultMode(totalMemBytes: Long): SeekThumbMode =

@@ -30,11 +30,11 @@ internal object UsenetCopy {
      */
     fun fetches(
         screenUp: Boolean, playing: Boolean, serverCap: Int, smallBox: Boolean, rateLimited: Boolean,
-        torBox: Boolean = false, refused: Boolean = false, headroom: Int = ThumbFetchLanes.MAX,
+        torBox: Boolean = false, refused: Boolean = false, headroom: Int = ThumbFetchLanes.MAX, surplus: Boolean = false,
     ): Int {
         val phase = if (screenUp && !playing) FetchPhase.GENERATING else FetchPhase.PLAYBACK
         val lanes = ThumbFetchLanes.limit(phase, rateLimited, smallBox4K = smallBox, ledgerCap = serverCap,
-            torBox = torBox, refused = refused)
+            torBox = torBox, refused = refused, surplus = surplus)
         return if (phase == FetchPhase.PLAYBACK) minOf(lanes, headroom.coerceAtLeast(1)) else lanes
     }
 

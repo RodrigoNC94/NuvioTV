@@ -324,14 +324,18 @@ class ThumbnailCopyDebridTest {
         val tb = DebridSettings(enabled = true, torboxApiKey = "tb_key")
         val pm = DebridSettings(enabled = true, premiumizeApiKey = "pm_key")
         val d = debrid(FakeTorbox(), MemoryStorage())
-        assertEquals(CopyRoute.LeftOut("add-on debrid link"), d.routeOf(addon(hash), none))
+        assertNull(d.routeOf(addon(hash), none))
         assertEquals(CopyRoute.Torbox, d.routeOf(addon(hash), tb))
         assertEquals(CopyRoute.Premiumize, d.routeOf(addon(hash), pm))
         assertEquals(CopyRoute.Torbox, d.routeOf(direct(hash), tb))
-        assertEquals(CopyRoute.LeftOut("Real-Debrid copies are off"), d.routeOf(direct(hash, DebridProviders.REAL_DEBRID_ID), tb))
+        assertEquals(CopyRoute.Resolve, d.routeOf(direct(hash, DebridProviders.REAL_DEBRID_ID), tb))
         assertEquals(CopyRoute.Premiumize, d.routeOf(direct(hash, DebridProviders.PREMIUMIZE_ID), pm))
         assertNull(d.routeOf(addon(null, "https://cdn.example/Film.1080p.mkv"), tb))
-        assertEquals(CopyRoute.LeftOut("add-on debrid link"), d.routeOf(addon(hash), tb.copy(enabled = false)))
+        assertNull(d.routeOf(addon(hash), tb.copy(enabled = false)))
+        val linked = "0123456789abcdef0123456789abcdef01234567"
+        val resolve = addon(null, "https://torrentio.strem.fun/resolve/torbox/key/$linked/null/1/Film.mkv")
+        assertEquals(CopyRoute.Torbox, d.routeOf(resolve, tb))
+        assertNull(d.routeOf(resolve, none))
     }
 
     private fun debrid(

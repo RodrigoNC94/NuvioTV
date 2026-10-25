@@ -21,7 +21,8 @@ internal object ThumbNative {
     const val INFO_MAX_CLL = 9
     const val INFO_MASTERING_MAX_NITS = 10
     const val INFO_DOVI_IPT = 11
-    const val INFO_COUNT = 12
+    const val INFO_STRIPS = 12
+    const val INFO_COUNT = 13
 
     private val retry = NativeLoadBackoff()
     @Volatile private var libraryLoaded = false
@@ -86,6 +87,8 @@ internal object ThumbNative {
         handle: Long, bitmap: Bitmap, transfer: Int, bt2020: Boolean, fullRange: Boolean,
         peakNits: Float, rowSkip: Boolean,
     ): Int
+    /** Strips an Annex B HEVC keyframe would decode in, 0 = whole. */
+    @JvmStatic external fun nativeStripCount(data: ByteArray, len: Int): Int
     @JvmStatic external fun nativeTrim(handle: Long)
     @JvmStatic external fun nativeRelease(handle: Long)
     /** Returns freed allocator pages to the system (mallopt M_PURGE). */
@@ -119,6 +122,8 @@ internal class DecodedFrame(
     val sarNum: Int,
     val sarDen: Int,
     val colour: FrameColour,
+    /** Strips the picture was decoded in, 0 = whole. */
+    val strips: Int = 0,
 )
 
 internal object ThumbGeometry {
@@ -214,6 +219,7 @@ internal class FfmpegThumbDecoder : Closeable {
                 masteringMaxNits = info[ThumbNative.INFO_MASTERING_MAX_NITS],
                 doviIpt = info[ThumbNative.INFO_DOVI_IPT] != 0,
             ),
+            strips = info[ThumbNative.INFO_STRIPS],
         )
     }
 

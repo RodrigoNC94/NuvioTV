@@ -250,12 +250,14 @@ internal class TorboxAddLimits {
 internal sealed class CopyRoute {
     data object Torbox : CopyRoute()
     data object Premiumize : CopyRoute()
+    /** An app debrid entry of another service, resolved with the app's key (the title may stay in that account). */
+    data object Resolve : CopyRoute()
     data class LeftOut(val why: String) : CopyRoute()
 
     companion object {
         /**
          * [directService]: the provider of an app debrid entry, null for any other source. [hasHash]: the source names
-         * its torrent. Null when the source is not a debrid one at all.
+         * its torrent. Null when the source is reached by its own link (or is no debrid source at all).
          */
         fun of(directService: String?, hasHash: Boolean, torboxKey: Boolean, premiumizeKey: Boolean): CopyRoute? =
             when {
@@ -263,13 +265,12 @@ internal sealed class CopyRoute {
                     DebridProviders.TORBOX_ID -> if (torboxKey) Torbox else LeftOut("TorBox entry without a TorBox key")
                     DebridProviders.PREMIUMIZE_ID ->
                         if (premiumizeKey) Premiumize else LeftOut("Premiumize entry without a Premiumize key")
-                    DebridProviders.REAL_DEBRID_ID -> LeftOut("Real-Debrid copies are off")
-                    else -> LeftOut("debrid entry outside TorBox and Premiumize")
+                    else -> Resolve
                 }
                 !hasHash -> null
                 torboxKey -> Torbox
                 premiumizeKey -> Premiumize
-                else -> LeftOut("add-on debrid link")
+                else -> null
             }
     }
 }

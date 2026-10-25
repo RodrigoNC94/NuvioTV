@@ -24,8 +24,15 @@ internal object MediaServerThumbs {
     /** An unfinished 4K coverage pass may carry on after the player closes, never on a media server's stream. */
     fun continuesAfterClose(mediaServer: Boolean): Boolean = !mediaServer
 
-    /** Another version on a media server is read for copy thumbnails only from a server on the home network. */
-    fun copyAllowed(serverAddress: String?): Boolean = serverAddress != null && onHomeNetwork(serverAddress)
+    /**
+     * Requests at once for a copy from another version on a media server: as for any link on the home network, one
+     * for a server away from it (its upload is the owner's own line), none without an address.
+     */
+    fun copyLanes(serverAddress: String?): Int = when {
+        serverAddress == null -> 0
+        onHomeNetwork(serverAddress) -> Int.MAX_VALUE
+        else -> ON_DEMAND_FETCHES
+    }
 
     fun fetchLimit(onDemand: Boolean, limit: Int): Int = if (onDemand) minOf(limit, ON_DEMAND_FETCHES) else limit
 

@@ -17,6 +17,7 @@ enum {
     INFO_WIDTH = 0, INFO_HEIGHT, INFO_BIT_DEPTH, INFO_SAR_NUM, INFO_SAR_DEN, INFO_TRC, INFO_PRIMARIES,
     INFO_MATRIX, INFO_RANGE, INFO_MAX_CLL, INFO_MASTERING_MAX_NITS,
     INFO_DOVI_IPT,   // 1: Dolby Vision metadata with an IPT signal (profile 5)
+    INFO_STRIPS,     // strips the picture was decoded in (hevc_strips.h), 0 = whole
     INFO_COUNT
 };
 

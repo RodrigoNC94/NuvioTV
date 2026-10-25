@@ -46,12 +46,12 @@ class MediaServerThumbsTest {
     }
 
     @Test
-    fun copiesComeOnlyFromAServerOnTheHomeNetwork() {
-        assertTrue(MediaServerThumbs.copyAllowed("http://192.168.1.20:8096"))
-        assertTrue(MediaServerThumbs.copyAllowed("https://nas.tail1234.ts.net"))
-        assertFalse(MediaServerThumbs.copyAllowed("https://silo.friend.example.com"))
-        assertFalse(MediaServerThumbs.copyAllowed("https://203.0.113.7:8920"))
-        assertFalse(MediaServerThumbs.copyAllowed(null))
+    fun aServerAwayFromHomeGivesCopiesOneRequestAtATime() {
+        assertEquals(Int.MAX_VALUE, MediaServerThumbs.copyLanes("http://192.168.1.20:8096"))
+        assertEquals(Int.MAX_VALUE, MediaServerThumbs.copyLanes("https://nas.tail1234.ts.net"))
+        assertEquals(1, MediaServerThumbs.copyLanes("https://silo.friend.example.com"))
+        assertEquals(1, MediaServerThumbs.copyLanes("https://203.0.113.7:8920"))
+        assertEquals(0, MediaServerThumbs.copyLanes(null))
         assertTrue(MediaServerThumbs.onHomeNetwork("http://192.168.1.20:8096/Videos/abc/stream?static=true&api_key=x"))
         assertFalse(MediaServerThumbs.onHomeNetwork("https://media.example.com/Videos/abc/stream?static=true&api_key=x"))
     }
