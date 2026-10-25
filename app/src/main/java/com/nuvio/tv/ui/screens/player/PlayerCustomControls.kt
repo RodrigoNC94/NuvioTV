@@ -146,6 +146,7 @@ internal fun PlayerCustomControls(
     progressUpFocus: FocusRequester?,
     containerFocus: FocusRequester,
     hasSeekTimeline: Boolean,
+    playerBadges: List<PlayerBadge>,
     onSkipAnchorChanged: (Dp) -> Unit,
     actions: V2PlayerActions,
     reportCodeVisible: Boolean
@@ -215,6 +216,7 @@ internal fun PlayerCustomControls(
                 else Text(title, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleLarge)
                 PlayerSecondaryMetadata(state, chapter = rememberCurrentChapter(viewModel, state.chapters))
+                if (playerBadges.isNotEmpty()) PlayerBadges(playerBadges)
             }
             }, timeline = {
             if (hasSeekTimeline) Box(Modifier.fillMaxWidth().onGloballyPositioned { coordinates ->

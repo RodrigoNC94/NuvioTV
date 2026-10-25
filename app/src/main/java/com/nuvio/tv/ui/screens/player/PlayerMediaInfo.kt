@@ -22,6 +22,11 @@ internal fun PlayerRuntimeController.playerMediaInfo(): PlayerMediaInfo =
         exoMediaInfo(_exoPlayer?.videoFormat, _exoPlayer?.audioFormat)
     }
 
+/** File name, stream name and description of what is playing, for badges the player cannot read. */
+internal fun PlayerRuntimeController.playingReleaseText(): String =
+    listOfNotNull(currentFilename, _uiState.value.currentStreamName, currentStreamDescription)
+        .joinToString(" ")
+
 internal fun mpvMediaInfo(property: (String) -> String?): PlayerMediaInfo =
     PlayerMediaInfo(
         videoCodec = property("current-tracks/video/codec")?.let(::mpvCodecLabel),
@@ -51,9 +56,10 @@ private fun exoMediaInfo(video: Format?, audio: Format?): PlayerMediaInfo =
         bitDepth = video?.colorInfo?.lumaBitdepth?.takeIf { it > 0 }
     )
 
-private fun Format.hdrFormats(): List<String> = buildList {
+/** Shared by the badges and the stats HDR row; the transfer falls back to the HEVC SPS. */
+internal fun Format.hdrFormats(): List<String> = buildList {
     if (sampleMimeType == MimeTypes.VIDEO_DOLBY_VISION) add("DV")
-    when (colorInfo?.colorTransfer) {
+    when (PlaybackVideoColorTransfer.of(this@hdrFormats)) {
         C.COLOR_TRANSFER_ST2084 -> add("HDR10")
         C.COLOR_TRANSFER_HLG -> add("HLG")
     }
