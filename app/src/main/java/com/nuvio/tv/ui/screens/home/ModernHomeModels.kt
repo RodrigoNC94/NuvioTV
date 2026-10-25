@@ -367,7 +367,7 @@ internal fun buildContinueWatchingItem(
             HeroPreview(
                 title = item.progress.name,
                 logo = item.progress.logo,
-                description = item.episodeDescription ?: item.progress.episodeTitle?.localizeEpisodeTitle(context),
+                description = item.episodeDescription?.takeIf { it.isNotBlank() },
                 contentTypeText = episodeLabel,
                 isSeries = isSeries,
                 yearText = extractYearOrRange(item.releaseInfo),
@@ -404,10 +404,7 @@ internal fun buildContinueWatchingItem(
             HeroPreview(
                 title = item.info.name,
                 logo = item.info.logo,
-                description = item.info.episodeDescription ?: if (item.info.badgeLabel != null) null else {
-                    item.info.episodeTitle?.localizeEpisodeTitle(context)
-                        ?: item.info.airDateLabel?.let { airsDateTemplate.format(it) }
-                },
+                description = item.info.episodeDescription?.takeIf { it.isNotBlank() },
                 contentTypeText = episodeLabel,
                 isSeries = !film,
                 yearText = extractYearOrRange(item.info.releaseInfo),

@@ -690,6 +690,7 @@ private fun ModernHomeRoute(
     // Only the hero and the cards' ratings use these, so they are read there and not here.
     val enrichingItemId = viewModel.enrichingItemId.collectAsStateWithLifecycle()
     val enrichedPreviews = viewModel.enrichedPreviews.collectAsStateWithLifecycle()
+    val heroSeriesFacts = viewModel.heroSeriesFacts.collectAsStateWithLifecycle()
     val failedEnrichmentIds = viewModel.failedEnrichmentIds.collectAsStateWithLifecycle()
     val requestTrailerPreview = remember(viewModel) {
         { itemId: String, title: String, releaseInfo: String?, apiType: String ->
@@ -726,6 +727,8 @@ private fun ModernHomeRoute(
         enrichingItemId = { enrichingItemId.value },
         enrichedPreviews = { enrichedPreviews.value },
         failedEnrichmentIds = { failedEnrichmentIds.value },
+        heroSeriesFacts = { heroSeriesFacts.value },
+        onSeriesHeroSettled = remember(viewModel) { { ref: HeroSeriesRef -> viewModel.onSeriesHeroSettled(ref) } },
         trailerPreviewUrls = viewModel.trailerPreviewUrls,
         trailerPreviewAudioUrls = viewModel.trailerPreviewAudioUrls,
         onNavigateToDetail = onNavigateToDetail,

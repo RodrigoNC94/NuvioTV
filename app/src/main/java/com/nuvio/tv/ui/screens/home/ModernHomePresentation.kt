@@ -441,7 +441,8 @@ internal fun buildCarouselRowLookups(carouselRows: List<HeroCarouselRow>): Carou
                     itemIdentities += "folder:${payload.folderId}"
                 }
                 is ModernPayload.ContinueWatching -> {
-                    itemIdentities += "cw:${payload.item.hashCode()}"
+                    // By key: a card's progress changes while it is played, and it must still be found after a reorder.
+                    itemIdentities += "cw:${item.key}"
                 }
             }
         }

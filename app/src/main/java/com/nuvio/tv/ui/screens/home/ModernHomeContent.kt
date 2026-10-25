@@ -6,6 +6,7 @@
 
 package com.nuvio.tv.ui.screens.home
 
+import com.nuvio.tv.data.mediaserver.DrawnArtworkWidths
 import com.nuvio.tv.ui.v2.components.sidebarPageContent
 import com.nuvio.tv.ui.v2.appearance.LocalUiScaleDecision
 import com.nuvio.tv.ui.v2.scale.posterSizeDp
@@ -141,6 +142,17 @@ internal fun findRelocatedItemIndex(
     return currentIdentities.indexOf(previousIdentity).takeIf { it >= 0 }
 }
 
+/** Where a row scrolls so its focused card keeps its place on screen after the card moved to another index. */
+internal fun scrollKeepingFocusedSlot(
+    firstVisibleIndex: Int,
+    firstVisibleOffset: Int,
+    oldFocusedIndex: Int,
+    newFocusedIndex: Int
+): Pair<Int, Int> {
+    val first = newFocusedIndex - (oldFocusedIndex - firstVisibleIndex).coerceAtLeast(0)
+    return if (first < 0) 0 to 0 else first to firstVisibleOffset
+}
+
 @Composable
 fun ModernHomeContent(
     uiState: HomeUiState,
@@ -149,6 +161,8 @@ fun ModernHomeContent(
     enrichingItemId: () -> String? = { null },
     enrichedPreviews: () -> Map<String, MetaPreview> = { emptyMap() },
     failedEnrichmentIds: () -> Set<String> = { emptySet() },
+    heroSeriesFacts: () -> Map<String, HeroSeriesFacts> = { emptyMap() },
+    onSeriesHeroSettled: (HeroSeriesRef) -> Unit = {},
     trailerPreviewUrls: Map<String, String> = emptyMap(),
     trailerPreviewAudioUrls: Map<String, String> = emptyMap(),
     onNavigateToDetail: (String, String, String) -> Unit,
@@ -448,6 +462,20 @@ fun ModernHomeContent(
             )
             if (relocatedIndex != null && relocatedIndex != storedIndex) {
                 focusedItemByRow[rowKey] = relocatedIndex
+                // The row keeps its first card when items move, so the focused card could slide off screen.
+                if (rowKey == activeRowKey.value && storedIndex != null) {
+                    rowListStates[rowKey]?.let { state ->
+                        val (index, offset) = Snapshot.withoutReadObservation {
+                            scrollKeepingFocusedSlot(
+                                state.firstVisibleItemIndex,
+                                state.firstVisibleItemScrollOffset,
+                                storedIndex,
+                                relocatedIndex
+                            )
+                        }
+                        state.requestScrollToItem(index, offset)
+                    }
+                }
                 // The hero reads its own index, synced by an effect keyed on the row size, so it
                 // would land a frame late and show whatever took the old index meanwhile.
                 if (rowKey == activeRowKey.value) {
@@ -626,6 +654,7 @@ fun ModernHomeContent(
     }
 
     val latestOnHeroItemFocus by rememberUpdatedState(onItemFocus)
+    val latestOnSeriesHeroSettled by rememberUpdatedState(onSeriesHeroSettled)
     LaunchedEffect(verticalRowListState) {
         snapshotFlow {
             ModernHeroFocus(
@@ -636,9 +665,10 @@ fun ModernHomeContent(
             .collect { selection ->
                 // Publish artwork/text and request enrichment from the same settled identity.
                 settledHeroSelection.value = selection
-                activeRowState.value?.takeIf { it.key == selection.rowKey }
+                val settledItem = activeRowState.value?.takeIf { it.key == selection.rowKey }
                     ?.items?.firstOrNull { it.key == selection.itemKey }
-                    ?.metaPreview?.let { latestOnHeroItemFocus(it) }
+                settledItem?.metaPreview?.let { latestOnHeroItemFocus(it) }
+                settledItem?.heroSeriesRef()?.let { latestOnSeriesHeroSettled(it) }
             }
     }
 
@@ -714,6 +744,13 @@ fun ModernHomeContent(
     val portraitModernPosterScale = 1.08f
     val landscapeModernPosterScale = 1.34f
     val portraitCatalogCardWidth = portraitBaseWidth * 0.84f * portraitModernPosterScale
+    val drawnDensity = LocalDensity.current
+    val drawnPosterPx = with(drawnDensity) { portraitCatalogCardWidth.roundToPx() }
+    val drawnLogoPx = with(drawnDensity) { 220.dp.roundToPx() }
+    val drawnScreenPx = LocalContext.current.resources.displayMetrics.widthPixels
+    LaunchedEffect(drawnPosterPx, drawnLogoPx, drawnScreenPx) {
+        DrawnArtworkWidths.report(drawnPosterPx, drawnLogoPx, drawnScreenPx)
+    }
     val portraitCatalogCardHeight = portraitBaseHeight * 0.84f * portraitModernPosterScale
     val landscapeCatalogCardWidth = portraitBaseWidth * 1.24f * landscapeModernPosterScale
     val landscapeCatalogCardHeight = landscapeCatalogCardWidth / 1.77f
@@ -748,7 +785,7 @@ fun ModernHomeContent(
                 derivedStateOf { resolveModernHeroItem(rowByKey.map, settledHeroSelection.value) }
             }
 
-            val resolvedHeroState = remember(settledCarouselItemState, enrichedPreviews, enrichingItemId, settledHeroSelection, uiState.heroEnrichmentEnabled, uiState.homeImdbRatingsVisibility, failedEnrichmentIds) {
+            val resolvedHeroState = remember(settledCarouselItemState, enrichedPreviews, enrichingItemId, settledHeroSelection, uiState.heroEnrichmentEnabled, uiState.homeImdbRatingsVisibility, failedEnrichmentIds, heroSeriesFacts) {
                 derivedStateOf {
                     val heroCarouselItem = settledCarouselItemState.value
                     val heroItemId = heroCarouselItem?.metaPreview?.id
@@ -787,7 +824,9 @@ fun ModernHomeContent(
                     val resolvedHero = when {
                         heroCarouselItem == null -> null
                         enrichedHero != null -> enrichedHero
-                        else -> heroCarouselItem.heroPreview
+                        else -> heroCarouselItem.heroSeriesRef()
+                            ?.let { ref -> heroCarouselItem.heroPreview.withSeriesFacts(heroSeriesFacts()[ref.key]) }
+                            ?: heroCarouselItem.heroPreview
                     }
                     
                     // Only use the real enrichmentActive flag from the ViewModel.

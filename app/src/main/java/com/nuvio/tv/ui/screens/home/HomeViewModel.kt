@@ -437,6 +437,11 @@ class HomeViewModel @Inject constructor(
     internal val mdbBatchNegativeIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
     internal var mdbBatchRowFocusJob: Job? = null
     @Volatile internal var mdbBatchHasFired: Boolean = false
+    internal val _heroSeriesFacts = MutableStateFlow<Map<String, HeroSeriesFacts>>(emptyMap())
+    val heroSeriesFacts: StateFlow<Map<String, HeroSeriesFacts>> = _heroSeriesFacts.asStateFlow()
+    internal val heroSeriesFactsAttempted: MutableSet<String> = Collections.newSetFromMap(createLruMap(MAX_CW_CACHE_SIZE))
+    internal var heroSeriesFactsJob: Job? = null
+    fun onSeriesHeroSettled(ref: HeroSeriesRef) = onSeriesHeroSettledPipeline(ref)
     internal val cwMetaCache: MutableMap<String, CwMetaSummary?> = createLruMap(MAX_CW_CACHE_SIZE)
     internal val cwMetaNegativeCacheTimestamps: MutableMap<String, Long> = createLruMap(MAX_CW_CACHE_SIZE)
     internal val cwMetaRefreshAtMs: MutableMap<String, Long> = createLruMap(MAX_CW_CACHE_SIZE)
@@ -598,6 +603,7 @@ class HomeViewModel @Inject constructor(
                     // Clear all in-memory CW caches so data from the previous
                     // profile doesn't leak into the new one.
                     cwMetaCache.clear()
+                    clearHeroSeriesFacts()
                     cwMetaNegativeCacheTimestamps.clear()
                     cwMetaRefreshAtMs.clear()
                     cwMetaStaleKeys.clear()
@@ -660,6 +666,7 @@ class HomeViewModel @Inject constructor(
 
     private fun clearAllCwInMemoryCaches() {
         cwMetaCache.clear()
+        clearHeroSeriesFacts()
         cwMetaNegativeCacheTimestamps.clear()
         cwMetaRefreshAtMs.clear()
         cwMetaStaleKeys.clear()
@@ -957,7 +964,7 @@ class HomeViewModel @Inject constructor(
                         ),
                         episodeThumbnail = cached.episodeThumbnail,
                         episodeDescription = cached.episodeDescription,
-                        episodeImdbRating = if (cached.ratingVisible) cached.episodeImdbRating else null,
+                        episodeImdbRating = if (cached.ratingVisible != false) cached.episodeImdbRating else null,
                         genres = cached.genres,
                         releaseInfo = cached.releaseInfo
                     )
@@ -984,7 +991,7 @@ class HomeViewModel @Inject constructor(
                         hasAired = cached.hasAired,
                         airDateLabel = cached.airDateLabel,
                         lastWatched = cached.lastWatched,
-                        imdbRating = if (cached.ratingVisible) cached.imdbRating else null,
+                        imdbRating = if (cached.ratingVisible != false) cached.imdbRating else null,
                         genres = cached.genres,
                         releaseInfo = cached.releaseInfo,
                         sortTimestamp = cached.sortTimestamp,
