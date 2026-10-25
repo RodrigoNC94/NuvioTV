@@ -68,14 +68,17 @@ private const val TAG = "StreamRepositoryImpl"
  * Per-addon deadline for a single stream fetch.
  *
  * Without this each addon inherits only the shared client's connect(30s) +
- * read(60s) budget, so one unresponsive source can hold its slot for ~90s
- * while every other addon has long since answered. 15s is deliberately
- * generous: a cold scrape on a large title legitimately takes ten-plus
- * seconds, and cutting those off would trade a latency win for lost results.
- * Results already stream out as each addon lands, so a slow addon that beats
- * the deadline still contributes.
+ * read(60s) budget, so one unresponsive source can hold its slot for ~90s.
+ * 60s matches the client's read budget: aggregators such as AIOStreams only
+ * answer once every source behind them has answered or hit its own timeout
+ * (user-configurable up to 50s), so a shorter deadline throws away their whole
+ * result when one upstream service is slow or down. Results already stream out
+ * as each addon lands, so a slow addon never holds back the others.
  */
-private const val ADDON_STREAM_FETCH_TIMEOUT_MS = 15_000L
+private const val ADDON_STREAM_FETCH_TIMEOUT_MS = 60_000L
+
+/** Deadline for loading one media server's streams. */
+private const val SERVER_SOURCE_FETCH_TIMEOUT_MS = 15_000L
 
 class StreamRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -349,11 +352,11 @@ class StreamRepositoryImpl @Inject constructor(
                             // is a CancellationException, and rethrowing it would cancel the
                             // enclosing coroutineScope and every sibling addon job with it.
                             //
-                            // Distinguish this addon's OWN 15s deadline from an EXTERNAL
+                            // Distinguish this addon's OWN deadline from an EXTERNAL
                             // cancellation. The prefetch cap wraps the collect in
                             // withTimeoutOrNull, whose TimeoutCancellationException propagates
                             // in here when the cap fires (e.g. at 3s). Without this check a 3s
-                            // cap-cancel reads as "exceeded 15000ms / timeout" and a genuinely
+                            // cap-cancel reads as a timeout of this addon and a genuinely
                             // dead addon looks the same as one that was
                             // simply cut short. On a real own-timeout only the inner withTimeout
                             // scope expired, so this coroutine is still active; on an external
@@ -402,7 +405,7 @@ class StreamRepositoryImpl @Inject constructor(
                         var streamCount = 0
                         var failure: Throwable? = null
                         try {
-                            val streams = withTimeoutOrNull(ADDON_STREAM_FETCH_TIMEOUT_MS) { source.load() }
+                            val streams = withTimeoutOrNull(SERVER_SOURCE_FETCH_TIMEOUT_MS) { source.load() }
                                 ?: run {
                                     timedOut = true
                                     throw ServerException(ServerFailure.UNREACHABLE)
@@ -894,7 +897,7 @@ class StreamRepositoryImpl @Inject constructor(
         val resolvedAddonName = addon.displayName
         val addonLogo = addon.logo
 
-        return when (val result = safeAddonApiCall(context) { api.getStreams(streamUrl) }) {
+        return when (val result = safeAddonApiCall(context, ADDON_STREAM_FETCH_TIMEOUT_MS) { api.getStreams(streamUrl) }) {
             is NetworkResult.Success -> {
                 val streams = result.data.streams?.map { 
                     it.toDomain(resolvedAddonName, addonLogo) 
