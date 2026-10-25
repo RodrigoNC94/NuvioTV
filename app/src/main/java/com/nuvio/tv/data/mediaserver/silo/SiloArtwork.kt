@@ -22,7 +22,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
 
-enum class SiloArtworkKind { POSTER, BACKGROUND, LOGO }
+enum class SiloArtworkKind { POSTER, BACKGROUND, LOGO, LANDSCAPE }
 
 /** The title a Silo artwork link belongs to, carried in the link's fragment (never sent to the server). */
 data class SiloArtworkMark(val connectionId: String, val contentId: String, val kind: SiloArtworkKind) {

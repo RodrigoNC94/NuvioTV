@@ -1,6 +1,7 @@
 package com.nuvio.tv.data.mediaserver.silo
 
 import com.nuvio.tv.core.tracking.TrackingExternalIds
+import com.nuvio.tv.data.mediaserver.DrawnArtworkWidths
 import com.nuvio.tv.data.mediaserver.ServerConnection
 import com.nuvio.tv.data.mediaserver.ServerHomeRow
 import com.nuvio.tv.data.mediaserver.ServerLibrary
@@ -27,10 +28,10 @@ class SiloNativeBrowseTest {
 
     private val notFound = Reply(404, """{"type":"https://siloserver.org/docs/api/v2/problems/not_found","title":"x","status":404,"detail":"","instance":"i"}""")
 
-    private fun silo(routes: (Request) -> Reply?): Pair<SiloNativeProvider, TestHttp> {
+    private fun silo(widths: DrawnArtworkWidths? = null, routes: (Request) -> Reply?): Pair<SiloNativeProvider, TestHttp> {
         val reply = { request: Request -> routes(request) ?: notFound }
         val http = TestHttp(status = { reply(it).status }, responder = { reply(it).body })
-        return SiloNativeProvider(http.client, testIdentity, now = { 1_000L }) to http
+        return SiloNativeProvider(http.client, testIdentity, now = { 1_000L }, drawnWidths = { widths }) to http
     }
 
     private fun session(libraries: List<ServerLibrary> = listOf(movies, shows)) = ServerSession(
@@ -91,6 +92,72 @@ class SiloNativeBrowseTest {
             assertEquals("Bearer acc", it.header("Authorization"))
             assertNull(it.url.queryParameter("offset"))
         }
+    }
+
+    @Test
+    fun rowsAskForArtworkAtTheWidthHomeDrawsIt() = runTest {
+        val (provider, http) = silo(widths = DrawnArtworkWidths.of(posterPx = 254, logoPx = 330, screenWidthPx = 3840)) { request ->
+            when (request.url.encodedPath) {
+                "/api/v2/catalog" -> Reply(200, """{"items":[${card("movie-tmdb-603", "The Matrix")}],"page":{"has_more":false},"total":1,"total_exact":true}""")
+                "/api/v2/home/sections" -> Reply(200, """{"sections":[]}""")
+                else -> null
+            }
+        }
+
+        provider.libraryPage(session(), movies, 0, 1)
+        provider.homeRows(session())
+
+        http.requests.forEach {
+            assertEquals("254", it.url.queryParameter("poster_width"))
+            assertEquals("2560", it.url.queryParameter("backdrop_width"))
+            assertEquals("330", it.url.queryParameter("logo_width"))
+        }
+        assertEquals(listOf("medium", "small"), http.requests.map { it.url.queryParameter("image_size") })
+    }
+
+    @Test
+    fun withoutAKnownScreenSiloGetsTheSizeNamesOnly() = runTest {
+        val (provider, http) = silo { request ->
+            if (request.url.encodedPath == "/api/v2/catalog") {
+                Reply(200, """{"items":[],"page":{"has_more":false},"total":0,"total_exact":true}""")
+            } else null
+        }
+
+        provider.libraryPage(session(), movies, 0, 1)
+
+        val url = http.requests.single().url
+        assertEquals("medium", url.queryParameter("image_size"))
+        assertTrue(url.queryParameterNames.none { it.endsWith("_width") })
+    }
+
+    @Test
+    fun aTitlePageAsksForTheBackdropAtScreenWidthAndUsesSilosWideThumb() = runTest {
+        val (provider, http) = silo(widths = DrawnArtworkWidths.of(posterPx = 254, logoPx = 330, screenWidthPx = 1920)) { request ->
+            if (request.url.encodedPath == "/api/v2/catalog/items/movie-tmdb-603") {
+                Reply(200, """{"content_id":"movie-tmdb-603","type":"movie","title":"The Matrix","genres":[],"keywords":[],"status":"matched",
+                    "backdrop_url":"/api/v2/artwork/b.webp?exp=1&sig=c","thumb_url":"/api/v2/artwork/t.webp?exp=1&sig=d",
+                    "banner_url":"/api/v2/artwork/s.webp?exp=1&sig=e","ratings":[],"subtitles":[],"versions":[]}""")
+            } else null
+        }
+
+        val meta = provider.details(session(), "movie-tmdb-603").meta
+        val fresh = provider.freshArtwork(session(), "movie-tmdb-603")
+
+        assertEquals("http://silo.local:8090/api/v2/artwork/t.webp?exp=1&sig=d#nuvio-silo=c1.movie-tmdb-603.landscape", meta.landscapePoster)
+        assertEquals("http://silo.local:8090/api/v2/artwork/b.webp?exp=1&sig=c#nuvio-silo=c1.movie-tmdb-603.background", meta.background)
+        assertEquals("http://silo.local:8090/api/v2/artwork/t.webp?exp=1&sig=d", fresh[SiloArtworkKind.LANDSCAPE])
+        val page = http.requests.first().url
+        assertEquals("large", page.queryParameter("image_size"))
+        assertEquals("1920", page.queryParameter("backdrop_width"))
+        assertNull(page.queryParameter("poster_width"))
+        assertNull(page.queryParameter("logo_width"))
+        assertEquals("254", http.requests.last().url.queryParameter("poster_width"))
+    }
+
+    @Test
+    fun drawnWidthsStayInsideTheScreenAndSilosBackdropLimit() {
+        assertEquals(DrawnArtworkWidths(poster = 1280, backdrop = 1280, logo = 330), DrawnArtworkWidths.of(4000, 330, 1280))
+        assertEquals(2560, DrawnArtworkWidths.of(254, 330, 3840).backdrop)
     }
 
     @Test

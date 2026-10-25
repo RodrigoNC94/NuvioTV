@@ -193,7 +193,8 @@ internal class SiloPlayState(
 /**
  * The player Silo is told about. The app's own player handles Dolby Vision (profile 7 included), HDR and every
  * audio format itself, so for [direct] playback it asks for the original file whatever it holds; otherwise only a
- * plain HLS stream Silo converts to.
+ * plain HLS stream Silo converts to. Silo plays the source on "auto"; servers from before mid October 2026 need
+ * [legacyQuality] ("original" and the `metered` flag they still require).
  */
 internal fun siloStartBody(
     installationId: String,
@@ -204,7 +205,8 @@ internal fun siloStartBody(
     audioIndex: Int?,
     subtitleIndex: Int?,
     model: String,
-    appVersion: String
+    appVersion: String,
+    legacyQuality: Boolean = false
 ): JsonObject = buildJsonObject {
     put("installation_id", installationId)
     put("protocol_version", PROTOCOL_VERSION)
@@ -212,9 +214,9 @@ internal fun siloStartBody(
     put("file_id", fileId)
     put("profile_id", profileId)
     put("playback_attempt_id", attemptId)
-    put("quality_preference", "original")
+    put("quality_preference", if (legacyQuality) "original" else "auto")
     put("subtitle_fidelity_preference", if (direct) "preserve" else "compatible")
-    put("metered", false)
+    if (legacyQuality) put("metered", false)
     put("start_position", 0)
     audioIndex?.let { put("audio_track_index", it) }
     subtitleIndex?.let { put("subtitle_track_index", it) }

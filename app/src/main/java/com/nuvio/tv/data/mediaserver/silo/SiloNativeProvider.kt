@@ -1,6 +1,7 @@
 package com.nuvio.tv.data.mediaserver.silo
 
 import com.nuvio.tv.core.tracking.TrackingExternalIds
+import com.nuvio.tv.data.mediaserver.DrawnArtworkWidths
 import com.nuvio.tv.data.mediaserver.ServerCandidate
 import com.nuvio.tv.data.mediaserver.ServerCapability
 import com.nuvio.tv.data.mediaserver.ServerEpisode
@@ -60,7 +61,8 @@ class SiloNativeProvider internal constructor(
     http: OkHttpClient,
     private val identity: ServerClientIdentity,
     private val now: () -> Long,
-    private val kindName: (ServerMediaKind) -> String = { englishKindName(it) }
+    private val kindName: (ServerMediaKind) -> String = { englishKindName(it) },
+    private val drawnWidths: () -> DrawnArtworkWidths? = { DrawnArtworkWidths.current }
 ) : ServerProvider {
     constructor(
         http: OkHttpClient,
@@ -83,6 +85,7 @@ class SiloNativeProvider internal constructor(
     private val json = client.json
     private val playStates = java.util.concurrent.ConcurrentHashMap<String, SiloPlayState>()
     private val installations = java.util.concurrent.ConcurrentHashMap<String, String>()
+    private val legacyQuality: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
     private val playbackCapabilityCache = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, PlaybackCapabilitiesWire>>()
     private val recentlyPlayed = java.util.concurrent.ConcurrentHashMap<String, Long>()
     private val trickplayManifests = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, TrickplayWire>>()
@@ -319,7 +322,7 @@ class SiloNativeProvider internal constructor(
         start: Int,
         limit: Int
     ): ServerPage<ServerTitle> {
-        val page = catalogPage(session, "library", libraryQuery(library, sort = "-added_at", imageSize = "medium"), start, limit)
+        val page = catalogPage(session, "library", libraryQuery(library, sort = "-added_at", drawn("medium")), start, limit)
         val mapper = mapper(session)
         return ServerPage(page.items.mapNotNull(mapper::title), page.total.takeIf { page.totalExact })
     }
@@ -338,7 +341,7 @@ class SiloNativeProvider internal constructor(
                 CATALOG_PATH,
                 CatalogPageWire.serializer(),
                 authHeaders(session),
-                libraryQuery(library, sort = null, imageSize = "medium") + mapOf(
+                libraryQuery(library, sort = null, drawn("medium")) + mapOf(
                     "q" to query.trim(),
                     "limit" to limit.coerceIn(1, SEARCH_MAX).toString()
                 )
@@ -348,7 +351,7 @@ class SiloNativeProvider internal constructor(
     }
 
     override suspend fun details(session: ServerSession, itemId: String): ServerItemDetails {
-        val item = item(session, itemId, imageSize = "large")
+        val item = item(session, itemId, drawnBackdrop("large"))
         val episodes = if (siloKind(item.type) == ServerMediaKind.SERIES) episodes(session, itemId) else emptyList()
         val mapper = mapper(session)
         val states = if (episodes.isEmpty()) listOfNotNull(mapper.userState(item)) else episodes.mapNotNull(mapper::userState)
@@ -356,7 +359,7 @@ class SiloNativeProvider internal constructor(
     }
 
     override suspend fun externalIds(session: ServerSession, itemId: String): TrackingExternalIds =
-        item(session, itemId, imageSize = "small").externalIds()
+        item(session, itemId, mapOf("image_size" to "small")).externalIds()
 
     override suspend fun setPlayed(session: ServerSession, itemId: String, played: Boolean) {
         // A title being played is marked by Silo itself when the play ends past its watched point.
@@ -381,7 +384,7 @@ class SiloNativeProvider internal constructor(
             "$HOME_SECTIONS_PATH/${pathSegment(section.id)}/items",
             HomeSectionWire.serializer(),
             authHeaders(session),
-            mapOf("image_size" to "medium")
+            drawn("medium")
         ).items
         val allowed = session.connection.selectedLibraries.map { it.kind.contentType }.toSet()
         val mapper = mapper(session)
@@ -408,7 +411,7 @@ class SiloNativeProvider internal constructor(
         var total: Int? = null
         while (entries.size < limit) {
             val size = minOf(CATALOG_MAX, limit - entries.size)
-            val page = catalogPage(session, "index", libraryQuery(library, sort = "title", imageSize = "small"), start + entries.size, size)
+            val page = catalogPage(session, "index", libraryQuery(library, sort = "title", mapOf("image_size" to "small")), start + entries.size, size)
             entries += page.items.map(mapper::indexEntry)
             total = page.total.takeIf { page.totalExact }
             if (page.items.size < size || page.page?.hasMore != true) break
@@ -425,7 +428,7 @@ class SiloNativeProvider internal constructor(
         val found = mutableListOf<ServerIndexEntry>()
         for (contentId in contentIdCandidates(library.kind, query.ids)) {
             val item = try {
-                item(session, contentId, imageSize = "small")
+                item(session, contentId, mapOf("image_size" to "small"))
             } catch (error: ServerException) {
                 if (error.failure == ServerFailure.NOT_FOUND) continue
                 throw error
@@ -440,7 +443,7 @@ class SiloNativeProvider internal constructor(
             CATALOG_PATH,
             CatalogPageWire.serializer(),
             authHeaders(session),
-            libraryQuery(library, sort = null, imageSize = "small") + mapOf("q" to text, "limit" to TITLE_SEARCH_LIMIT.toString())
+            libraryQuery(library, sort = null, mapOf("image_size" to "small")) + mapOf("q" to text, "limit" to TITLE_SEARCH_LIMIT.toString())
         )
         val mapper = mapper(session)
         return reply.items.filter { siloKind(it.type) == library.kind }.map(mapper::indexEntry)
@@ -449,7 +452,7 @@ class SiloNativeProvider internal constructor(
     override suspend fun findEpisode(session: ServerSession, seriesItemId: String, season: Int, episode: Int): ServerEpisode? {
         episodeContentId(seriesItemId, season, episode)?.let { contentId ->
             try {
-                val item = item(session, contentId, imageSize = "small")
+                val item = item(session, contentId, mapOf("image_size" to "small"))
                 if (item.type.equals("episode", ignoreCase = true) && item.seasonNumber == season && item.episodeNumber == episode) {
                     return ServerEpisode(item.contentId, item.airDate)
                 }
@@ -473,7 +476,7 @@ class SiloNativeProvider internal constructor(
 
     /** Silo's Home rows for the profile, without Continue Watching (Nuvio has its own) and rows with nothing to watch. */
     override suspend fun homeRows(session: ServerSession): List<ServerHomeRow> =
-        get(session.address, HOME_SECTIONS_PATH, HomeLayoutWire.serializer(), authHeaders(session), mapOf("image_size" to "small"))
+        get(session.address, HOME_SECTIONS_PATH, HomeLayoutWire.serializer(), authHeaders(session), drawn("small"))
             .sections
             .filter { it.id.isNotBlank() && it.sectionType != "continue_watching" }
             .mapNotNull { section ->
@@ -488,7 +491,7 @@ class SiloNativeProvider internal constructor(
             "$HOME_SECTIONS_PATH/${pathSegment(rowId)}/items",
             HomeSectionWire.serializer(),
             authHeaders(session),
-            mapOf("image_size" to "medium")
+            drawn("medium")
         ).items
         val mapper = mapper(session)
         return items
@@ -501,23 +504,42 @@ class SiloNativeProvider internal constructor(
 
     /** Fresh artwork links for [contentId]; Silo's signed links run out after a few hours. */
     internal suspend fun freshArtwork(session: ServerSession, contentId: String): Map<SiloArtworkKind, String> {
-        val item = item(session, contentId, "medium")
+        val item = item(session, contentId, drawn("medium"))
         val mapper = mapper(session)
         return buildMap {
             mapper.artwork(item.posterUrl)?.let { put(SiloArtworkKind.POSTER, it) }
             mapper.artwork(item.backdropUrl)?.let { put(SiloArtworkKind.BACKGROUND, it) }
             mapper.artwork(item.logoUrl)?.let { put(SiloArtworkKind.LOGO, it) }
+            mapper.artwork(item.thumbUrl)?.let { put(SiloArtworkKind.LANDSCAPE, it) }
         }
     }
 
-    private suspend fun item(session: ServerSession, contentId: String, imageSize: String): CatalogItemWire =
+    private suspend fun item(session: ServerSession, contentId: String, pictures: Map<String, String?>): CatalogItemWire =
         get(
             session.address,
             "$CATALOG_ITEMS_PATH/${pathSegment(contentId)}",
             CatalogItemWire.serializer(),
             authHeaders(session),
-            mapOf("image_size" to imageSize)
+            pictures
         )
+
+    /**
+     * Artwork at the width Home draws it on this screen. Silo from mid October 2026 picks the nearest size it holds,
+     * backdrops up to 2560 wide; older servers ignore the widths and go by [imageSize].
+     */
+    private fun drawn(imageSize: String): Map<String, String?> {
+        val widths = drawnWidths() ?: return mapOf("image_size" to imageSize)
+        return mapOf(
+            "image_size" to imageSize,
+            "poster_width" to widths.poster.toString(),
+            "backdrop_width" to widths.backdrop.toString(),
+            "logo_width" to widths.logo.toString()
+        )
+    }
+
+    /** A title's own page draws its poster and logo larger than Home does: only the backdrop goes by the screen. */
+    private fun drawnBackdrop(imageSize: String): Map<String, String?> =
+        mapOf("image_size" to imageSize) + drawnWidths()?.let { mapOf("backdrop_width" to it.backdrop.toString()) }.orEmpty()
 
     /** Every episode of a series, a few seasons at a time to stay inside Silo's request limit. */
     private suspend fun episodes(session: ServerSession, seriesId: String): List<EpisodeWire> {
@@ -542,13 +564,12 @@ class SiloNativeProvider internal constructor(
             mapOf("image_size" to "small")
         ).items.filter { it.contentId.isNotBlank() }
 
-    private fun libraryQuery(library: ServerLibrary, sort: String?, imageSize: String): Map<String, String?> = mapOf(
+    private fun libraryQuery(library: ServerLibrary, sort: String?, pictures: Map<String, String?>): Map<String, String?> = mapOf(
         "source" to "query",
         "library_id" to library.id.substringBefore(PART),
         "type" to library.kind.takeIf { it == ServerMediaKind.MOVIE || it == ServerMediaKind.SERIES }?.contentType,
-        "sort" to sort,
-        "image_size" to imageSize
-    )
+        "sort" to sort
+    ) + pictures
 
     /**
      * One page of a catalog list at an offset. Silo pages with cursors, so the cursor for the next page is kept,
@@ -626,18 +647,34 @@ class SiloNativeProvider internal constructor(
             ?: state.versions.firstOrNull()?.fileId
             ?: throw ServerException(ServerFailure.NOT_FOUND)
         val direct = request.capabilities.allowDirectPlay
-        val body = siloStartBody(
+        val attemptId = java.util.UUID.randomUUID().toString()
+        fun startBody(legacy: Boolean) = siloStartBody(
             installationId = installationId,
             fileId = fileId,
             profileId = credential.profileId,
-            attemptId = java.util.UUID.randomUUID().toString(),
+            attemptId = attemptId,
             direct = direct,
             audioIndex = request.audioStreamIndex,
             subtitleIndex = request.subtitleStreamIndex,
             model = identity.device,
-            appVersion = identity.version
+            appVersion = identity.version,
+            legacyQuality = legacy
         )
-        val decision = sendJson(session, "POST", PLAYBACK_START_PATH, body.toString(), DecisionWire.serializer())
+        val key = cacheKey(session)
+        var body = startBody(key in legacyQuality)
+        val decision = try {
+            sendJson(session, "POST", PLAYBACK_START_PATH, body.toString(), DecisionWire.serializer())
+        } catch (error: ServerException) {
+            if (error.httpStatus != 422 && error.code != VALIDATION_FAILED) throw error
+            // Rejected in the old form as well: the next play asks in the new form again.
+            if (key in legacyQuality) {
+                legacyQuality -= key
+                throw error
+            }
+            body = startBody(legacy = true)
+            sendJson(session, "POST", PLAYBACK_START_PATH, body.toString(), DecisionWire.serializer())
+                .also { legacyQuality += key }
+        }
         val started = decision.plan
         val startedSession = decision.sessionId
         if (decision.outcome != "playable" || started == null || startedSession.isNullOrBlank() || started.stream.url.isBlank()) {
@@ -1173,6 +1210,7 @@ class SiloNativeProvider internal constructor(
         const val PROFILE_TOKEN = "X-Profile-Token"
         const val PROFILE_VERIFICATION = "profile_verification_required"
         const val CAPACITY_UNAVAILABLE = "capacity_unavailable"
+        const val VALIDATION_FAILED = "validation_failed"
         const val DEVICE_NAME_MAX = 120
         const val RENEW_BEFORE_MS = 60_000L
 

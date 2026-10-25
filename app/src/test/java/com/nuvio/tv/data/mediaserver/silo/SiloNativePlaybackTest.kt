@@ -146,6 +146,72 @@ class SiloNativePlaybackTest {
     }
 
     @Test
+    fun silosAutoQualityIsAskedForWithoutTheRetiredMeteredFlag() = runTest {
+        val (provider, http) = silo()
+
+        provider.preparePlayback(session(), request())
+
+        val body = Json.parseToJsonElement(http.requests.single { it.url.encodedPath == "/api/v2/playback/start" }.text).jsonObject
+        assertEquals("auto", body["quality_preference"]!!.jsonPrimitive.content)
+        assertFalse("metered" in body)
+        assertFalse("allow_alternate_versions" in body)
+    }
+
+    @Test
+    fun anOlderSiloThatRejectsTheNewStartGetsTheOldOneOnceAndFromThenOn() = runTest {
+        val rejected = """{"type":"https://siloserver.org/docs/api/v2/problems/validation_failed","title":"Validation failed","status":422,
+            "detail":"The request did not pass validation; see errors.","instance":"i","errors":[{"message":"expected required property metered to be present","location":"body"}]}"""
+        val (provider, http) = silo { request ->
+            if (request.url.encodedPath == "/api/v2/playback/start" && "\"metered\"" !in request.text) Reply(422, rejected) else null
+        }
+
+        assertEquals(ServerPlayMethod.DIRECT_PLAY, provider.preparePlayback(session(), request()).playMethod)
+        provider.preparePlayback(session(), request())
+
+        val starts = http.requests.filter { it.url.encodedPath == "/api/v2/playback/start" }.map { Json.parseToJsonElement(it.text).jsonObject }
+        assertEquals(listOf("auto", "original", "original"), starts.map { it["quality_preference"]!!.jsonPrimitive.content })
+        assertEquals(listOf(null, "false", "false"), starts.map { it["metered"]?.jsonPrimitive?.content })
+        assertEquals(starts[0]["playback_attempt_id"], starts[1]["playback_attempt_id"])
+    }
+
+    @Test
+    fun aCurrentSiloThatRejectsAStartForAnotherReasonIsNotMarkedOld() = runTest {
+        val rejected = """{"type":"https://siloserver.org/docs/api/v2/problems/validation_failed","title":"Validation failed","status":422,
+            "detail":"The request did not pass validation; see errors.","instance":"i","errors":[{"message":"audio_track_index out of range","location":"body"}]}"""
+        var refuse = true
+        val (provider, http) = silo { request ->
+            if (refuse && request.url.encodedPath == "/api/v2/playback/start") Reply(422, rejected) else null
+        }
+
+        try {
+            provider.preparePlayback(session(), request())
+            fail("expected the start to fail")
+        } catch (_: ServerException) {
+        }
+        refuse = false
+        provider.preparePlayback(session(), request())
+
+        val starts = http.requests.filter { it.url.encodedPath == "/api/v2/playback/start" }.map { Json.parseToJsonElement(it.text).jsonObject }
+        assertEquals(listOf("auto", "original", "auto"), starts.map { it["quality_preference"]!!.jsonPrimitive.content })
+    }
+
+    @Test
+    fun aStartSiloRefusesForAnotherReasonIsNotRetried() = runTest {
+        val (provider, http) = silo { request ->
+            if (request.url.encodedPath == "/api/v2/playback/start") {
+                Reply(409, """{"type":"https://siloserver.org/docs/api/v2/problems/installation_changed","title":"x","status":409,"detail":"","instance":"i"}""")
+            } else null
+        }
+
+        try {
+            provider.preparePlayback(session(), request())
+            fail("expected a refusal")
+        } catch (_: ServerException) {
+        }
+        assertEquals(1, http.requests.count { it.url.encodedPath == "/api/v2/playback/start" })
+    }
+
+    @Test
     fun theFallbackAsksForAConvertedStreamOnly() = runTest {
         val (provider, http) = silo(start = decision("server_remux_hls"))
 
@@ -178,6 +244,8 @@ class SiloNativePlaybackTest {
         assertEquals(listOf("v3:1"), replan["attempted_plan_keys"]!!.jsonArray.map { it.jsonPrimitive.content })
         assertEquals("file:43:audio:0", replan["selected_tracks"]!!.jsonObject["audio"]!!.jsonObject["id"]!!.jsonPrimitive.content)
         assertEquals("player_failure", replan["failure"]!!.jsonObject["classification"]!!.jsonPrimitive.content)
+        assertEquals("auto", replan["quality_preference"]!!.jsonPrimitive.content)
+        assertFalse("metered" in replan)
         listOf("installation_id", "playback_attempt_id", "client_features", "client_capabilities", "client_playback_context").forEach {
             assertEquals(it, start[it], replan[it])
         }
