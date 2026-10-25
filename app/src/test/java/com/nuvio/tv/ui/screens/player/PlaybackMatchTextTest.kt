@@ -84,6 +84,19 @@ class PlaybackMatchTextTest {
     }
 
     @Test
+    fun `ExoPlayer takes DTS-HD MA and Atmos from the release name like the built-in pictures`() {
+        val release = "Film.2023.2160p.UHD.BluRay.REMUX.DV.HDR.HEVC.TrueHD.Atmos.7.1-GRP Film DTS-HD.MA.5.1"
+        val truehd = playbackMatchText(PlayerMediaInfo(audioCodec = "TrueHD"), emptyList(), release)
+        assertEquals(true, " Atmos" in " $truehd")
+        val dts = playbackMatchText(PlayerMediaInfo(audioCodec = "DTS-HD"), emptyList(), release)
+        assertEquals(true, "DTS-HD MA" in dts)
+        val aac = playbackMatchText(PlayerMediaInfo(audioCodec = "AAC"), emptyList(), release)
+        assertEquals(false, "Atmos" in aac || "DTS-HD MA" in aac)
+        val dtsCore = playbackMatchText(PlayerMediaInfo(audioCodec = "DTS"), emptyList(), release)
+        assertEquals(false, "DTS-HD MA" in dtsCore)
+    }
+
+    @Test
     fun `shows nothing before playback info loads`() {
         assertEquals(emptyList<String>(), matchedNames(PlayerMediaInfo()))
     }

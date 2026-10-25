@@ -436,6 +436,9 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
             if (resolvedAudioAmplificationDb != currentState.audioAmplificationDb) {
                 applyAudioAmplification(resolvedAudioAmplificationDb)
             }
+            if (settings.nightMode != currentState.nightMode) {
+                applyNightMode(settings.nightMode)
+            }
             if (resolvedCenterMixLevelDb != currentState.centerMixLevelDb) {
                 applyCenterMixLevel(resolvedCenterMixLevelDb)
             }
@@ -550,6 +553,7 @@ internal fun PlayerRuntimeController.observeSubtitleSettings() {
             val wasEnabled = skipIntroEnabled
             skipIntroEnabled = settings.skipIntroEnabled
             applyChaptersEnabled(settings.chaptersEnabled)
+            seekingMode = settings.seekingMode
             parentalGuideEnabled = settings.parentalGuideEnabled
             autoSkipSegmentTypes = settings.autoSkipSegmentTypes
             playerSettingsInitialized = true

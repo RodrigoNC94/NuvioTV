@@ -189,7 +189,7 @@ private fun PlayerRuntimeController.onAudioOutputRouteMaybeChanged(
         AudioRejectionReverifier.ledger.invalidate()
         saveAudioRefusalEvidence()
         AudioChainProbe.invalidate()
-        PlatformIecAudioTrackFactory.invalidateIec61937ProbeMemo()
+        PlatformIecAudioTrackFactory.invalidateIec61937ProbeMemo(routeChanged = true)
         applySurroundResolutionInPlace(reason)
 
         if (rememberAudioDelayPerDeviceEnabled) {
@@ -341,7 +341,7 @@ internal fun PlayerRuntimeController.applyMpvBluetoothAudioRouteInPlace(isBlueto
     view.applyBluetoothAudioRoute(isBluetooth, reloadOutput = true)
     // ao-reload can drop live properties; re-pin the current per-route delay.
     view.setAudioDelayMs(_uiState.value.audioDelayMs)
-    view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb)
+    view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb, _uiState.value.nightMode)
     if (!wasPlaying || userPausedManually) {
         view.setPaused(true)
     }

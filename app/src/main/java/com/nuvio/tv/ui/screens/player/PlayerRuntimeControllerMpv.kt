@@ -29,7 +29,8 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
         registerMpvEventRelay(view)
         view.setMedia(currentStreamUrl, currentHeaders)
         view.setPlaybackSpeed(_uiState.value.playbackSpeed)
-        view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb)
+        view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb, _uiState.value.nightMode)
+        view.applyDialogueBoostDb(_uiState.value.centerMixLevelDb)
         view.applyAudioLanguagePreferences(mpvPreferredAudioLanguages)
         view.applySubtitleLanguagePreferences(
             preferred = _uiState.value.subtitleStyle.preferredLanguage,
@@ -37,7 +38,7 @@ internal fun PlayerRuntimeController.attachMpvView(view: NuvioMpvSurfaceView?) {
             tertiary = _uiState.value.subtitleStyle.tertiaryPreferredLanguage
         )
         view.applySubtitleStyle(_uiState.value.effectiveSubtitleStyle)
-        view.setSubtitleDelayMs(_uiState.value.subtitleDelayMs)
+        view.setSubtitleDelayMs(mpvSubtitleDelayMs(_uiState.value.subtitleDelayMs))
         view.applyBluetoothAudioRoute(currentAudioOutputRoute?.isBluetooth == true)
         view.setAudioDelayMs(_uiState.value.audioDelayMs)
         view.applyAspectMode(_uiState.value.aspectMode)
@@ -95,8 +96,12 @@ internal fun PlayerRuntimeController.initializeMpvPlayer(
 ) {
     mpvMediaLoadPrepared = true
     prefetchAutoSyncIndex(url, headers) // AutoSync hook
-    _exoPlayer?.release()
+    _exoPlayer?.let { player ->
+        runCatching { player.releaseAssHandlerCompat() }
+        player.release()
+    }
     _exoPlayer = null
+    lastMpvOutputChannels = -1
     nativeVideoSelection.clear()
     trackSelector = null
     try {
@@ -150,7 +155,8 @@ internal fun PlayerRuntimeController.initializeMpvPlayer(
             updatePlaybackTimeline(currentPosition = initialResumePosition)
         }
         view.setPlaybackSpeed(_uiState.value.playbackSpeed)
-        view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb)
+        view.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb, _uiState.value.nightMode)
+        view.applyDialogueBoostDb(_uiState.value.centerMixLevelDb)
         view.applyAudioLanguagePreferences(mpvPreferredAudioLanguages)
         view.applySubtitleLanguagePreferences(
             preferred = _uiState.value.subtitleStyle.preferredLanguage,
@@ -158,7 +164,7 @@ internal fun PlayerRuntimeController.initializeMpvPlayer(
             tertiary = _uiState.value.subtitleStyle.tertiaryPreferredLanguage
         )
         view.applySubtitleStyle(_uiState.value.effectiveSubtitleStyle)
-        view.setSubtitleDelayMs(_uiState.value.subtitleDelayMs)
+        view.setSubtitleDelayMs(mpvSubtitleDelayMs(_uiState.value.subtitleDelayMs))
         view.applyBluetoothAudioRoute(currentAudioOutputRoute?.isBluetooth == true)
         view.setAudioDelayMs(_uiState.value.audioDelayMs)
         view.applyAspectMode(_uiState.value.aspectMode)
@@ -322,6 +328,7 @@ internal fun PlayerRuntimeController.updateMpvTracksOnTick() {
         return
     }
     if (!isUsingMpvEngine() || mpvTrackRefreshInProgress || mpvView == null) return
+    followMpvAudioOutput()
     val state = _uiState.value
     markMpvTextTracksScannedIfReady(hasInternalSubtitleTracks = state.subtitleTracks.isNotEmpty())
     maybeRestorePendingAudioSelectionAfterSubtitleRefresh(state.audioTracks)
@@ -330,6 +337,22 @@ internal fun PlayerRuntimeController.updateMpvTracksOnTick() {
         subtitleTracks = state.subtitleTracks
     )
     tryAutoSelectPreferredSubtitleFromAvailableTracks()
+}
+
+/**
+ * mpv settles its output channels only once audio runs. Dialogue boost's state follows them, and surround played out
+ * as stereo gets the limiter after the downmix.
+ */
+private fun PlayerRuntimeController.followMpvAudioOutput() {
+    val view = mpvView ?: return
+    val outputChannels = view.audioOutputChannelCount()
+    val state = _uiState.value
+    val trackChannels = state.audioTracks.getOrNull(state.selectedAudioTrackIndex)?.channelCount ?: 0
+    if (mpvStereoDownmixNeedsLimiter(outputChannels, trackChannels)) view.limitStereoDownmix(true)
+    if (outputChannels != lastMpvOutputChannels) {
+        lastMpvOutputChannels = outputChannels
+        updateAudioControlAvailability()
+    }
 }
 
 /** mpv only reports the video transfer once it has decoded video params, so this is re-read each tick. */
@@ -478,6 +501,7 @@ private fun PlayerRuntimeController.applyMpvTrackSnapshot(snapshot: MpvTrackSnap
         subtitleTracks = internalSubtitleTracks
     )
     applyLosslessAudioDefaultIfUnset(audioTracks)
+    updateAudioControlAvailability()
     logSwitchTrace(
         stage = "mpv-snapshot-after-restore",
         message = "uiAudioIndex=${_uiState.value.selectedAudioTrackIndex} " +
@@ -554,7 +578,7 @@ internal fun PlayerRuntimeController.applyPendingMpvSeekIfNeeded(
     if (!canSeekNow) return
 
     view.seekToMs(target)
-    view.setSubtitleDelayMs(state.subtitleDelayMs)
+    view.setSubtitleDelayMs(mpvSubtitleDelayMs(state.subtitleDelayMs))
     view.setAudioDelayMs(state.audioDelayMs)
     if (state.pendingSeekPosition != target) {
         _uiState.update { it.copy(pendingSeekPosition = target) }
@@ -614,7 +638,7 @@ internal fun PlayerRuntimeController.seekPlaybackTo(
         mpvView?.let { view ->
             if (exact) view.seekToMsExact(positionMs) else view.seekToMs(positionMs)
             // Keep subtitle/audio delay sticky during FF/RW seeks.
-            view.setSubtitleDelayMs(_uiState.value.subtitleDelayMs)
+            view.setSubtitleDelayMs(mpvSubtitleDelayMs(_uiState.value.subtitleDelayMs))
             view.setAudioDelayMs(_uiState.value.audioDelayMs)
         }
     } else {

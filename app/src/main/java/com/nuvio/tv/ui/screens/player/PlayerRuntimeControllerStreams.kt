@@ -51,6 +51,10 @@ internal fun PlayerRuntimeController.scheduleSourceBadgeApplication() {
                 .filterTo(HashSet()) { it !in sourceBadgedAddonNames }
             if (newAddons.isEmpty()) break
             val allNewStreams = _uiState.value.sourceAllStreams.filter { it.addonName in newAddons }
+            if (allNewStreams.isEmpty() || !streamBadgePresentation.hasActiveFilters()) {
+                sourceBadgedAddonNames = sourceBadgedAddonNames + newAddons
+                continue
+            }
             val badgedByKey = HashMap<String, Stream>()
             var lastPublishNs = System.nanoTime()
             for (chunk in allNewStreams.chunked(5)) {
@@ -719,7 +723,7 @@ private fun PlayerRuntimeController.applySelectedStreamState(
  */
 private fun PlayerRuntimeController.applyStreamMetadata(stream: Stream) {
     currentStreamBingeGroup = stream.behaviorHints?.bingeGroup
-    applyStreamAudioDelay(stream.behaviorHints?.audioDelayMs)
+    applyStreamAudioDelay(stream.behaviorHints?.audioDelayMs, stream.behaviorHints?.audioDelayLanguage)
     currentVideoHash = stream.behaviorHints?.videoHash
     currentVideoSize = stream.behaviorHints?.videoSize
     currentEpisodeAutoPlayed = false
@@ -824,7 +828,8 @@ private fun PlayerRuntimeController.persistSelectedStreamForReuse(
             bingeGroup = stream.behaviorHints?.bingeGroup,
             contentLanguage = contentLanguage,
             year = year,
-            audioDelayMs = stream.behaviorHints?.audioDelayMs
+            audioDelayMs = stream.behaviorHints?.audioDelayMs,
+            audioDelayLanguage = stream.behaviorHints?.audioDelayLanguage
         )
     }
 }
@@ -852,7 +857,8 @@ private fun PlayerRuntimeController.persistTorrentStreamForReuse(stream: Stream)
             bingeGroup = stream.behaviorHints?.bingeGroup,
             contentLanguage = contentLanguage,
             year = year,
-            audioDelayMs = stream.behaviorHints?.audioDelayMs
+            audioDelayMs = stream.behaviorHints?.audioDelayMs,
+            audioDelayLanguage = stream.behaviorHints?.audioDelayLanguage
         )
     }
 }
@@ -1685,6 +1691,7 @@ internal fun PlayerRuntimeController.switchToEpisodeStream(
     hasRetriedCurrentStreamAfter416 = false
     resetErrorRetryState()
     deadSourceFailoverCount = 0
+    freshLinkForReusedLinkTried = false
     serverDeadAnswerRetried.clear()
     serverAudioChosenByUser = false
     clearSourceStreams()

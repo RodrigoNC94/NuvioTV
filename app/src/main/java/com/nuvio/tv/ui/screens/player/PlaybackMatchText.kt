@@ -1,13 +1,13 @@
 package com.nuvio.tv.ui.screens.player
 
-internal fun playbackMatchText(info: PlayerMediaInfo, languages: List<String>): String = buildList {
+internal fun playbackMatchText(info: PlayerMediaInfo, languages: List<String>, releaseText: String = ""): String = buildList {
     addAll(resolutionTokens(info))
     addAll(videoCodecTokens(info.videoCodec))
     if ("DV" in info.hdr) addAll(listOf("DV", "DoVi", "Dolby Vision"))
     if ("HDR10" in info.hdr) addAll(listOf("HDR", "HDR10"))
     if ("HLG" in info.hdr) addAll(listOf("HDR", "HLG"))
     (info.bitDepth ?: 10.takeIf { info.hdr.isNotEmpty() })?.let { add("${it}bit") }
-    addAll(audioTokens(info.audioCodec, info.audioProfile))
+    addAll(audioTokens(info.audioCodec, info.audioProfile, releaseText.lowercase()))
     channelsToken(info.audioChannels)?.let(::add)
     addAll(languages)
 }.distinct().joinToString(" ")
@@ -31,7 +31,7 @@ private fun videoCodecTokens(codec: String?): List<String> = when (codec?.upperc
     else -> listOf(codec)
 }
 
-private fun audioTokens(codec: String?, profile: String?): List<String> {
+private fun audioTokens(codec: String?, profile: String?, release: String): List<String> {
     val label = codec?.uppercase() ?: return emptyList()
     val profileLabel = profile.orEmpty().uppercase()
     return buildList {
@@ -41,12 +41,12 @@ private fun audioTokens(codec: String?, profile: String?): List<String> {
             label.startsWith("DTS") -> {
                 add("DTS")
                 if (label.contains("HD") || profileLabel.contains("DTS-HD")) add("DTS-HD")
-                if (profileLabel.contains("MA")) add("DTS-HD MA")
+                if (profileLabel.contains("MA") || releaseSaysDtsHdMa(label, release)) add("DTS-HD MA")
                 if (profileLabel.contains("DTS:X")) add("DTS:X")
             }
             else -> add(codec)
         }
-        if (label.endsWith("JOC") || profileLabel.contains("ATMOS")) add("Atmos")
+        if (label.endsWith("JOC") || profileLabel.contains("ATMOS") || releaseSaysAtmos(label, release)) add("Atmos")
     }
 }
 

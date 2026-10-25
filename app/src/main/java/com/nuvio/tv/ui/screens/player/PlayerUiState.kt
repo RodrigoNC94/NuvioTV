@@ -109,11 +109,10 @@ data class PlayerUiState(
     val subtitleTracks: List<TrackInfo> = emptyList(),
     val selectedAudioTrackIndex: Int = -1,
     val selectedSubtitleTrackIndex: Int = -1,
-    /** The file's chapters, sorted; empty when it has fewer than two. */
-    val chapters: List<PlayerChapter> = emptyList(),
-    val showChaptersPanel: Boolean = false,
     val audioDelayMs: Int = 0,
     val audioAmplificationDb: Int = 0,
+    val nightMode: com.nuvio.tv.data.local.NightModeLevel = com.nuvio.tv.data.local.NightModeLevel.OFF,
+    val dialogueBoostState: DialogueBoostState = DialogueBoostState.STEREO_TRACK,
     val isAudioAmplificationAvailable: Boolean = false,
     val persistAudioAmplification: Boolean = false,
     val centerMixLevelDb: Int = 0,
@@ -136,8 +135,6 @@ data class PlayerUiState(
     val isHdrVideo: Boolean = false,
     // Subtitle style settings
     val subtitleStyle: SubtitleStyleSettings = SubtitleStyleSettings(),
-    // Current video is HDR10/HDR10+/HLG/Dolby Vision; selects the HDR subtitle style when enabled
-    val isHdrVideo: Boolean = false,
     // Addon subtitles
     val addonSubtitles: List<Subtitle> = emptyList(),
     val isLoadingAddonSubtitles: Boolean = false,
@@ -189,6 +186,7 @@ data class PlayerUiState(
     val showAddonLogo: Boolean = true,
     val streamBadgePlacement: StreamBadgePlacement = StreamBadgePlacement.BOTTOM,
     val playerBadgeFilters: List<CompiledStreamBadgeFilter> = emptyList(),
+    val showPlayerBadges: Boolean = false,
     val error: String? = null,
     val showSwitchToMpvErrorAction: Boolean = false,
     val playbackIssueReportStatus: PlaybackIssueReportStatus = PlaybackIssueReportStatus.Idle,
@@ -342,16 +340,14 @@ sealed class PlayerEvent {
     /** A seek key repeat: the key is held, so the cursor glides until the commit. */
     data class OnScrubHold(val forward: Boolean, val downTime: Long, val eventTime: Long) : PlayerEvent()
     data object OnCommitPreviewSeek : PlayerEvent()
-    data class OnSeekTo(val position: Long) : PlayerEvent()
-    data class OnSkipChapter(val forward: Boolean) : PlayerEvent()
-    data object OnShowChaptersPanel : PlayerEvent()
-    data object OnDismissChaptersPanel : PlayerEvent()
-    data class OnSelectChapter(val index: Int) : PlayerEvent()
+    /** [exact] lands on the frame itself instead of the nearest keyframe (chapter jumps). */
+    data class OnSeekTo(val position: Long, val exact: Boolean = false) : PlayerEvent()
     data class OnSelectAudioTrack(val index: Int) : PlayerEvent()
     data class OnSetAudioDelayMs(val delayMs: Int) : PlayerEvent()
     data class OnSetAudioAmplificationDb(val db: Int) : PlayerEvent()
     data class OnSetPersistAudioAmplification(val enabled: Boolean) : PlayerEvent()
     data class OnSetCenterMixLevelDb(val db: Int) : PlayerEvent()
+    data class OnSetNightMode(val level: com.nuvio.tv.data.local.NightModeLevel) : PlayerEvent()
     data class OnSelectSubtitleTrack(val index: Int, val openPanel: Boolean = true) : PlayerEvent()
     data object OnDisableSubtitles : PlayerEvent()
     data object OnDisableSubtitlesQuietly : PlayerEvent()

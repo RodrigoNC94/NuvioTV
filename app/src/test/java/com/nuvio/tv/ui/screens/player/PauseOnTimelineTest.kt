@@ -84,4 +84,23 @@ class PauseOnTimelineTest {
         assertNull(PauseOnTimeline.thumbnailPositionMs(null, null, gliding = true, playing = false, barShown = true))
         assertNull(PauseOnTimeline.thumbnailPositionMs(null, null, gliding = false, playing = false, barShown = true))
     }
+
+    @Test
+    fun afterTheStrip_thePictureStaysCentredUntilItGoes() {
+        var kept = PauseOnTimeline.keepsStripPlace(keptBefore = false, stripShown = true, thumbnailShown = true)
+        assertTrue(kept)
+        // Key released: the strip ends, the single picture keeps the centre, also for later taps.
+        kept = PauseOnTimeline.keepsStripPlace(kept, stripShown = false, thumbnailShown = true)
+        assertTrue(kept)
+        kept = PauseOnTimeline.keepsStripPlace(kept, stripShown = false, thumbnailShown = true)
+        assertTrue(kept)
+        kept = PauseOnTimeline.keepsStripPlace(kept, stripShown = false, thumbnailShown = false)
+        assertFalse(kept)
+        assertFalse(PauseOnTimeline.keepsStripPlace(kept, stripShown = false, thumbnailShown = true))
+    }
+
+    @Test
+    fun withoutTheStrip_thePictureFollowsTheBar() {
+        assertFalse(PauseOnTimeline.keepsStripPlace(keptBefore = false, stripShown = false, thumbnailShown = true))
+    }
 }

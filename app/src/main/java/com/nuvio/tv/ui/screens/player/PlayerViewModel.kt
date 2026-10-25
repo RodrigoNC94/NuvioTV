@@ -453,16 +453,11 @@ class PlayerViewModel @Inject constructor(
             val codec = format.sampleMimeType?.substringAfter('/')
             listOfNotNull(size, fps, codec).joinToString(" · ")
                 .takeIf { it.isNotBlank() }?.let { rows += StatsRow("Video", it) }
-            // The MKV Colour element is optional, and neither MatroskaExtractor nor the
-            // vendored dvmkv copy falls back to the HEVC SPS when it is missing, so a
-            // remux muxed without it reports colorInfo == null even for a genuine HDR10
-            // stream that the decoder and display take as HDR from the SPS.
-            // PlaybackVideoColorTransfer reads the SPS when the container is silent.
-            val colorTransfer = PlaybackVideoColorTransfer.of(format)
+            val hdrFormats = format.hdrFormats()
             val hdr = when {
-                format.sampleMimeType?.contains("dolby-vision") == true -> "Dolby Vision"
-                colorTransfer == C.COLOR_TRANSFER_ST2084 -> "HDR10 / PQ"
-                colorTransfer == C.COLOR_TRANSFER_HLG -> "HLG"
+                "DV" in hdrFormats -> "Dolby Vision"
+                "HDR10" in hdrFormats -> "HDR10 / PQ"
+                "HLG" in hdrFormats -> "HLG"
                 else -> "SDR"
             }
             rows += StatsRow("HDR", hdr)
@@ -684,6 +679,9 @@ class PlayerViewModel @Inject constructor(
         // A zero is an idle counted interval, not proof of starvation or a full buffer.
         rows += StatsRow("Speed", speedText, StatsDot.NONE)
         rows += StatsRow("Connections", PlaybackLanes.connectionsText(hud.lanes), StatsDot.NONE)
+        PlaybackLanes.requestsText(hud.lanes?.takeIf { it.auto }?.let { AutoSpeedup.hud() })?.let {
+            rows += StatsRow("Requests", it, StatsDot.NONE, marquee = true)
+        }
         lastPingMs?.takeIf { it.matches(hud.transfer) }?.let { ping ->
             rows += StatsRow("Server latency", "${ping.elapsedMs} ms", StatsDot.NONE)
         }
@@ -991,6 +989,10 @@ class PlayerViewModel @Inject constructor(
 
     fun pauseForSeekThumbnails(): Boolean? = controller.pauseForSeekThumbnails()
 
+    fun letGoForSeekThumbnails(): Boolean = controller.letGoForSeekThumbnails()
+
+    fun loadAgainAfterSeekThumbnails(play: Boolean) = controller.loadAgainAfterSeekThumbnails(play)
+
     fun seekThumbnailSkipReason(): String? =
         if (controller.isErrorCardPlayback()) "error card or a film/episode stream under 2 minutes" else null
 
@@ -1099,6 +1101,8 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun playerMediaInfo(): PlayerMediaInfo = controller.playerMediaInfo()
+
+    fun playingReleaseText(): String = controller.playingReleaseText()
 
     fun bindExoSubtitleView(subtitleView: androidx.media3.ui.SubtitleView?) {
         controller.bindExoSubtitleView(subtitleView)

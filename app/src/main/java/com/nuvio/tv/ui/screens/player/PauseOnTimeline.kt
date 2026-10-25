@@ -44,4 +44,8 @@ internal object PauseOnTimeline {
         !playing && barShown -> thumbPositionMs
         else -> null
     }
+
+    /** After a held seek showed the strip, the picture keeps the strip's centre place until it goes away. */
+    fun keepsStripPlace(keptBefore: Boolean, stripShown: Boolean, thumbnailShown: Boolean): Boolean =
+        thumbnailShown && (stripShown || keptBefore)
 }

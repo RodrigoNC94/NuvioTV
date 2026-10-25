@@ -37,6 +37,8 @@ import coil3.compose.AsyncImage
 import com.nuvio.tv.R
 import com.nuvio.tv.domain.model.PlayerChromeStyle
 import com.nuvio.tv.domain.model.VisualStyle
+import com.nuvio.tv.ui.screens.player.PlayerBadge
+import com.nuvio.tv.ui.screens.player.PlayerBadges
 import com.nuvio.tv.ui.screens.player.*
 import com.nuvio.tv.ui.v2.appearance.LocalV2Appearance
 import com.nuvio.tv.ui.v2.components.*
@@ -76,7 +78,8 @@ fun V2PlayerControls(
     progressUpFocus: FocusRequester?,
     onSkipAnchorChanged: (Dp) -> Unit,
     actions: V2PlayerActions,
-    reportCodeVisible: Boolean
+    reportCodeVisible: Boolean,
+    playerBadges: List<PlayerBadge> = emptyList()
 ) {
     val deck = LocalV2Appearance.current?.playerChromeStyle != PlayerChromeStyle.INVISIBLE
     val cinematicGlass = LocalV2Appearance.current?.visualStyle == VisualStyle.CINEMATIC_GLASS
@@ -119,6 +122,7 @@ fun V2PlayerControls(
                 } else Text(title, color = Color.White, style = MaterialTheme.typography.titleMedium,
                     maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 12.dp))
                 PlayerSecondaryMetadata(uiState, Modifier.padding(start = 12.dp), rememberCurrentChapter(viewModel, uiState.chapters))
+                if (playerBadges.isNotEmpty()) PlayerBadges(playerBadges, Modifier.padding(start = 12.dp))
             }
             Column(Modifier.fillMaxWidth()
                 .then(if (deck) Modifier.nuvioGlass(GlassRole.CONTROL, shape = RoundedCornerShape(12.dp)) else Modifier)

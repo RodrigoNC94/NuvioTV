@@ -25,7 +25,8 @@ data class CachedStreamLink(
     val bingeGroup: String? = null,
     val contentLanguage: String? = null,
     val year: String? = null,
-    val audioDelayMs: Int? = null
+    val audioDelayMs: Int? = null,
+    val audioDelayLanguage: String? = null
 )
 
 @Singleton
@@ -39,6 +40,21 @@ class StreamLinkCacheDataStore @Inject constructor(
 
     private fun store(profileId: Int = profileManager.activeProfileId.value) =
         factory.get(profileId, FEATURE)
+
+    private val replayed = java.util.concurrent.ConcurrentHashMap<String, CachedStreamLink>()
+
+    /** The saved link is being played again as is, without asking the add-ons. */
+    fun markReplayed(contentKey: String, link: CachedStreamLink) {
+        replayed[contentKey] = link
+    }
+
+    /** The saved link that was played again for [contentKey], until it is removed or saved over. */
+    fun replayedLink(contentKey: String): CachedStreamLink? = replayed[contentKey]
+
+    suspend fun remove(contentKey: String) {
+        replayed.remove(contentKey)
+        store().edit { prefs -> prefs.remove(cachePrefKey(contentKey)) }
+    }
 
     suspend fun save(
         contentKey: String,
@@ -54,7 +70,8 @@ class StreamLinkCacheDataStore @Inject constructor(
         bingeGroup: String? = null,
         contentLanguage: String? = null,
         year: String? = null,
-        audioDelayMs: Int? = null
+        audioDelayMs: Int? = null,
+        audioDelayLanguage: String? = null
     ) {
         val payload = JSONObject().apply {
             put("url", url)
@@ -71,8 +88,10 @@ class StreamLinkCacheDataStore @Inject constructor(
             contentLanguage?.let { put("contentLanguage", it) }
             year?.let { put("year", it) }
             audioDelayMs?.let { put("audioDelayMs", it) }
+            audioDelayLanguage?.let { put("audioDelayLanguage", it) }
         }.toString()
 
+        replayed.remove(contentKey)
         store().edit { prefs ->
             prefs[cachePrefKey(contentKey)] = payload
         }
@@ -125,7 +144,8 @@ class StreamLinkCacheDataStore @Inject constructor(
                 bingeGroup = json.optString("bingeGroup", "").ifBlank { null },
                 contentLanguage = json.optString("contentLanguage", "").ifBlank { null },
                 year = json.optString("year", "").ifBlank { null },
-                audioDelayMs = if (json.has("audioDelayMs")) json.optInt("audioDelayMs") else null
+                audioDelayMs = if (json.has("audioDelayMs")) json.optInt("audioDelayMs") else null,
+                audioDelayLanguage = json.optString("audioDelayLanguage", "").ifBlank { null }
             )
         }.getOrNull()
 
