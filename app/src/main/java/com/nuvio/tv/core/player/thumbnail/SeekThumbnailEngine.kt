@@ -491,6 +491,7 @@ object SeekThumbnails {
             const val DEFER_LOG_INTERVAL_MS = 30_000L
             /** A stand-in is at most [fallbackSlots] away: 30 s, or half the finest stride. Farther shows nothing. */
             const val MIN_FALLBACK_SLOTS = 3
+            const val STRIP_RECHECK_MS = 500L
             /** Slots decoded either side of the position once the saved pictures are in memory. */
             const val PRELOAD_WARM_SLOTS = 6
             /** A 4K decode needs about 80 MB. Only taken once the read-ahead is [RESERVE_MIN_AHEAD_MS] ahead. */
@@ -577,6 +578,9 @@ object SeekThumbnails {
         private var screenStride = 3
         private var beforePlay = ThumbsBeforePlay.FASTER
         private var fallbackSlots = MIN_FALLBACK_SLOTS
+        /** UI thread: the strip's stride in slots and when it was last worked out. */
+        private var stripStride = 0
+        private var stripCheckedAt = 0L
         /** 4K keyframes cost about 1 s each on small boxes: fewer settle neighbours. */
         private val priorityRadius = if (fourK) 2 else 3
         /** False while 4K may not decode (playing on a small box); the pane reads it. */
@@ -2382,7 +2386,24 @@ object SeekThumbnails {
             return -1
         }
 
-        fun stripSpacingMs(): Long? = if (index != null && slotKeyframe.isNotEmpty()) latticeStrides.last() * SPACING_MS else null
+        /**
+         * The finest stride whose sweep is stored, not the finest the pass may still make: the before-play grid is
+         * coarser than that, and on small boxes a 4K remux makes nothing while it plays, so the strip had empty frames
+         * between the pictures. It gets denser as the pass fills in. Rechecked at most every [STRIP_RECHECK_MS].
+         */
+        fun stripSpacingMs(): Long? {
+            val st = store
+            val keyframes = slotKeyframe
+            if (index == null || keyframes.isEmpty() || st == null) return null
+            val now = SystemClock.elapsedRealtime()
+            if (stripStride <= 0 || now - stripCheckedAt >= STRIP_RECHECK_MS) {
+                stripStride = SeekGrid.finestStoredStride(keyframes.size, latticeStrides) { slot ->
+                    keyframes[slot] < 0 || st.has(slot.toLong() * SPACING_MS * 1000L)
+                } ?: return null
+                stripCheckedAt = now
+            }
+            return stripStride * SPACING_MS
+        }
 
         /** Does not touch [lastServed]. A picture only on disk is loaded and shows on the next tick. */
         fun tileFor(positionMs: Long): Shown? {

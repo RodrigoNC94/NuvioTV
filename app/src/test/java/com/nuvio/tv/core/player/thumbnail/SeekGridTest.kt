@@ -114,4 +114,27 @@ class SeekGridTest {
         assertEquals(720, gridFirst.size)
         assertEquals(plain.toSet(), gridFirst.toSet())
     }
+
+    /** The strip is spaced by what is stored, not by what the pass may still make. */
+    @Test fun stripFollowsTheFinestStoredSweep() {
+        val strides = listOf(30, 12, 6, 3)
+        val slots = 900
+        // The before-play grid (every 12 slots) is in, the finer sweeps are not.
+        assertEquals(12, SeekGrid.finestStoredStride(slots, strides) { it % 12 == 0 })
+        assertEquals(3, SeekGrid.finestStoredStride(slots, strides) { it % 3 == 0 })
+        assertEquals(30, SeekGrid.finestStoredStride(slots, strides) { false })
+    }
+
+    @Test fun aFewFailedKeyframesDoNotCoarsenTheStrip() {
+        val strides = listOf(30, 12, 6, 3)
+        // 300 slots in the 3-slot sweep allow 10 missing; 75 in the 12-slot sweep allow 2.
+        val failed = setOf(3, 9, 15, 21, 27, 33, 39, 45, 51, 57)
+        assertEquals(3, SeekGrid.finestStoredStride(900, strides) { it % 3 == 0 && it !in failed })
+        val more = failed + 63
+        assertEquals(6, SeekGrid.finestStoredStride(900, strides) { it % 3 == 0 && it !in more })
+    }
+
+    @Test fun noSlotsNoStride() {
+        assertEquals(null, SeekGrid.finestStoredStride(0, listOf(30, 3)) { true })
+    }
 }

@@ -45,6 +45,30 @@ internal object SeekGrid {
     }
 
     /**
+     * The finest of [strides] (coarse first) whose sweep from slot 0 is stored, so a strip spaced by it has a picture
+     * on every tile. A sweep may miss one slot in [MISSING_SLOTS_PER] (a keyframe that would not decode). With none
+     * stored, the coarsest.
+     */
+    fun finestStoredStride(slotCount: Int, strides: List<Int>, stored: (Int) -> Boolean): Int? {
+        if (slotCount <= 0 || strides.isEmpty()) return null
+        for (stride in strides.asReversed()) {
+            if (stride <= 0) continue
+            val sweep = (slotCount - 1) / stride + 1
+            val allowed = sweep / MISSING_SLOTS_PER
+            var missing = 0
+            var s = 0
+            while (s < slotCount && missing <= allowed) {
+                if (!stored(s)) missing++
+                s += stride
+            }
+            if (missing <= allowed) return stride
+        }
+        return strides.first()
+    }
+
+    const val MISSING_SLOTS_PER = 30
+
+    /**
      * Coverage-pass order: first the finest-stride slots around [anchorSlot] (the playback position), nearest first
      * and ahead before behind, then the whole title coarse to fine ([strides]). With [gridFirst] above 0 the sweeps
      * down to that stride come before the slots around the anchor: the generating screen's grid first, the fine
