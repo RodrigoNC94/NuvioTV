@@ -739,6 +739,8 @@
     <string name="autoplay_scope">自動再生ソースの範囲</string>
     <string name="autoplay_timeout_title">ストリーム選択タイムアウト</string>
     <string name="autoplay_timeout_sub">選択前のアドオン待機時間</string>
+    <string name="addon_stream_timeout_title">アドオン応答タイムアウト</string>
+    <string name="addon_stream_timeout_sub">各アドオンがストリームを返すまでの待機時間です。過ぎるとスキップされます。AIOStreams などの遅いアドオンで結果が表示されない場合は長くしてください。</string>
     <string name="autoplay_timeout_instant">即時</string>
     <string name="autoplay_timeout_unlimited">無制限</string>
     <string name="autoplay_allowed_addons">許可するアドオン</string>

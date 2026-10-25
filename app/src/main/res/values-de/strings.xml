@@ -700,6 +700,8 @@
     <string name="autoplay_scope">Bereich für automatische Wiedergabe</string>
     <string name="autoplay_timeout_title">Zeitlimit für die Stream-Auswahl</string>
     <string name="autoplay_timeout_sub">Wartezeit für Add-ons vor der Auswahl.</string>
+    <string name="addon_stream_timeout_title">Zeitlimit für Add-on-Antworten</string>
+    <string name="addon_stream_timeout_sub">Wie lange jedes Add-on Zeit hat, Streams zu liefern, bevor es übersprungen wird. Erhöhen Sie den Wert, wenn ein langsames Add-on wie AIOStreams keine Ergebnisse zeigt.</string>
     <string name="autoplay_timeout_instant">Sofort</string>
     <string name="autoplay_timeout_unlimited">Unbegrenzt</string>
     <string name="autoplay_allowed_addons">Zulässige Add-ons</string>

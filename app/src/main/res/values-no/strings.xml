@@ -394,6 +394,8 @@
     <string name="autoplay_scope">Autoavspill kildeomfang</string>
     <string name="autoplay_timeout_title">Strømvalgtidsavbrudd</string>
     <string name="autoplay_timeout_sub">Ventetid for tillegg før valg.</string>
+    <string name="addon_stream_timeout_title">Tidsavbrudd for tilleggssvar</string>
+    <string name="addon_stream_timeout_sub">Hvor lenge hvert tillegg får til å returnere strømmer før det hoppes over. Øk den hvis et tregt tillegg som AIOStreams ikke viser resultater.</string>
     <string name="autoplay_timeout_instant">Med en gang</string>
     <string name="autoplay_timeout_unlimited">Ubegrenset</string>
     <string name="autoplay_allowed_addons">Tillatte tillegg</string>

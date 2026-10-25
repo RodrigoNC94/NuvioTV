@@ -1122,6 +1122,8 @@
     <string name="autoplay_scope">Auto-play source scope</string>
     <string name="autoplay_timeout_title">Stream selection timeout</string>
     <string name="autoplay_timeout_sub">Wait time for addons before selecting.</string>
+    <string name="addon_stream_timeout_title">Addon response timeout</string>
+    <string name="addon_stream_timeout_sub">How long each addon gets to return streams before it is skipped. Raise it if a slow addon such as AIOStreams shows no results.</string>
     <string name="autoplay_eager_ready_title">Ready faster on slow sources</string>
     <string name="autoplay_eager_ready_sub">Prepare playback as soon as the selection timeout is reached, instead of waiting for the slowest add-on. Applies to the details page and Continue watching.</string>
     <string name="autoplay_timeout_instant">Instant</string>

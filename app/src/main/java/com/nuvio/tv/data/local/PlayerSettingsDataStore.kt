@@ -381,6 +381,8 @@ data class PlayerSettings(
      * Default on.
      */
     val streamAutoPlayEagerReadyEnabled: Boolean = true,
+    /** How long each addon gets to return streams before it is abandoned. */
+    val addonStreamTimeoutSeconds: Int = DEFAULT_ADDON_STREAM_TIMEOUT_SECONDS,
     val speculativeStreamSearchEnabled: Boolean = false,
     val showSourceLineBadges: Boolean = true,
     val showSourceLineReleaseGroup: Boolean = true,
@@ -476,6 +478,16 @@ data class PlayerSettings(
             return STREAM_AUTOPLAY_TIMEOUT_VALUES
                 .filter { it != STREAM_AUTOPLAY_TIMEOUT_UNLIMITED }
                 .minBy { kotlin.math.abs(it.toLong() - raw.toLong()) }
+        }
+
+        const val DEFAULT_ADDON_STREAM_TIMEOUT_SECONDS = 60
+
+        val ADDON_STREAM_TIMEOUT_VALUES: List<Int> = listOf(10, 15, 20, 30, 45, 60, 90, 120)
+
+        /** Missing or off-list stored values snap to the nearest allowed timeout. */
+        fun sanitizeAddonStreamTimeout(stored: Int?): Int {
+            val raw = stored ?: return DEFAULT_ADDON_STREAM_TIMEOUT_SECONDS
+            return ADDON_STREAM_TIMEOUT_VALUES.minBy { kotlin.math.abs(it.toLong() - raw.toLong()) }
         }
 
         fun isBoundedTimeout(timeoutSeconds: Int): Boolean =
@@ -804,6 +816,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val streamAutoPlayReuseBingeGroupKey = booleanPreferencesKey("stream_auto_play_reuse_binge_group")
     private val streamAutoPlayTimeoutSecondsKey = intPreferencesKey("stream_auto_play_timeout_seconds")
     private val speculativeStreamSearchEnabledKey = booleanPreferencesKey("speculative_stream_search_enabled")
+    private val addonStreamTimeoutSecondsKey = intPreferencesKey("addon_stream_timeout_seconds")
     private val showSourceLineBadgesKey = booleanPreferencesKey("show_source_line_badges")
     private val showSourceLineReleaseGroupKey = booleanPreferencesKey("show_source_line_release_group")
     private val streamAutoPlayEagerReadyEnabledKey = booleanPreferencesKey("stream_auto_play_eager_ready_enabled")
@@ -1324,6 +1337,7 @@ class PlayerSettingsDataStore @Inject constructor(
                     prefs[streamAutoPlayTimeoutSecondsKey]
                 ),
                 speculativeStreamSearchEnabled = prefs[speculativeStreamSearchEnabledKey] ?: false,
+                addonStreamTimeoutSeconds = PlayerSettings.sanitizeAddonStreamTimeout(prefs[addonStreamTimeoutSecondsKey]),
                 showSourceLineBadges = prefs[showSourceLineBadgesKey] ?: true,
                 showSourceLineReleaseGroup = prefs[showSourceLineReleaseGroupKey] ?: true,
                 streamAutoPlayEagerReadyEnabled = prefs[streamAutoPlayEagerReadyEnabledKey] ?: true,
@@ -1976,6 +1990,12 @@ class PlayerSettingsDataStore @Inject constructor(
     suspend fun setStreamAutoPlayTimeoutSeconds(seconds: Int) {
         store().edit { prefs ->
             prefs[streamAutoPlayTimeoutSecondsKey] = PlayerSettings.applyLegacyTimeoutSentinelMigration(seconds)
+        }
+    }
+
+    suspend fun setAddonStreamTimeoutSeconds(seconds: Int) {
+        store().edit { prefs ->
+            prefs[addonStreamTimeoutSecondsKey] = PlayerSettings.sanitizeAddonStreamTimeout(seconds)
         }
     }
 

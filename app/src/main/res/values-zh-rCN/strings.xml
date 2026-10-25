@@ -913,6 +913,8 @@
     <string name="autoplay_scope">自动播放来源范围</string>
     <string name="autoplay_timeout_title">流选择超时</string>
     <string name="autoplay_timeout_sub">选择前等待扩展的时间。</string>
+    <string name="addon_stream_timeout_title">扩展响应超时</string>
+    <string name="addon_stream_timeout_sub">每个扩展返回流的最长等待时间，超时后将被跳过。如果 AIOStreams 等较慢的扩展没有结果，请调大此值。</string>
     <string name="autoplay_timeout_instant">即时</string>
     <string name="autoplay_timeout_unlimited">无限制</string>
     <string name="autoplay_allowed_addons">允许的扩展</string>

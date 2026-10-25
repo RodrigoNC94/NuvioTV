@@ -351,6 +351,8 @@
     <string name="autoplay_scope">ऑटो-प्ले सोर्स स्कोप</string>
     <string name="autoplay_timeout_title">स्ट्रीम चयन टाइमआउट</string>
     <string name="autoplay_timeout_sub">चयन से पहले ऐडऑन के लिए प्रतीक्षा समय</string>
+    <string name="addon_stream_timeout_title">ऐडऑन प्रतिक्रिया टाइमआउट</string>
+    <string name="addon_stream_timeout_sub">छोड़े जाने से पहले हर ऐडऑन को स्ट्रीम लौटाने के लिए कितना समय मिलता है। अगर AIOStreams जैसा धीमा ऐडऑन कोई परिणाम नहीं दिखाता, तो इसे बढ़ाएँ।</string>
     <string name="autoplay_timeout_instant">तुरंत</string>
     <string name="autoplay_timeout_unlimited">असीमित</string>
     <string name="autoplay_allowed_addons">अनुमत ऐडऑन</string>

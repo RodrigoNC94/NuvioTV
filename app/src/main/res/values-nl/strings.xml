@@ -882,6 +882,8 @@
     <string name="autoplay_scope">Bereik automatische bronselectie</string>
     <string name="autoplay_timeout_title">Time-out voor streamselectie</string>
     <string name="autoplay_timeout_sub">Wachttijd voor add-ons voordat er wordt geselecteerd.</string>
+    <string name="addon_stream_timeout_title">Time-out voor add-on-antwoord</string>
+    <string name="addon_stream_timeout_sub">Hoe lang elke add-on krijgt om streams terug te geven voordat deze wordt overgeslagen. Verhoog dit als een trage add-on zoals AIOStreams geen resultaten toont.</string>
     <string name="autoplay_timeout_instant">Direct</string>
     <string name="autoplay_timeout_unlimited">Onbeperkt</string>
     <string name="autoplay_allowed_addons">Toegestane add-ons</string>

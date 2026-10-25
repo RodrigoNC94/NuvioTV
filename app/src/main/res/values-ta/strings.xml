@@ -684,6 +684,8 @@
     <string name="autoplay_scope">தானியங்கு இயக்க மூல வரம்பு</string>
     <string name="autoplay_timeout_title">ஸ்ட்ரீம் தேர்வு நேரவரம்பு</string>
     <string name="autoplay_timeout_sub">தேர்வு செய்வதற்கு முன் ஆட்ஒன்களுக்காக காத்திருக்கும் நேரம்.</string>
+    <string name="addon_stream_timeout_title">ஆட்ஒன் பதில் நேரவரம்பு</string>
+    <string name="addon_stream_timeout_sub">தவிர்க்கப்படுவதற்கு முன் ஒவ்வொரு ஆட்ஒனும் ஸ்ட்ரீம்களை வழங்க எவ்வளவு நேரம் பெறும். AIOStreams போன்ற மெதுவான ஆட்ஒன் எந்த முடிவுகளையும் காட்டவில்லை என்றால் இதை அதிகரிக்கவும்.</string>
     <string name="autoplay_timeout_instant">உடனடி</string>
     <string name="autoplay_timeout_unlimited">வரம்பற்றது</string>
     <string name="autoplay_allowed_addons">அனுமதிக்கப்பட்ட ஆட்ஒன்கள்</string>

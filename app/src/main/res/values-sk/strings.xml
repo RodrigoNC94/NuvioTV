@@ -712,6 +712,8 @@
     <string name="autoplay_scope">Rozsah zdrojov pre automatické prehrávanie</string>
     <string name="autoplay_timeout_title">Časový limit výberu streamu</string>
     <string name="autoplay_timeout_sub">Čas čakania na doplnky pred výberom.</string>
+    <string name="addon_stream_timeout_title">Časový limit odozvy doplnku</string>
+    <string name="addon_stream_timeout_sub">Koľko času má každý doplnok na vrátenie streamov, kým bude preskočený. Zvýšte ho, ak pomalý doplnok, ako je AIOStreams, nezobrazuje žiadne výsledky.</string>
     <string name="autoplay_timeout_instant">Okamžite</string>
     <string name="autoplay_timeout_unlimited">Neobmedzene</string>
     <string name="autoplay_allowed_addons">Povolené doplnky</string>

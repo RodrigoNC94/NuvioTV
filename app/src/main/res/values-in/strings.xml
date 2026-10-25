@@ -706,6 +706,8 @@
     <string name="autoplay_scope">Cakupan Sumber Putar Otomatis</string>
     <string name="autoplay_timeout_title">Batas Waktu Pemilihan Stream</string>
     <string name="autoplay_timeout_sub">Waktu tunggu addon sebelum memilih.</string>
+    <string name="addon_stream_timeout_title">Batas Waktu Respons Addon</string>
+    <string name="addon_stream_timeout_sub">Berapa lama setiap addon diberi waktu untuk mengembalikan stream sebelum dilewati. Naikkan jika addon yang lambat seperti AIOStreams tidak menampilkan hasil.</string>
     <string name="autoplay_timeout_instant">Instan</string>
     <string name="autoplay_timeout_unlimited">Tidak terbatas</string>
     <string name="autoplay_allowed_addons">Addon yang Diizinkan</string>

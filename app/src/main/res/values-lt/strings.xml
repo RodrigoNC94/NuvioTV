@@ -342,6 +342,8 @@
     <string name="autoplay_scope">Automatinio paleidimo šaltinių apimtis</string>
     <string name="autoplay_timeout_title">Srauto pasirinkimo laikas</string>
     <string name="autoplay_timeout_sub">Laukimo laikas priedams prieš pasirenkant.</string>
+    <string name="addon_stream_timeout_title">Priedo atsako laiko riba</string>
+    <string name="addon_stream_timeout_sub">Kiek laiko kiekvienas priedas turi grąžinti srautus, kol bus praleistas. Padidinkite, jei lėtas priedas, pvz., AIOStreams, nerodo rezultatų.</string>
     <string name="autoplay_timeout_instant">Momentinis</string>
     <string name="autoplay_timeout_unlimited">Neribotas</string>
     <string name="autoplay_allowed_addons">Leidžiami priedai</string>

@@ -177,6 +177,15 @@ internal fun PlaybackStreamSelectionSection(
         onValueChange = { seconds -> onUpdate { setStreamAutoPlayTimeoutSeconds(seconds) } }
     )
 
+    SliderSettingsItem(
+        title = stringResource(R.string.addon_stream_timeout_title),
+        subtitle = stringResource(R.string.addon_stream_timeout_sub),
+        values = PlayerSettings.ADDON_STREAM_TIMEOUT_VALUES,
+        selected = settings.addonStreamTimeoutSeconds,
+        valueText = "${settings.addonStreamTimeoutSeconds}s",
+        onValueChange = { seconds -> onUpdate { setAddonStreamTimeoutSeconds(seconds) } }
+    )
+
     SettingsToggleRow(
         title = stringResource(R.string.autoplay_reuse_last_link),
         subtitle = stringResource(R.string.autoplay_reuse_last_link_sub),

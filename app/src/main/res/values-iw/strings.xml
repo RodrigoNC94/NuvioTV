@@ -959,6 +959,8 @@
     <string name="autoplay_scope">אילו מקורות לכלול בבחירה אוטומטית</string>
     <string name="autoplay_timeout_title">זמן קצוב לבחירת מקור</string>
     <string name="autoplay_timeout_sub">זמן המתנה לתוספים לפני הבחירה.</string>
+    <string name="addon_stream_timeout_title">זמן קצוב לתגובת תוסף</string>
+    <string name="addon_stream_timeout_sub">כמה זמן יש לכל תוסף להחזיר מקורות לפני שהוא מדולג. הגדילו אותו אם תוסף איטי כמו AIOStreams לא מציג תוצאות.</string>
     <string name="autoplay_timeout_instant">מיידי</string>
     <string name="autoplay_timeout_unlimited">ללא הגבלה</string>
     <string name="autoplay_allowed_addons">תוספים מורשים</string>

@@ -936,6 +936,8 @@
     <string name="autoplay_scope">Automatikus lejátszáshoz használható források</string>
     <string name="autoplay_timeout_title">Forrásválasztás időkorlátja</string>
     <string name="autoplay_timeout_sub">Várakozási idő a bővítményekre a kiválasztás előtt.</string>
+    <string name="addon_stream_timeout_title">Bővítmény válaszidő-korlátja</string>
+    <string name="addon_stream_timeout_sub">Mennyi ideje van minden bővítménynek a források visszaadására, mielőtt kihagyásra kerül. Növeld, ha egy lassú bővítmény, például az AIOStreams, nem mutat találatot.</string>
     <string name="autoplay_timeout_instant">Azonnal</string>
     <string name="autoplay_timeout_unlimited">Korlátlan</string>
     <string name="autoplay_allowed_addons">Engedélyezett bővítmények</string>

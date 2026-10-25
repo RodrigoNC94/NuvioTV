@@ -927,6 +927,8 @@
     <string name="autoplay_scope">Opseg izvora za automatsku reprodukciju</string>
     <string name="autoplay_timeout_title">Vremensko ograničenje odabira streama</string>
     <string name="autoplay_timeout_sub">Vrijeme čekanja na dodatke prije odabira.</string>
+    <string name="addon_stream_timeout_title">Vremensko ograničenje odgovora dodatka</string>
+    <string name="addon_stream_timeout_sub">Koliko vremena svaki dodatak ima za vraćanje streamova prije nego što bude preskočen. Povećajte ga ako spori dodatak poput AIOStreams ne prikazuje rezultate.</string>
     <string name="autoplay_timeout_instant">Odmah</string>
     <string name="autoplay_timeout_unlimited">Neograničeno</string>
     <string name="autoplay_allowed_addons">Dopušteni dodaci</string>

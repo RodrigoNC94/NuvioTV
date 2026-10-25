@@ -955,6 +955,8 @@
     <string name="autoplay_scope">Alcance de Fuentes para Auto-reproducción</string>
     <string name="autoplay_timeout_title">Tiempo de espera de transmisión</string>
     <string name="autoplay_timeout_sub">Tiempo de espera para los Addons antes de seleccionar.</string>
+    <string name="addon_stream_timeout_title">Tiempo de respuesta de Addons</string>
+    <string name="addon_stream_timeout_sub">Tiempo que tiene cada Addon para devolver transmisiones antes de omitirlo. Auméntalo si un Addon lento como AIOStreams no muestra resultados.</string>
     <string name="autoplay_timeout_instant">Instantáneo</string>
     <string name="autoplay_timeout_unlimited">Ilimitado</string>
     <string name="autoplay_allowed_addons">Addons Permitidos</string>

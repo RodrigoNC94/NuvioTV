@@ -906,6 +906,8 @@
     <string name="autoplay_scope">অটো-প্লে সোর্স স্কোপ</string>
     <string name="autoplay_timeout_title">স্ট্রিম নির্বাচনের সময়সীমা</string>
     <string name="autoplay_timeout_sub">নির্বাচন করার আগে অ্যাডনসমূহের জন্য অপেক্ষা করুন।</string>
+    <string name="addon_stream_timeout_title">অ্যাডনের সাড়া দেওয়ার সময়সীমা</string>
+    <string name="addon_stream_timeout_sub">বাদ দেওয়ার আগে প্রতিটি অ্যাডন স্ট্রিম ফেরত দেওয়ার জন্য কত সময় পাবে। AIOStreams-এর মতো ধীর কোনো অ্যাডন কোনো ফলাফল না দেখালে এটি বাড়ান।</string>
     <string name="autoplay_timeout_instant">তাত্ক্ষণিক</string>
     <string name="autoplay_timeout_unlimited">সীমাহীন</string>
     <string name="autoplay_allowed_addons">অনুমোদিত অ্যাডনসমূহ</string>

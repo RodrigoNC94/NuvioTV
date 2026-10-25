@@ -13,6 +13,8 @@ import com.nuvio.tv.core.plugin.resolvePluginSeasonEpisode
 import com.nuvio.tv.core.profile.ProfileManager
 import com.nuvio.tv.core.tmdb.TmdbService
 import com.nuvio.tv.data.local.DebridSettingsDataStore
+import com.nuvio.tv.data.local.PlayerSettings
+import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import com.nuvio.tv.data.mapper.toDomain
 import com.nuvio.tv.data.mediaserver.ServerException
 import com.nuvio.tv.data.mediaserver.ServerFailure
@@ -64,19 +66,6 @@ import javax.inject.Inject
 
 private const val TAG = "StreamRepositoryImpl"
 
-/**
- * Per-addon deadline for a single stream fetch.
- *
- * Without this each addon inherits only the shared client's connect(30s) +
- * read(60s) budget, so one unresponsive source can hold its slot for ~90s.
- * 60s matches the client's read budget: aggregators such as AIOStreams only
- * answer once every source behind them has answered or hit its own timeout
- * (user-configurable up to 50s), so a shorter deadline throws away their whole
- * result when one upstream service is slow or down. Results already stream out
- * as each addon lands, so a slow addon never holds back the others.
- */
-private const val ADDON_STREAM_FETCH_TIMEOUT_MS = 60_000L
-
 /** Deadline for loading one media server's streams. */
 private const val SERVER_SOURCE_FETCH_TIMEOUT_MS = 15_000L
 
@@ -91,8 +80,29 @@ class StreamRepositoryImpl @Inject constructor(
     private val debridStreamPresentation: DebridStreamPresentation,
     private val localDebridAvailabilityService: LocalDebridAvailabilityService,
     private val healthStore: AddonHealthStore,
-    private val serverStreams: ServerStreams
+    private val serverStreams: ServerStreams,
+    private val playerSettingsDataStore: PlayerSettingsDataStore
 ) : StreamRepository {
+
+    /**
+     * Per-addon deadline for a single stream fetch, from the Addon response timeout
+     * setting (60s by default). Without one each addon inherits only the shared
+     * client's connect(30s) + read(60s) budget. It must not be short: aggregators
+     * such as AIOStreams only answer once every source behind them has answered or
+     * hit its own timeout, so a short deadline throws away their whole result when
+     * one upstream service is slow or down. Results stream out as each addon lands,
+     * so a slow addon never holds back the others.
+     */
+    private suspend fun addonStreamTimeoutMs(): Long {
+        val seconds = try {
+            playerSettingsDataStore.playerSettings.first().addonStreamTimeoutSeconds
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            PlayerSettings.DEFAULT_ADDON_STREAM_TIMEOUT_SECONDS
+        }
+        return seconds * 1_000L
+    }
 
     // Detached scope for passive health writes so recording a stream
     // outcome never adds latency to the fetch or delays the channel close.
@@ -268,6 +278,8 @@ class StreamRepositoryImpl @Inject constructor(
         val scrapeT0 = android.os.SystemClock.elapsedRealtime()
         serverStreams.logSkippedSources(type, videoId, season, episode)
 
+        val addonTimeoutMs = addonStreamTimeoutMs()
+
         try {
             // Filter addons that support streams for this type and id
             val streamAddons = addons.filter { addon ->
@@ -301,8 +313,8 @@ class StreamRepositoryImpl @Inject constructor(
                         var addonOutcome = "cancelled"
                         var addonStreamCount = 0
                         try {
-                          withTimeout(ADDON_STREAM_FETCH_TIMEOUT_MS) {
-                            val streamsResult = getStreamsFromAddon(addon, type, videoId)
+                          withTimeout(addonTimeoutMs) {
+                            val streamsResult = fetchStreamsFromAddon(addon, type, videoId, addonTimeoutMs)
                             when (streamsResult) {
                                 is NetworkResult.Success -> {
                                     if (streamsResult.data.isNotEmpty()) {
@@ -366,7 +378,7 @@ class StreamRepositoryImpl @Inject constructor(
                                 throw e
                             }
                             addonOutcome = "timeout"
-                            Log.w(TAG, "Addon ${addon.name} exceeded ${ADDON_STREAM_FETCH_TIMEOUT_MS}ms - abandoning")
+                            Log.w(TAG, "Addon ${addon.name} exceeded ${addonTimeoutMs}ms - abandoning")
                             attemptedFailures += StreamAttemptFailure(
                                 addonName = addon.displayName,
                                 kind = StreamFailureKind.REQUEST_FAILED,
@@ -880,6 +892,13 @@ class StreamRepositoryImpl @Inject constructor(
         addon: Addon,
         type: String,
         videoId: String
+    ): NetworkResult<List<Stream>> = fetchStreamsFromAddon(addon, type, videoId, addonStreamTimeoutMs())
+
+    private suspend fun fetchStreamsFromAddon(
+        addon: Addon,
+        type: String,
+        videoId: String,
+        timeoutMs: Long
     ): NetworkResult<List<Stream>> {
         val cleanBaseUrl = addon.baseUrl.trimEnd('/')
         val queryStart = cleanBaseUrl.indexOf('?')
@@ -897,7 +916,7 @@ class StreamRepositoryImpl @Inject constructor(
         val resolvedAddonName = addon.displayName
         val addonLogo = addon.logo
 
-        return when (val result = safeAddonApiCall(context, ADDON_STREAM_FETCH_TIMEOUT_MS) { api.getStreams(streamUrl) }) {
+        return when (val result = safeAddonApiCall(context, timeoutMs) { api.getStreams(streamUrl) }) {
             is NetworkResult.Success -> {
                 val streams = result.data.streams?.map { 
                     it.toDomain(resolvedAddonName, addonLogo) 

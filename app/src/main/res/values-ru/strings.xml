@@ -560,6 +560,8 @@
     <string name="autoplay_scope">Область поиска автовоспроизведения</string>
     <string name="autoplay_timeout_title">Таймаут выбора потока</string>
     <string name="autoplay_timeout_sub">Время ожидания аддонов перед выбором.</string>
+    <string name="addon_stream_timeout_title">Таймаут ответа аддона</string>
+    <string name="addon_stream_timeout_sub">Сколько времени у каждого аддона есть на возврат потоков, прежде чем он будет пропущен. Увеличьте, если медленный аддон, например AIOStreams, не показывает результатов.</string>
     <string name="autoplay_timeout_instant">Мгновенно</string>
     <string name="autoplay_timeout_unlimited">Неограниченно</string>
     <string name="autoplay_allowed_addons">Разрешенные аддоны</string>

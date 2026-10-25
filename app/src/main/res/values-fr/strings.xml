@@ -940,6 +940,8 @@
     <string name="autoplay_scope">Portée des sources de la lecture automatique</string>
     <string name="autoplay_timeout_title">Délai de sélection du flux</string>
     <string name="autoplay_timeout_sub">Temps d’attente des addons avant la sélection.</string>
+    <string name="addon_stream_timeout_title">Délai de réponse des addons</string>
+    <string name="addon_stream_timeout_sub">Temps accordé à chaque addon pour renvoyer des flux avant d’être ignoré. Augmentez-le si un addon lent comme AIOStreams n’affiche aucun résultat.</string>
     <string name="autoplay_timeout_instant">Instantané</string>
     <string name="autoplay_timeout_unlimited">Illimité</string>
     <string name="autoplay_allowed_addons">Addons autorisés</string>

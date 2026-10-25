@@ -966,6 +966,8 @@
     <string name="autoplay_scope">Otomatik Oynatma Kaynak Kapsamı</string>
     <string name="autoplay_timeout_title">Kaynak Seçim Zaman Aşımı</string>
     <string name="autoplay_timeout_sub">Seçim yapılmadan önce eklentiler için beklenecek süre.</string>
+    <string name="addon_stream_timeout_title">Eklenti Yanıt Zaman Aşımı</string>
+    <string name="addon_stream_timeout_sub">Her eklentinin atlanmadan önce kaynak döndürmek için ne kadar süresi olduğu. AIOStreams gibi yavaş bir eklenti sonuç göstermiyorsa bunu artırın.</string>
     <string name="autoplay_timeout_instant">Anında</string>
     <string name="autoplay_timeout_unlimited">Sınırsız</string>
     <string name="autoplay_allowed_addons">İzin Verilen Eklentiler</string>

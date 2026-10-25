@@ -353,6 +353,8 @@
     <string name="autoplay_scope">Källomfång för automatisk uppspelning</string>
     <string name="autoplay_timeout_title">Tidsgräns för strömval</string>
     <string name="autoplay_timeout_sub">Väntetid för tillägg innan val görs.</string>
+    <string name="addon_stream_timeout_title">Tidsgräns för tilläggssvar</string>
+    <string name="addon_stream_timeout_sub">Hur länge varje tillägg får på sig att returnera strömmar innan det hoppas över. Höj den om ett långsamt tillägg som AIOStreams inte visar några resultat.</string>
     <string name="autoplay_timeout_instant">Omedelbart</string>
     <string name="autoplay_timeout_unlimited">Obegränsad</string>
     <string name="autoplay_allowed_addons">Tillåtna tillägg</string>

@@ -734,6 +734,8 @@
     <string name="autoplay_scope">نطاق التشغيل التلقائي</string>
     <string name="autoplay_timeout_title">مهلة اختيار المصدر</string>
     <string name="autoplay_timeout_sub">وقت الانتظار للإضافات قبل الاختيار.</string>
+    <string name="addon_stream_timeout_title">مهلة استجابة الإضافة</string>
+    <string name="addon_stream_timeout_sub">المدة التي تُمنح لكل إضافة لإرجاع المصادر قبل تخطيها. زِدها إذا لم تُظهر إضافة بطيئة مثل AIOStreams أي نتائج.</string>
     <string name="autoplay_timeout_instant">فوري</string>
     <string name="autoplay_timeout_unlimited">غير محدود</string>
     <string name="autoplay_allowed_addons">الإضافات المسموح بها</string>

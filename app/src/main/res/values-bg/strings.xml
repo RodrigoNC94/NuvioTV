@@ -743,6 +743,8 @@
     <string name="autoplay_scope">Обхват на източници за автоматично възпроизвеждане</string>
     <string name="autoplay_timeout_title">Таймаут за избор на поток</string>
     <string name="autoplay_timeout_sub">Време за изчакване на добавките преди избор.</string>
+    <string name="addon_stream_timeout_title">Таймаут за отговор на добавка</string>
+    <string name="addon_stream_timeout_sub">Колко време има всяка добавка да върне потоци, преди да бъде пропусната. Увеличете го, ако бавна добавка като AIOStreams не показва резултати.</string>
     <string name="autoplay_timeout_instant">Моментално</string>
     <string name="autoplay_timeout_unlimited">Неограничено</string>
     <string name="autoplay_allowed_addons">Разрешени добавки</string>

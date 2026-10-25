@@ -35,7 +35,8 @@ internal fun captureMissingPresentationChoices(
         "player_settings" -> setOf(
             "speculative_stream_search_enabled",
             "show_source_line_badges",
-            "show_source_line_release_group"
+            "show_source_line_release_group",
+            "addon_stream_timeout_seconds"
         )
         else -> emptySet()
     }

@@ -665,6 +665,8 @@
     <string name="autoplay_scope">Obseg samodejnega predvajanja virov</string>
 	<string name="autoplay_timeout_title">Časovna omejitev izbire vira</string>
     <string name="autoplay_timeout_sub">Čas čakanja na dodatke pred izbiro.</string>
+    <string name="addon_stream_timeout_title">Časovna omejitev odziva dodatka</string>
+    <string name="addon_stream_timeout_sub">Koliko časa ima vsak dodatek, da vrne vire, preden je preskočen. Povečajte jo, če počasen dodatek, kot je AIOStreams, ne prikaže rezultatov.</string>
     <string name="autoplay_timeout_instant">Takoj</string>
     <string name="autoplay_timeout_unlimited">Neomejeno</string>																	   
 	<string name="autoplay_allowed_addons">Dovoljeni dodatki</string>

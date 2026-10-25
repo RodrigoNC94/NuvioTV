@@ -359,6 +359,8 @@
     <string name="autoplay_scope">Zakres źródeł auto-play</string>
     <string name="autoplay_timeout_title">Limit czasu wyboru strumienia</string>
     <string name="autoplay_timeout_sub">Czas oczekiwania na dodatki przed wyborem.</string>
+    <string name="addon_stream_timeout_title">Limit czasu odpowiedzi dodatku</string>
+    <string name="addon_stream_timeout_sub">Ile czasu każdy dodatek ma na zwrócenie strumieni, zanim zostanie pominięty. Zwiększ go, jeśli wolny dodatek, taki jak AIOStreams, nie pokazuje wyników.</string>
     <string name="autoplay_timeout_instant">Natychmiast</string>
     <string name="autoplay_timeout_unlimited">Bez limitu</string>
     <string name="autoplay_allowed_addons">Dozwolone dodatki</string>

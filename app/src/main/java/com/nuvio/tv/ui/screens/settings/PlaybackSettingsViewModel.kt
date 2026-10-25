@@ -659,6 +659,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setStreamAutoPlayTimeoutSeconds(seconds)
     }
 
+    suspend fun setAddonStreamTimeoutSeconds(seconds: Int) {
+        playerSettingsDataStore.setAddonStreamTimeoutSeconds(seconds)
+    }
+
     suspend fun setSpeculativeStreamSearchEnabled(enabled: Boolean) {
         playerSettingsDataStore.setSpeculativeStreamSearchEnabled(enabled)
     }

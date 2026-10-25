@@ -963,6 +963,8 @@
     <string name="autoplay_scope">Phạm vi nguồn tự động phát</string>
     <string name="autoplay_timeout_title">Thời gian chờ khi chọn luồng</string>
     <string name="autoplay_timeout_sub">Thời gian chờ các tiện ích trước khi chọn luồng</string>
+    <string name="addon_stream_timeout_title">Thời gian chờ phản hồi tiện ích</string>
+    <string name="addon_stream_timeout_sub">Thời gian mỗi tiện ích có để trả về luồng trước khi bị bỏ qua. Hãy tăng nếu một tiện ích chậm như AIOStreams không hiển thị kết quả.</string>
     <string name="autoplay_timeout_instant">Ngay lập tức</string>
     <string name="autoplay_timeout_unlimited">Không giới hạn</string>
     <string name="autoplay_allowed_addons">Tiện ích được phép</string>

@@ -878,6 +878,8 @@
 <string name="autoplay_scope">Ambito sorgenti riproduzione automatica</string>
 <string name="autoplay_timeout_title">Timeout selezione stream</string>
 <string name="autoplay_timeout_sub">Tempo di attesa degli addon prima della selezione.</string>
+<string name="addon_stream_timeout_title">Timeout risposta addon</string>
+<string name="addon_stream_timeout_sub">Quanto tempo ha ogni addon per restituire gli stream prima di essere saltato. Aumentalo se un addon lento come AIOStreams non mostra risultati.</string>
 <string name="autoplay_timeout_instant">Immediato</string>
 <string name="autoplay_timeout_unlimited">Illimitato</string>
 <string name="autoplay_allowed_addons">Addon consentiti</string>

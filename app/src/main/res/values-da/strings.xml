@@ -735,6 +735,8 @@
     <string name="autoplay_scope">Omfang for autoplay-kilder</string>
     <string name="autoplay_timeout_title">Timeout for streamvalg</string>
     <string name="autoplay_timeout_sub">Ventetid for addons før valg.</string>
+    <string name="addon_stream_timeout_title">Timeout for addon-svar</string>
+    <string name="addon_stream_timeout_sub">Hvor længe hver addon har til at returnere streams, før den springes over. Hæv den, hvis en langsom addon som AIOStreams ikke viser resultater.</string>
     <string name="autoplay_timeout_instant">Øjeblikkelig</string>
     <string name="autoplay_timeout_unlimited">Ubegrænset</string>
     <string name="autoplay_allowed_addons">Tilladte addons</string>

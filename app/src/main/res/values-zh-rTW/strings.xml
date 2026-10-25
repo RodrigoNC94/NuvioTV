@@ -913,6 +913,8 @@
     <string name="autoplay_scope">自動播放來源範圍</string>
     <string name="autoplay_timeout_title">串流選擇逾時</string>
     <string name="autoplay_timeout_sub">選擇前等待擴充套件的時間。</string>
+    <string name="addon_stream_timeout_title">擴充套件回應逾時</string>
+    <string name="addon_stream_timeout_sub">每個擴充套件傳回串流的最長等待時間，逾時後將略過。如果 AIOStreams 等較慢的擴充套件沒有結果，請調高此值。</string>
     <string name="autoplay_timeout_instant">即時</string>
     <string name="autoplay_timeout_unlimited">無限制</string>
     <string name="autoplay_allowed_addons">允許的擴充套件</string>

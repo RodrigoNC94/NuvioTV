@@ -466,6 +466,8 @@
     <string name="autoplay_scope">Opseg Izvora za Auto-play</string>
     <string name="autoplay_timeout_title">Timeout za Odabir Streama</string>
     <string name="autoplay_timeout_sub">Vrijeme čekanja na addone prije odabira.</string>
+    <string name="addon_stream_timeout_title">Timeout za Odgovor Addona</string>
+    <string name="addon_stream_timeout_sub">Koliko vremena svaki addon ima da vrati streamove prije nego što bude preskočen. Povećajte ga ako spori addon poput AIOStreams ne prikazuje rezultate.</string>
     <string name="autoplay_timeout_instant">Odmah</string>
     <string name="autoplay_timeout_unlimited">Neograničeno</string>
     <string name="autoplay_allowed_addons">Dozvoljeni Addoni</string>

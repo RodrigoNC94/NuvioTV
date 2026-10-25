@@ -967,6 +967,8 @@
     <string name="autoplay_scope">Alcance de fuente de reproducción automática</string>
     <string name="autoplay_timeout_title">Tiempo de espera de selección de transmisión</string>
     <string name="autoplay_timeout_sub">Tiempo de espera para los complementos antes de seleccionar.</string>
+    <string name="addon_stream_timeout_title">Tiempo de respuesta de complementos</string>
+    <string name="addon_stream_timeout_sub">Tiempo que tiene cada complemento para devolver transmisiones antes de omitirlo. Auméntalo si un complemento lento como AIOStreams no muestra resultados.</string>
     <string name="autoplay_timeout_instant">Instantáneo</string>
     <string name="autoplay_timeout_unlimited">Ilimitado</string>
     <string name="autoplay_allowed_addons">Complementos permitidos</string>

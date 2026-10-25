@@ -805,6 +805,8 @@
     <string name="autoplay_scope">Fusha e burimeve për luajtjen automatike</string>
     <string name="autoplay_timeout_title">Koha e pritjes për zgjedhjen e transmetimit</string>
     <string name="autoplay_timeout_sub">Koha e pritjes për shtesat para zgjedhjes.</string>
+    <string name="addon_stream_timeout_title">Koha e pritjes për përgjigjen e shtesës</string>
+    <string name="addon_stream_timeout_sub">Sa kohë ka çdo shtesë për të kthyer transmetime përpara se të anashkalohet. Rriteni nëse një shtesë e ngadaltë si AIOStreams nuk shfaq rezultate.</string>
     <string name="autoplay_timeout_instant">Menjëherë</string>
     <string name="autoplay_timeout_unlimited">Pa kufi</string>
     <string name="autoplay_allowed_addons">Shtesat e lejuara</string>

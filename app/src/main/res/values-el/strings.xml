@@ -815,6 +815,8 @@
   <string name="autoplay_scope">Εύρος πηγών αυτόματης αναπαραγωγής</string>
   <string name="autoplay_timeout_title">Χρονικό όριο επιλογής ροής</string>
   <string name="autoplay_timeout_sub">Χρόνος αναμονής για πρόσθετα πριν την επιλογή.</string>
+  <string name="addon_stream_timeout_title">Χρονικό όριο απόκρισης πρόσθετου</string>
+  <string name="addon_stream_timeout_sub">Πόσο χρόνο έχει κάθε πρόσθετο για να επιστρέψει ροές πριν παραλειφθεί. Αυξήστε το αν ένα αργό πρόσθετο, όπως το AIOStreams, δεν εμφανίζει αποτελέσματα.</string>
   <string name="autoplay_timeout_instant">Άμεσα</string>
   <string name="autoplay_timeout_unlimited">Απεριόριστο</string>
   <string name="autoplay_allowed_addons">Επιτρεπόμενα πρόσθετα</string>
