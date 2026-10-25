@@ -433,9 +433,6 @@ object FrameRateUtils {
     private fun ModeMatchQuality.isExactOrDouble() =
         this == ModeMatchQuality.EXACT || this == ModeMatchQuality.DOUBLE
 
-    /** 25 and 30 fps look smoother at 50 and 60 Hz on most TVs: each frame shown twice, same motion. */
-    internal fun prefersDoubleRefresh(frameRate: Float): Boolean = frameRate in 24.5f..30.5f
-
     private fun chooseBestModeForFrameRate(
         activeMode: DisplayModeSpec,
         modes: List<DisplayModeSpec>,
@@ -455,11 +452,6 @@ object FrameRateUtils {
         modes: List<DisplayModeSpec>,
         frameRate: Float
     ): ModeChoice {
-        if (prefersDoubleRefresh(frameRate)) {
-            pickBestForTarget(modes, frameRate * 2f)?.let {
-                return ModeChoice(it, ModeMatchQuality.DOUBLE)
-            }
-        }
         pickBestForTarget(modes, frameRate)?.let {
             return ModeChoice(it, ModeMatchQuality.EXACT)
         }
