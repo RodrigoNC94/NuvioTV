@@ -19,7 +19,6 @@ import com.nuvio.tv.core.streams.StreamBadgeMatcher
 import com.nuvio.tv.domain.model.StreamBadge
 import com.nuvio.tv.ui.components.StreamImportedBadgeChip
 import com.nuvio.tv.ui.theme.NuvioTheme
-import com.nuvio.tv.ui.util.languageCodeToName
 import kotlinx.coroutines.delay
 
 sealed interface PlayerBadge {
@@ -59,8 +58,7 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
             builtInPlayerBadges(mediaInfo, releaseText).map { PlayerBadge.BuiltIn(it) }
         }
     }
-    val language = selectedAudio?.language
-    val text = playbackMatchText(mediaInfo, listOfNotNull(language, language?.let(::languageCodeToName)), releaseText)
+    val text = playbackMatchText(mediaInfo, playbackLanguageTokens(selectedAudio?.language), releaseText)
     return remember(text, filters) {
         StreamBadgeMatcher.matchedBadges(listOfNotNull(text.takeIf { it.isNotBlank() }), filters)
             .filter { it.imageURL.isNotBlank() }

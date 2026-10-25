@@ -63,9 +63,14 @@ internal fun releaseSaysAtmos(codec: String, release: String): Boolean =
 internal fun releaseSaysDtsHdMa(codec: String, release: String): Boolean =
     codec == "DTS-HD" && DTS_HD_MA.containsMatchIn(release)
 
+/** DTS:X rides on a DTS-HD MA stream, which ExoPlayer reports as DTS-HD. */
+internal fun releaseSaysDtsX(codec: String, release: String): Boolean =
+    codec == "DTS-HD" && DTS_X.containsMatchIn(release)
+
 private val ATMOS = Regex("""(?:(?<![a-z])|(?<=ddp|truehd))atmos(?![a-z])""")
 private val DTS_HD_MA = Regex("""(?<![a-z])dts[\W_]*hd[\W_]*(?:ma|master[\W_]*audio)(?![a-z])""")
-private val REMUX = Regex("""(?<![a-z])remux(?![a-z])""")
+private val DTS_X = Regex("""(?<![a-z])dts[ .:_-]?x(?![a-z0-9])""")
+private val REMUX =Regex("""(?<![a-z])remux(?![a-z])""")
 private val WEB_DL = Regex("""(?<![a-z])web[ ._-]?dl(?![a-z])""")
 private val WEBRIP = Regex("""(?<![a-z])web[ ._-]?rip(?![a-z])""")
 private val BLURAY = Regex("""(?<![a-z])(blu[ ._-]?ray|bdrip|brrip)(?![a-z])""")

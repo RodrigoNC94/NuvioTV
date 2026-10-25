@@ -43,4 +43,16 @@ class PlayerMediaInfoHdrTest {
     fun `sdr without any colour data`() {
         assertEquals(emptyList<String>(), hevc().hdrFormats())
     }
+
+    @Test
+    fun `bit depth from the codecs string`() {
+        assertEquals(10, codecsBitDepth("hvc1.2.4.L150.B0"))
+        assertEquals(null, codecsBitDepth("hev1.1.6.L93.B0"))
+        assertEquals(10, codecsBitDepth("avc1.6E0028"))
+        assertEquals(null, codecsBitDepth("avc1.640028"))
+        assertEquals(10, codecsBitDepth("av01.0.08M.10"))
+        assertEquals(10, codecsBitDepth("vp09.02.10.10"))
+        assertEquals(10, codecsBitDepth("dvhe.08.06"))
+        assertEquals(null, codecsBitDepth("mp4a.40.2"))
+    }
 }
