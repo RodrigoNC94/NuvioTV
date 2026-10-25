@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Oynatma istatistiklerini aç/kapat</string>
     <string name="remote_buttons_job_next_audio">Sonraki ses parçası</string>
     <string name="remote_buttons_job_subtitles_toggle">Altyazıları aç/kapat</string>
+    <string name="remote_buttons_job_subtitles_up">Altyazıyı yukarı taşı</string>
+    <string name="remote_buttons_job_subtitles_down">Altyazıyı aşağı taşı</string>
     <string name="remote_buttons_job_play_pause">Oynat/Duraklat</string>
     <string name="remote_buttons_job_seek_forward">İleri sar</string>
     <string name="remote_buttons_job_seek_back">Geri sar</string>

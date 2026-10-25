@@ -115,7 +115,8 @@
     <string name="calendar_setting_lists">تضمين قوائمي الخاصة</string>
     <string name="calendar_setting_lists_sub">يتابع أيضاً العناوين في قوائمك الخاصة على Trakt وMDBList. القوائم الطويلة تزحم التقويم.</string>
     <string name="calendar_setting_other_services">متابعة خدماتي الأخرى أيضاً</string>
-    <string name="calendar_setting_other_services_sub">يتابع أيضاً Trakt وSimkl وMDBList ومكتبة Nuvio، وليس مصدر المكتبة وحده.</string>
+    <string name="calendar_setting_other_services_from">تأتي مكتبتك من %1$s ومن مكتبة Nuvio. فعّل هذا الخيار لمتابعة Trakt وSimkl وMDBList أيضاً.</string>
+    <string name="calendar_setting_other_services_nuvio">تأتي مكتبتك من مكتبة Nuvio. فعّل هذا الخيار لمتابعة Trakt وSimkl وMDBList أيضاً.</string>
     <string name="calendar_setting_hidden">المسلسلات المخفية</string>
     <string name="calendar_setting_hidden_sub">عناوين أخفيتها من التقويم. اختر واحداً لإظهاره مجدداً.</string>
     <plurals name="calendar_setting_hidden_value">

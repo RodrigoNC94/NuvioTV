@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Estatísticas de reprodução: ligar/desligar</string>
     <string name="remote_buttons_job_next_audio">Faixa de áudio seguinte</string>
     <string name="remote_buttons_job_subtitles_toggle">Legendas: ligar/desligar</string>
+    <string name="remote_buttons_job_subtitles_up">Subir legendas</string>
+    <string name="remote_buttons_job_subtitles_down">Descer legendas</string>
     <string name="remote_buttons_job_play_pause">Reproduzir/Pausa</string>
     <string name="remote_buttons_job_seek_forward">Avançar</string>
     <string name="remote_buttons_job_seek_back">Recuar</string>

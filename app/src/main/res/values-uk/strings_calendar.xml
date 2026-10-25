@@ -105,7 +105,8 @@
     <string name="calendar_setting_lists">Враховувати мої списки</string>
     <string name="calendar_setting_lists_sub">Також відстежує тайтли з ваших списків Trakt і MDBList. Довгі списки перевантажують календар.</string>
     <string name="calendar_setting_other_services">Враховувати й мої інші сервіси</string>
-    <string name="calendar_setting_other_services_sub">Також відстежує Trakt, Simkl, MDBList і вашу бібліотеку Nuvio, а не лише джерело бібліотеки.</string>
+    <string name="calendar_setting_other_services_from">Ваша бібліотека береться з %1$s і вашої бібліотеки Nuvio. Увімкніть, щоб відстежувати також Trakt, Simkl і MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Ваша бібліотека береться з вашої бібліотеки Nuvio. Увімкніть, щоб відстежувати також Trakt, Simkl і MDBList.</string>
     <string name="calendar_setting_hidden">Приховані серіали</string>
     <string name="calendar_setting_hidden_sub">Тайтли, які ви приховали з календаря. Оберіть один, щоб повернути його.</string>
     <plurals name="calendar_setting_hidden_value">

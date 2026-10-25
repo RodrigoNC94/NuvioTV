@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Štatistiky prehrávania zap./vyp.</string>
     <string name="remote_buttons_job_next_audio">Ďalšia zvuková stopa</string>
     <string name="remote_buttons_job_subtitles_toggle">Titulky zap./vyp.</string>
+    <string name="remote_buttons_job_subtitles_up">Titulky vyššie</string>
+    <string name="remote_buttons_job_subtitles_down">Titulky nižšie</string>
     <string name="remote_buttons_job_play_pause">Prehrať/Pozastaviť</string>
     <string name="remote_buttons_job_seek_forward">Pretáčanie dopredu</string>
     <string name="remote_buttons_job_seek_back">Pretáčanie dozadu</string>

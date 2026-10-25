@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">再生統計のオン/オフ</string>
     <string name="remote_buttons_job_next_audio">次の音声トラック</string>
     <string name="remote_buttons_job_subtitles_toggle">字幕のオン/オフ</string>
+    <string name="remote_buttons_job_subtitles_up">字幕を上へ</string>
+    <string name="remote_buttons_job_subtitles_down">字幕を下へ</string>
     <string name="remote_buttons_job_play_pause">再生/一時停止</string>
     <string name="remote_buttons_job_seek_forward">早送りシーク</string>
     <string name="remote_buttons_job_seek_back">早戻しシーク</string>

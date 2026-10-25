@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Statystyki odtwarzania wł./wył.</string>
     <string name="remote_buttons_job_next_audio">Następna ścieżka audio</string>
     <string name="remote_buttons_job_subtitles_toggle">Napisy wł./wył.</string>
+    <string name="remote_buttons_job_subtitles_up">Napisy wyżej</string>
+    <string name="remote_buttons_job_subtitles_down">Napisy niżej</string>
     <string name="remote_buttons_job_play_pause">Odtwórz/Pauza</string>
     <string name="remote_buttons_job_seek_forward">Przewijanie do przodu</string>
     <string name="remote_buttons_job_seek_back">Przewijanie do tyłu</string>

@@ -90,7 +90,8 @@
     <string name="calendar_setting_lists">Gồm danh sách của tôi</string>
     <string name="calendar_setting_lists_sub">Theo dõi cả nội dung trong danh sách Trakt và MDBList của bạn. Danh sách dài sẽ làm Lịch rối.</string>
     <string name="calendar_setting_other_services">Theo dõi cả các dịch vụ khác của tôi</string>
-    <string name="calendar_setting_other_services_sub">Theo dõi cả Trakt, Simkl, MDBList và thư viện Nuvio của bạn, không chỉ nguồn thư viện.</string>
+    <string name="calendar_setting_other_services_from">Thư viện của bạn lấy từ %1$s và thư viện Nuvio của bạn. Bật để theo dõi cả Trakt, Simkl và MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Thư viện của bạn lấy từ thư viện Nuvio của bạn. Bật để theo dõi cả Trakt, Simkl và MDBList.</string>
     <string name="calendar_setting_hidden">Chương trình đã ẩn</string>
     <string name="calendar_setting_hidden_sub">Nội dung bạn đã ẩn khỏi Lịch. Chọn một mục để hiện lại.</string>
     <plurals name="calendar_setting_hidden_value">

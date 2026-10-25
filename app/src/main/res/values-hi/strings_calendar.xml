@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">मेरी अपनी लिस्ट शामिल करें</string>
     <string name="calendar_setting_lists_sub">आपकी अपनी Trakt और MDBList लिस्ट के टाइटल भी फ़ॉलो करता है। लंबी लिस्ट से कैलेंडर भर जाता है।</string>
     <string name="calendar_setting_other_services">मेरी दूसरी सेवाएँ भी फ़ॉलो करें</string>
-    <string name="calendar_setting_other_services_sub">सिर्फ़ आपका लाइब्रेरी सोर्स नहीं, Trakt, Simkl, MDBList और आपकी Nuvio लाइब्रेरी को भी फ़ॉलो करता है।</string>
+    <string name="calendar_setting_other_services_from">आपकी लाइब्रेरी %1$s और आपकी Nuvio लाइब्रेरी से आती है। Trakt, Simkl और MDBList को भी फ़ॉलो करने के लिए चालू करें।</string>
+    <string name="calendar_setting_other_services_nuvio">आपकी लाइब्रेरी आपकी Nuvio लाइब्रेरी से आती है। Trakt, Simkl और MDBList को भी फ़ॉलो करने के लिए चालू करें।</string>
     <string name="calendar_setting_hidden">छुपाए गए शो</string>
     <string name="calendar_setting_hidden_sub">जो टाइटल आपने कैलेंडर से छुपाए। फिर से दिखाने के लिए एक चुनें।</string>
     <plurals name="calendar_setting_hidden_value">

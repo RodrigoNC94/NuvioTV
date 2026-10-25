@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Mostra/nascondi statistiche di riproduzione</string>
     <string name="remote_buttons_job_next_audio">Traccia audio successiva</string>
     <string name="remote_buttons_job_subtitles_toggle">Attiva/disattiva sottotitoli</string>
+    <string name="remote_buttons_job_subtitles_up">Sottotitoli più su</string>
+    <string name="remote_buttons_job_subtitles_down">Sottotitoli più giù</string>
     <string name="remote_buttons_job_play_pause">Play/Pausa</string>
     <string name="remote_buttons_job_seek_forward">Scorri avanti</string>
     <string name="remote_buttons_job_seek_back">Scorri indietro</string>

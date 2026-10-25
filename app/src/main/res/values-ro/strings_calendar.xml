@@ -100,7 +100,8 @@
     <string name="calendar_setting_lists">Include listele mele</string>
     <string name="calendar_setting_lists_sub">Urmărește și titlurile din listele tale Trakt și MDBList. Listele lungi aglomerează Calendarul.</string>
     <string name="calendar_setting_other_services">Urmărește și celelalte servicii ale mele</string>
-    <string name="calendar_setting_other_services_sub">Urmărește și Trakt, Simkl, MDBList și biblioteca ta Nuvio, nu doar sursa bibliotecii.</string>
+    <string name="calendar_setting_other_services_from">Biblioteca ta vine din %1$s și din biblioteca ta Nuvio. Activează pentru a urmări și Trakt, Simkl și MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Biblioteca ta vine din biblioteca ta Nuvio. Activează pentru a urmări și Trakt, Simkl și MDBList.</string>
     <string name="calendar_setting_hidden">Seriale ascunse</string>
     <string name="calendar_setting_hidden_sub">Titluri ascunse din Calendar. Selectează unul pentru a-l afișa din nou.</string>
     <plurals name="calendar_setting_hidden_value">

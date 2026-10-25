@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">प्लेबैक स्टैट्स चालू/बंद</string>
     <string name="remote_buttons_job_next_audio">अगला ऑडियो ट्रैक</string>
     <string name="remote_buttons_job_subtitles_toggle">सबटाइटल चालू/बंद</string>
+    <string name="remote_buttons_job_subtitles_up">सबटाइटल ऊपर</string>
+    <string name="remote_buttons_job_subtitles_down">सबटाइटल नीचे</string>
     <string name="remote_buttons_job_play_pause">प्ले/पॉज़</string>
     <string name="remote_buttons_job_seek_forward">आगे खिसकाएँ</string>
     <string name="remote_buttons_job_seek_back">पीछे खिसकाएँ</string>

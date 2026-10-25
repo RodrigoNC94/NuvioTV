@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Статистика воспроизведения вкл./выкл.</string>
     <string name="remote_buttons_job_next_audio">Следующая аудиодорожка</string>
     <string name="remote_buttons_job_subtitles_toggle">Субтитры вкл./выкл.</string>
+    <string name="remote_buttons_job_subtitles_up">Субтитры выше</string>
+    <string name="remote_buttons_job_subtitles_down">Субтитры ниже</string>
     <string name="remote_buttons_job_play_pause">Воспроизведение/пауза</string>
     <string name="remote_buttons_job_seek_forward">Перемотка вперёд</string>
     <string name="remote_buttons_job_seek_back">Перемотка назад</string>

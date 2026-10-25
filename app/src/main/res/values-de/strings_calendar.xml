@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Eigene Listen einbeziehen</string>
     <string name="calendar_setting_lists_sub">Verfolgt auch Titel in Ihren eigenen Trakt- und MDBList-Listen. Lange Listen machen den Kalender unübersichtlich.</string>
     <string name="calendar_setting_other_services">Auch meine anderen Dienste verfolgen</string>
-    <string name="calendar_setting_other_services_sub">Verfolgt auch Trakt, Simkl, MDBList und Ihre Nuvio-Bibliothek, nicht nur Ihre Bibliothek-Quelle.</string>
+    <string name="calendar_setting_other_services_from">Ihre Bibliothek kommt von %1$s und aus Ihrer Nuvio-Bibliothek. Einschalten, um auch Trakt, Simkl und MDBList zu verfolgen.</string>
+    <string name="calendar_setting_other_services_nuvio">Ihre Bibliothek kommt aus Ihrer Nuvio-Bibliothek. Einschalten, um auch Trakt, Simkl und MDBList zu verfolgen.</string>
     <string name="calendar_setting_hidden">Ausgeblendete Serien</string>
     <string name="calendar_setting_hidden_sub">Titel, die Sie im Kalender ausgeblendet haben. Zum erneuten Anzeigen auswählen.</string>
     <plurals name="calendar_setting_hidden_value">

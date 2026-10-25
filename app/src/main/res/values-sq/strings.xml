@@ -766,7 +766,6 @@
     <string name="sub_advanced_section">Renderim i avancuar i titrave</string>
     <string name="sub_libass">Përdor libass për titrat ASS/SSA</string>
     <string name="sub_libass_sub">Eksperimentale: renderim i avancuar ASS/SSA (stile, pozicionim, animacione)</string>
-    <string name="sub_libass_mode">Modaliteti i renderimit Libass</string>
     <string name="sub_org_none">Asnjë (renditja e parazgjedhur)</string>
     <string name="sub_org_by_lang">Sipas gjuhës</string>
     <string name="sub_org_by_addon">Sipas shtesës</string>

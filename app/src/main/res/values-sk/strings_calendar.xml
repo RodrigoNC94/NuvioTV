@@ -105,7 +105,8 @@
     <string name="calendar_setting_lists">Zahrnúť moje vlastné zoznamy</string>
     <string name="calendar_setting_lists_sub">Sleduje aj tituly z vašich zoznamov Trakt a MDBList. Dlhé zoznamy Kalendár zahltia.</string>
     <string name="calendar_setting_other_services">Sledovať aj moje ďalšie služby</string>
-    <string name="calendar_setting_other_services_sub">Sleduje aj Trakt, Simkl, MDBList a vašu knižnicu Nuvio, nielen váš zdroj knižnice.</string>
+    <string name="calendar_setting_other_services_from">Vaša knižnica pochádza z %1$s a z vašej knižnice Nuvio. Zapnite, ak chcete sledovať aj Trakt, Simkl a MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Vaša knižnica pochádza z vašej knižnice Nuvio. Zapnite, ak chcete sledovať aj Trakt, Simkl a MDBList.</string>
     <string name="calendar_setting_hidden">Skryté seriály</string>
     <string name="calendar_setting_hidden_sub">Tituly, ktoré ste skryli z Kalendára. Vyberte titul a znova sa zobrazí.</string>
     <plurals name="calendar_setting_hidden_value">

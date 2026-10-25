@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Atkūrimo statistika įj./išj.</string>
     <string name="remote_buttons_job_next_audio">Kitas garso takelis</string>
     <string name="remote_buttons_job_subtitles_toggle">Subtitrai įj./išj.</string>
+    <string name="remote_buttons_job_subtitles_up">Subtitrai aukštyn</string>
+    <string name="remote_buttons_job_subtitles_down">Subtitrai žemyn</string>
     <string name="remote_buttons_job_play_pause">Leisti/pristabdyti</string>
     <string name="remote_buttons_job_seek_forward">Prasukti pirmyn</string>
     <string name="remote_buttons_job_seek_back">Prasukti atgal</string>

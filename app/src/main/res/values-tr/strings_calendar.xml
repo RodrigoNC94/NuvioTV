@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Kendi listelerimi dahil et</string>
     <string name="calendar_setting_lists_sub">Kendi Trakt ve MDBList listelerinizdeki içerikleri de takip eder. Uzun listeler Takvimi kalabalıklaştırır.</string>
     <string name="calendar_setting_other_services">Diğer hizmetlerimi de takip et</string>
-    <string name="calendar_setting_other_services_sub">Yalnızca kütüphane kaynağınızı değil, Trakt, Simkl, MDBList ve Nuvio kütüphanenizi de takip eder.</string>
+    <string name="calendar_setting_other_services_from">Kütüphaneniz %1$s ve Nuvio kütüphanenizden gelir. Trakt, Simkl ve MDBList takibi için açın.</string>
+    <string name="calendar_setting_other_services_nuvio">Kütüphaneniz Nuvio kütüphanenizden gelir. Trakt, Simkl ve MDBList takibi için açın.</string>
     <string name="calendar_setting_hidden">Gizlenen diziler</string>
     <string name="calendar_setting_hidden_sub">Takvimden gizlediğiniz içerikler. Tekrar göstermek için birini seçin.</string>
     <plurals name="calendar_setting_hidden_value">

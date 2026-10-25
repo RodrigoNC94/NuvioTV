@@ -647,7 +647,6 @@
     <string name="sub_advanced_section">மேம்பட்ட வசன வரி காட்சிப்படுத்தல்</string>
     <string name="sub_libass">ஏஎஸ்எஸ்/எஸ்எஸ்ஏ வசனங்களுக்கு லிபாஸ் பயன்படுத்து</string>
     <string name="sub_libass_sub">சோதனை நிலை: மேம்பட்ட ஏஎஸ்எஸ்/எஸ்எஸ்ஏ காட்சி (பாணி, நிலை, அசைவூட்டம்)</string>
-    <string name="sub_libass_mode">லிபாஸ் காட்சி முறை</string>
     <string name="sub_org_none">எதுவுமில்லை (இயல்புநிலை வரிசை)</string>
     <string name="sub_org_by_lang">மொழிப்படி</string>
     <string name="sub_org_by_addon">ஆட்ஒன்படி</string>

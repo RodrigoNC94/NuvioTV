@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Στατιστικά αναπαραγωγής ενεργ./απενεργ.</string>
     <string name="remote_buttons_job_next_audio">Επόμενο κομμάτι ήχου</string>
     <string name="remote_buttons_job_subtitles_toggle">Υπότιτλοι ενεργ./απενεργ.</string>
+    <string name="remote_buttons_job_subtitles_up">Υπότιτλοι πιο πάνω</string>
+    <string name="remote_buttons_job_subtitles_down">Υπότιτλοι πιο κάτω</string>
     <string name="remote_buttons_job_play_pause">Αναπαραγωγή/Παύση</string>
     <string name="remote_buttons_job_seek_forward">Μετακίνηση εμπρός</string>
     <string name="remote_buttons_job_seek_back">Μετακίνηση πίσω</string>

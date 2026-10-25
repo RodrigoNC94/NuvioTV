@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Lejátszási statisztika be/ki</string>
     <string name="remote_buttons_job_next_audio">Következő hangsáv</string>
     <string name="remote_buttons_job_subtitles_toggle">Feliratok be/ki</string>
+    <string name="remote_buttons_job_subtitles_up">Feliratok feljebb</string>
+    <string name="remote_buttons_job_subtitles_down">Feliratok lejjebb</string>
     <string name="remote_buttons_job_play_pause">Lejátszás/Szünet</string>
     <string name="remote_buttons_job_seek_forward">Tekerés előre</string>
     <string name="remote_buttons_job_seek_back">Tekerés hátra</string>

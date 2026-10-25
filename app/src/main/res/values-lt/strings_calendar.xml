@@ -105,7 +105,8 @@
     <string name="calendar_setting_lists">Įtraukti mano sąrašus</string>
     <string name="calendar_setting_lists_sub">Taip pat sekami pavadinimai iš jūsų „Trakt“ ir „MDBList“ sąrašų. Ilgi sąrašai perkrauna kalendorių.</string>
     <string name="calendar_setting_other_services">Sekti ir kitas mano paslaugas</string>
-    <string name="calendar_setting_other_services_sub">Taip pat sekami „Trakt“, „Simkl“, „MDBList“ ir jūsų „Nuvio“ biblioteka, ne tik bibliotekos šaltinis.</string>
+    <string name="calendar_setting_other_services_from">Jūsų biblioteka gaunama iš %1$s ir jūsų „Nuvio“ bibliotekos. Įjunkite, kad būtų sekami ir „Trakt“, „Simkl“ bei „MDBList“.</string>
+    <string name="calendar_setting_other_services_nuvio">Jūsų biblioteka gaunama iš jūsų „Nuvio“ bibliotekos. Įjunkite, kad būtų sekami ir „Trakt“, „Simkl“ bei „MDBList“.</string>
     <string name="calendar_setting_hidden">Paslėpti serialai</string>
     <string name="calendar_setting_hidden_sub">Pavadinimai, kuriuos paslėpėte kalendoriuje. Pasirinkite vieną, kad jis vėl būtų rodomas.</string>
     <plurals name="calendar_setting_hidden_value">

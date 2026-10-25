@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Включи моите списъци</string>
     <string name="calendar_setting_lists_sub">Следи и заглавията от твоите списъци в Trakt и MDBList. Дългите списъци претрупват календара.</string>
     <string name="calendar_setting_other_services">Следи и другите ми услуги</string>
-    <string name="calendar_setting_other_services_sub">Следи и Trakt, Simkl, MDBList и библиотеката ти в Nuvio, не само източника на библиотеката.</string>
+    <string name="calendar_setting_other_services_from">Библиотеката ти идва от %1$s и от библиотеката ти в Nuvio. Включи, за да следиш и Trakt, Simkl и MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Библиотеката ти идва от библиотеката ти в Nuvio. Включи, за да следиш и Trakt, Simkl и MDBList.</string>
     <string name="calendar_setting_hidden">Скрити сериали</string>
     <string name="calendar_setting_hidden_sub">Заглавия, които си скрил от календара. Избери едно, за да го покажеш отново.</string>
     <plurals name="calendar_setting_hidden_value">

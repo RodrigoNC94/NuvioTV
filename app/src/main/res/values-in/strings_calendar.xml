@@ -90,7 +90,8 @@
     <string name="calendar_setting_lists">Sertakan daftar saya sendiri</string>
     <string name="calendar_setting_lists_sub">Juga mengikuti judul di daftar Trakt dan MDBList milik Anda. Daftar panjang membuat Kalender ramai.</string>
     <string name="calendar_setting_other_services">Ikuti juga layanan saya yang lain</string>
-    <string name="calendar_setting_other_services_sub">Juga mengikuti Trakt, Simkl, MDBList, dan pustaka Nuvio Anda, bukan hanya sumber pustaka Anda.</string>
+    <string name="calendar_setting_other_services_from">Pustaka Anda berasal dari %1$s dan pustaka Nuvio Anda. Aktifkan untuk juga mengikuti Trakt, Simkl, dan MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Pustaka Anda berasal dari pustaka Nuvio Anda. Aktifkan untuk juga mengikuti Trakt, Simkl, dan MDBList.</string>
     <string name="calendar_setting_hidden">Serial tersembunyi</string>
     <string name="calendar_setting_hidden_sub">Judul yang Anda sembunyikan dari Kalender. Pilih salah satu untuk menampilkannya lagi.</string>
     <plurals name="calendar_setting_hidden_value">

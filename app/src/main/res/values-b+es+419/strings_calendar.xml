@@ -100,7 +100,8 @@
     <string name="calendar_setting_lists">Incluir mis propias listas</string>
     <string name="calendar_setting_lists_sub">También sigue los títulos de tus propias listas de Trakt y MDBList. Las listas largas llenan mucho el Calendario.</string>
     <string name="calendar_setting_other_services">Seguir también mis otros servicios</string>
-    <string name="calendar_setting_other_services_sub">También sigue Trakt, Simkl, MDBList y tu biblioteca de Nuvio, no solo tu fuente de la biblioteca.</string>
+    <string name="calendar_setting_other_services_from">Tu biblioteca viene de %1$s y de tu biblioteca de Nuvio. Actívalo para seguir también Trakt, Simkl y MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Tu biblioteca viene de tu biblioteca de Nuvio. Actívalo para seguir también Trakt, Simkl y MDBList.</string>
     <string name="calendar_setting_hidden">Títulos ocultos</string>
     <string name="calendar_setting_hidden_sub">Títulos que ocultaste del Calendario. Selecciona uno para volver a mostrarlo.</string>
     <plurals name="calendar_setting_hidden_value">

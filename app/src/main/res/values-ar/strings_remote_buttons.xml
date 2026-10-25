@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">إظهار/إخفاء إحصائيات التشغيل</string>
     <string name="remote_buttons_job_next_audio">المسار الصوتي التالي</string>
     <string name="remote_buttons_job_subtitles_toggle">تشغيل/إيقاف الترجمات</string>
+    <string name="remote_buttons_job_subtitles_up">تحريك الترجمات للأعلى</string>
+    <string name="remote_buttons_job_subtitles_down">تحريك الترجمات للأسفل</string>
     <string name="remote_buttons_job_play_pause">تشغيل/إيقاف مؤقت</string>
     <string name="remote_buttons_job_seek_forward">تنقل للأمام</string>
     <string name="remote_buttons_job_seek_back">تنقل للخلف</string>

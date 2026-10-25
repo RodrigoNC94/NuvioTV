@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Afficher/masquer les statistiques de lecture</string>
     <string name="remote_buttons_job_next_audio">Piste audio suivante</string>
     <string name="remote_buttons_job_subtitles_toggle">Activer/désactiver les sous-titres</string>
+    <string name="remote_buttons_job_subtitles_up">Monter les sous-titres</string>
+    <string name="remote_buttons_job_subtitles_down">Descendre les sous-titres</string>
     <string name="remote_buttons_job_play_pause">Lecture/Pause</string>
     <string name="remote_buttons_job_seek_forward">Avance rapide</string>
     <string name="remote_buttons_job_seek_back">Retour rapide</string>

@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">הצגה/הסתרה של נתוני הפעלה</string>
     <string name="remote_buttons_job_next_audio">רצועת השמע הבאה</string>
     <string name="remote_buttons_job_subtitles_toggle">הפעלה/כיבוי של כתוביות</string>
+    <string name="remote_buttons_job_subtitles_up">הזזת כתוביות למעלה</string>
+    <string name="remote_buttons_job_subtitles_down">הזזת כתוביות למטה</string>
     <string name="remote_buttons_job_play_pause">הפעלה/השהיה</string>
     <string name="remote_buttons_job_seek_forward">הרצה קדימה</string>
     <string name="remote_buttons_job_seek_back">הרצה אחורה</string>

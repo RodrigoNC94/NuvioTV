@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Mijn eigen lijsten meenemen</string>
     <string name="calendar_setting_lists_sub">Volgt ook titels in je eigen Trakt- en MDBList-lijsten. Lange lijsten maken de Kalender druk.</string>
     <string name="calendar_setting_other_services">Ook mijn andere diensten volgen</string>
-    <string name="calendar_setting_other_services_sub">Volgt ook Trakt, Simkl, MDBList en je Nuvio-bibliotheek, niet alleen je bibliotheekbron.</string>
+    <string name="calendar_setting_other_services_from">Je bibliotheek komt van %1$s en je Nuvio-bibliotheek. Zet aan om ook Trakt, Simkl en MDBList te volgen.</string>
+    <string name="calendar_setting_other_services_nuvio">Je bibliotheek komt uit je Nuvio-bibliotheek. Zet aan om ook Trakt, Simkl en MDBList te volgen.</string>
     <string name="calendar_setting_hidden">Verborgen series</string>
     <string name="calendar_setting_hidden_sub">Titels die je in de Kalender hebt verborgen. Selecteer er een om hem weer te tonen.</string>
     <plurals name="calendar_setting_hidden_value">

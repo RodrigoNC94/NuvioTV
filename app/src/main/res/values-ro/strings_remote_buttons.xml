@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Statistici de redare: pornit/oprit</string>
     <string name="remote_buttons_job_next_audio">Pista audio următoare</string>
     <string name="remote_buttons_job_subtitles_toggle">Subtitrări: pornit/oprit</string>
+    <string name="remote_buttons_job_subtitles_up">Subtitrări mai sus</string>
+    <string name="remote_buttons_job_subtitles_down">Subtitrări mai jos</string>
     <string name="remote_buttons_job_play_pause">Redare/Pauză</string>
     <string name="remote_buttons_job_seek_forward">Derulează înainte</string>
     <string name="remote_buttons_job_seek_back">Derulează înapoi</string>

@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">自分のリストを含める</string>
     <string name="calendar_setting_lists_sub">自分のTraktとMDBListのリストにあるタイトルもフォローします。長いリストだとカレンダーが混み合います。</string>
     <string name="calendar_setting_other_services">他のサービスもフォローする</string>
-    <string name="calendar_setting_other_services_sub">ライブラリソースだけでなく、Trakt、Simkl、MDBList、Nuvioのライブラリもフォローします。</string>
+    <string name="calendar_setting_other_services_from">ライブラリは%1$sとNuvioのライブラリから取得しています。オンにするとTrakt、Simkl、MDBListもフォローします。</string>
+    <string name="calendar_setting_other_services_nuvio">ライブラリはNuvioのライブラリから取得しています。オンにするとTrakt、Simkl、MDBListもフォローします。</string>
     <string name="calendar_setting_hidden">非表示の番組</string>
     <string name="calendar_setting_hidden_sub">カレンダーから非表示にしたタイトル。選択すると再表示します。</string>
     <plurals name="calendar_setting_hidden_value">

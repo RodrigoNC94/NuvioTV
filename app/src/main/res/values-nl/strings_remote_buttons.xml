@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Afspeelstatistieken aan/uit</string>
     <string name="remote_buttons_job_next_audio">Volgend audiospoor</string>
     <string name="remote_buttons_job_subtitles_toggle">Ondertiteling aan/uit</string>
+    <string name="remote_buttons_job_subtitles_up">Ondertiteling omhoog</string>
+    <string name="remote_buttons_job_subtitles_down">Ondertiteling omlaag</string>
     <string name="remote_buttons_job_play_pause">Afspelen/Pauze</string>
     <string name="remote_buttons_job_seek_forward">Vooruit spoelen</string>
     <string name="remote_buttons_job_seek_back">Terug spoelen</string>

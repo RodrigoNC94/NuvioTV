@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">播放统计开/关</string>
     <string name="remote_buttons_job_next_audio">下一条音轨</string>
     <string name="remote_buttons_job_subtitles_toggle">字幕开/关</string>
+    <string name="remote_buttons_job_subtitles_up">字幕上移</string>
+    <string name="remote_buttons_job_subtitles_down">字幕下移</string>
     <string name="remote_buttons_job_play_pause">播放/暂停</string>
     <string name="remote_buttons_job_seek_forward">快进</string>
     <string name="remote_buttons_job_seek_back">快退</string>

@@ -863,7 +863,6 @@
     <string name="sub_advanced_section">অ্যাডভান্সড সাবটাইটেল রেন্ডারিং</string>
     <string name="sub_libass">ASS/SSA সাবটাইটেলের জন্য libass ব্যবহার করুন</string>
     <string name="sub_libass_sub">পরীক্ষামূলক: উন্নত ASS/SSA রেন্ডারিং (স্টাইল, পজিশনিং, অ্যানিমেশন)</string>
-    <string name="sub_libass_mode">libass রেন্ডার মোড</string>
     <string name="sub_org_none">কোনোটিই নয় (ডিফল্ট ক্রম)</string>
     <string name="sub_org_by_lang">ভাষা অনুযায়ী</string>
     <string name="sub_org_by_addon">অ্যাডন অনুযায়ী</string>

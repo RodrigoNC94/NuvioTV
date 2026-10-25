@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Avspillingsstatistikk på/av</string>
     <string name="remote_buttons_job_next_audio">Neste lydspor</string>
     <string name="remote_buttons_job_subtitles_toggle">Undertekster på/av</string>
+    <string name="remote_buttons_job_subtitles_up">Undertekster opp</string>
+    <string name="remote_buttons_job_subtitles_down">Undertekster ned</string>
     <string name="remote_buttons_job_play_pause">Spill av/Pause</string>
     <string name="remote_buttons_job_seek_forward">Spol fremover</string>
     <string name="remote_buttons_job_seek_back">Spol bakover</string>

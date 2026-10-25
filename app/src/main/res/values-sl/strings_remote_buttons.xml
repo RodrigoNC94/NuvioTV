@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Statistika predvajanja vklop/izklop</string>
     <string name="remote_buttons_job_next_audio">Naslednji zvočni zapis</string>
     <string name="remote_buttons_job_subtitles_toggle">Podnapisi vklop/izklop</string>
+    <string name="remote_buttons_job_subtitles_up">Podnapisi višje</string>
+    <string name="remote_buttons_job_subtitles_down">Podnapisi nižje</string>
     <string name="remote_buttons_job_play_pause">Predvajaj/Premor</string>
     <string name="remote_buttons_job_seek_forward">Previjanje naprej</string>
     <string name="remote_buttons_job_seek_back">Previjanje nazaj</string>

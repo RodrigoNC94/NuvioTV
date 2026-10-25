@@ -105,7 +105,8 @@
     <string name="calendar_setting_lists">Vključi moje sezname</string>
     <string name="calendar_setting_lists_sub">Spremlja tudi naslove z vaših seznamov Trakt in MDBList. Dolgi seznami natrpajo Koledar.</string>
     <string name="calendar_setting_other_services">Spremljaj tudi moje druge storitve</string>
-    <string name="calendar_setting_other_services_sub">Spremlja tudi Trakt, Simkl, MDBList in vašo knjižnico Nuvio, ne le vašega vira knjižnice.</string>
+    <string name="calendar_setting_other_services_from">Vaša knjižnica prihaja iz %1$s in vaše knjižnice Nuvio. Vklopite, da spremljate tudi Trakt, Simkl in MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Vaša knjižnica prihaja iz vaše knjižnice Nuvio. Vklopite, da spremljate tudi Trakt, Simkl in MDBList.</string>
     <string name="calendar_setting_hidden">Skrite serije</string>
     <string name="calendar_setting_hidden_sub">Naslovi, ki ste jih skrili iz Koledarja. Izberite enega, da ga znova prikažete.</string>
     <plurals name="calendar_setting_hidden_value">

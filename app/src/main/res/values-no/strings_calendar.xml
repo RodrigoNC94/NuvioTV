@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Ta med mine egne lister</string>
     <string name="calendar_setting_lists_sub">Følger også titler i dine egne Trakt- og MDBList-lister. Lange lister gjør Kalenderen rotete.</string>
     <string name="calendar_setting_other_services">Følg også de andre tjenestene mine</string>
-    <string name="calendar_setting_other_services_sub">Følger også Trakt, Simkl, MDBList og Nuvio-biblioteket ditt, ikke bare bibliotekskilden din.</string>
+    <string name="calendar_setting_other_services_from">Biblioteket ditt kommer fra %1$s og Nuvio-biblioteket ditt. Slå på for også å følge Trakt, Simkl og MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Biblioteket ditt kommer fra Nuvio-biblioteket ditt. Slå på for også å følge Trakt, Simkl og MDBList.</string>
     <string name="calendar_setting_hidden">Skjulte serier</string>
     <string name="calendar_setting_hidden_sub">Titler du har skjult i Kalenderen. Velg en for å vise den igjen.</string>
     <plurals name="calendar_setting_hidden_value">

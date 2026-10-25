@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Wiedergabestatistik an/aus</string>
     <string name="remote_buttons_job_next_audio">Nächste Audiospur</string>
     <string name="remote_buttons_job_subtitles_toggle">Untertitel an/aus</string>
+    <string name="remote_buttons_job_subtitles_up">Untertitel höher</string>
+    <string name="remote_buttons_job_subtitles_down">Untertitel tiefer</string>
     <string name="remote_buttons_job_play_pause">Wiedergabe/Pause</string>
     <string name="remote_buttons_job_seek_forward">Vorwärts spulen</string>
     <string name="remote_buttons_job_seek_back">Rückwärts spulen</string>

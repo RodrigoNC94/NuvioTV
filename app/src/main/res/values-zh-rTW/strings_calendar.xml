@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">包含我自己的清單</string>
     <string name="calendar_setting_lists_sub">同時追蹤您自己的 Trakt 和 MDBList 清單中的內容。清單過長會讓日曆顯得擁擠。</string>
     <string name="calendar_setting_other_services">同時追蹤我的其他服務</string>
-    <string name="calendar_setting_other_services_sub">除了媒體庫來源，也追蹤 Trakt、Simkl、MDBList 和您的 Nuvio 媒體庫。</string>
+    <string name="calendar_setting_other_services_from">您的媒體庫來自 %1$s 和您的 Nuvio 媒體庫。開啟後也會追蹤 Trakt、Simkl 和 MDBList。</string>
+    <string name="calendar_setting_other_services_nuvio">您的媒體庫來自您的 Nuvio 媒體庫。開啟後也會追蹤 Trakt、Simkl 和 MDBList。</string>
     <string name="calendar_setting_hidden">隱藏的節目</string>
     <string name="calendar_setting_hidden_sub">您從日曆中隱藏的內容。選擇一項即可重新顯示。</string>
     <plurals name="calendar_setting_hidden_value">

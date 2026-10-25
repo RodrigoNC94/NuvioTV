@@ -100,7 +100,8 @@
     <string name="calendar_setting_lists">Uključi moje liste</string>
     <string name="calendar_setting_lists_sub">Prati i naslove iz vaših Trakt i MDBList lista. Duge liste pretrpavaju Kalendar.</string>
     <string name="calendar_setting_other_services">Prati i moje ostale servise</string>
-    <string name="calendar_setting_other_services_sub">Prati i Trakt, Simkl, MDBList i vašu Nuvio biblioteku, ne samo vaš izvor biblioteke.</string>
+    <string name="calendar_setting_other_services_from">Vaša biblioteka dolazi iz %1$s i vaše Nuvio biblioteke. Uključite da pratite i Trakt, Simkl i MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Vaša biblioteka dolazi iz vaše Nuvio biblioteke. Uključite da pratite i Trakt, Simkl i MDBList.</string>
     <string name="calendar_setting_hidden">Sakrivene serije</string>
     <string name="calendar_setting_hidden_sub">Naslovi koje ste sakrili iz Kalendara. Izaberite jedan da se ponovo prikaže.</string>
     <plurals name="calendar_setting_hidden_value">

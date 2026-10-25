@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Bật/tắt thống kê phát lại</string>
     <string name="remote_buttons_job_next_audio">Bản âm thanh tiếp theo</string>
     <string name="remote_buttons_job_subtitles_toggle">Bật/tắt phụ đề</string>
+    <string name="remote_buttons_job_subtitles_up">Đưa phụ đề lên</string>
+    <string name="remote_buttons_job_subtitles_down">Đưa phụ đề xuống</string>
     <string name="remote_buttons_job_play_pause">Phát/Tạm dừng</string>
     <string name="remote_buttons_job_seek_forward">Tua tới</string>
     <string name="remote_buttons_job_seek_back">Tua lùi</string>

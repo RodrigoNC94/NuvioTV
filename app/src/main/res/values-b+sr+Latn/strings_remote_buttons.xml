@@ -40,6 +40,8 @@
     <string name="remote_buttons_job_stats">Statistika reprodukcije uklj./isklj.</string>
     <string name="remote_buttons_job_next_audio">Sledeći zvučni zapis</string>
     <string name="remote_buttons_job_subtitles_toggle">Titlovi uklj./isklj.</string>
+    <string name="remote_buttons_job_subtitles_up">Titlovi gore</string>
+    <string name="remote_buttons_job_subtitles_down">Titlovi dole</string>
     <string name="remote_buttons_job_play_pause">Pusti/pauza</string>
     <string name="remote_buttons_job_seek_forward">Premotavanje napred</string>
     <string name="remote_buttons_job_seek_back">Premotavanje nazad</string>

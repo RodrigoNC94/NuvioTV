@@ -105,7 +105,8 @@
     <string name="calendar_setting_lists">הכללת הרשימות שלי</string>
     <string name="calendar_setting_lists_sub">מעקב גם אחרי כותרים ברשימות שלך ב-Trakt וב-MDBList. רשימות ארוכות מעמיסות על לוח השנה.</string>
     <string name="calendar_setting_other_services">מעקב גם אחרי השירותים האחרים שלי</string>
-    <string name="calendar_setting_other_services_sub">מעקב גם אחרי Trakt, Simkl, MDBList והספרייה שלך ב-Nuvio, לא רק אחרי מקור הספרייה.</string>
+    <string name="calendar_setting_other_services_from">הספרייה שלך מגיעה מ-%1$s ומהספרייה שלך ב-Nuvio. יש להפעיל כדי לעקוב גם אחרי Trakt, Simkl ו-MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">הספרייה שלך מגיעה מהספרייה שלך ב-Nuvio. יש להפעיל כדי לעקוב גם אחרי Trakt, Simkl ו-MDBList.</string>
     <string name="calendar_setting_hidden">סדרות מוסתרות</string>
     <string name="calendar_setting_hidden_sub">כותרים שהסתרת מלוח השנה. יש לבחור אחד כדי להציג אותו שוב.</string>
     <plurals name="calendar_setting_hidden_value">

@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Συμπερίληψη των λιστών μου</string>
     <string name="calendar_setting_lists_sub">Ακολουθεί και τίτλους από τις δικές σας λίστες Trakt και MDBList. Οι μεγάλες λίστες γεμίζουν το Ημερολόγιο.</string>
     <string name="calendar_setting_other_services">Παρακολούθηση και των άλλων υπηρεσιών μου</string>
-    <string name="calendar_setting_other_services_sub">Ακολουθεί και τα Trakt, Simkl, MDBList και τη βιβλιοθήκη σας στο Nuvio, όχι μόνο την πηγή βιβλιοθήκης σας.</string>
+    <string name="calendar_setting_other_services_from">Η βιβλιοθήκη σας προέρχεται από το %1$s και τη βιβλιοθήκη σας στο Nuvio. Ενεργοποιήστε το για να ακολουθείτε και τα Trakt, Simkl και MDBList.</string>
+    <string name="calendar_setting_other_services_nuvio">Η βιβλιοθήκη σας προέρχεται από τη βιβλιοθήκη σας στο Nuvio. Ενεργοποιήστε το για να ακολουθείτε και τα Trakt, Simkl και MDBList.</string>
     <string name="calendar_setting_hidden">Κρυφές σειρές</string>
     <string name="calendar_setting_hidden_sub">Τίτλοι που αποκρύψατε από το Ημερολόγιο. Επιλέξτε έναν για να εμφανιστεί ξανά.</string>
     <plurals name="calendar_setting_hidden_value">

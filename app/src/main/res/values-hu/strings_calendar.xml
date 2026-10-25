@@ -95,7 +95,8 @@
     <string name="calendar_setting_lists">Saját listáim is</string>
     <string name="calendar_setting_lists_sub">A saját Trakt- és MDBList-listáid címeit is követi. A hosszú listák zsúfolttá teszik a Naptárt.</string>
     <string name="calendar_setting_other_services">A többi szolgáltatásom is</string>
-    <string name="calendar_setting_other_services_sub">A Trakt, a Simkl és az MDBList szolgáltatást és a Nuvio-könyvtáradat is követi, nem csak a könyvtár forrását.</string>
+    <string name="calendar_setting_other_services_from">A könyvtárad a(z) %1$s szolgáltatásból és a Nuvio-könyvtáradból származik. Kapcsold be, hogy a Trakt, a Simkl és az MDBList szolgáltatást is kövesse.</string>
+    <string name="calendar_setting_other_services_nuvio">A könyvtárad a Nuvio-könyvtáradból származik. Kapcsold be, hogy a Trakt, a Simkl és az MDBList szolgáltatást is kövesse.</string>
     <string name="calendar_setting_hidden">Rejtett sorozatok</string>
     <string name="calendar_setting_hidden_sub">A Naptárból elrejtett címek. Válassz egyet, hogy újra megjelenjen.</string>
     <plurals name="calendar_setting_hidden_value">
