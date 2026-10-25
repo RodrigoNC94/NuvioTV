@@ -126,7 +126,7 @@ class CalendarReminderCenterTest {
         assertNotNull(center.card.value)
     }
 
-    @Test fun atMostOneCardPerHomeVisit() = runTest {
+    @Test fun oneCardPerHomeVisitThenAnotherLookEveryFifteenMinutes() = runTest {
         val (data, center) = setUp()
         data.follow(show("tt1", airs(Duration.ofHours(-3), 1)))
         openHome(center)
@@ -136,10 +136,60 @@ class CalendarReminderCenterTest {
         data.follow(show("tt1", airs(Duration.ofHours(-3), 1), airs(Duration.ofHours(-2), 2)))
         wait(Duration.ofMinutes(5))
         assertNull(center.card.value)
+        wait(Duration.ofMinutes(11))
+        assertEquals(listOf(2), center.card.value?.items?.map { it.entry.episode })
+    }
+
+    @Test fun aNewHomeVisitShowsTheCardForWhatCameDueMeanwhile() = runTest {
+        val (data, center) = setUp()
+        data.follow(show("tt1", airs(Duration.ofHours(-3), 1)))
+        openHome(center)
+        wait(Duration.ofSeconds(2))
+        center.dismissCard()
+        runCurrent()
+        data.follow(show("tt1", airs(Duration.ofHours(-3), 1), airs(Duration.ofHours(-2), 2)))
         leaveHome(center)
         openHome(center)
         wait(Duration.ofSeconds(2))
         assertEquals(listOf(2), center.card.value?.items?.map { it.entry.episode })
+    }
+
+    @Test fun theCardLooksAgainWhenTheScreensaverEndsOnHome() = runTest {
+        val (data, center) = setUp()
+        data.settings.value = data.settings.value?.copy(cornerMessage = false)
+        data.follow(show("tt1", airs(Duration.ofMinutes(10))))
+        openHome(center)
+        wait(Duration.ofSeconds(21))
+        assertNull(center.card.value)
+        center.setBlocked(true)
+        wait(Duration.ofMinutes(75))
+        assertNull(center.card.value)
+        center.setBlocked(false)
+        wait(Duration.ofSeconds(2))
+        assertEquals(listOf(1), center.card.value?.items?.map { it.entry.episode })
+    }
+
+    @Test fun theCardLooksAgainWhenTheAppIsBackInFront() = runTest {
+        val (data, center) = setUp()
+        data.settings.value = data.settings.value?.copy(cornerMessage = false)
+        data.follow(show("tt1", airs(Duration.ofMinutes(10))))
+        openHome(center)
+        wait(Duration.ofSeconds(21))
+        center.setAppVisible(false)
+        wait(Duration.ofMinutes(75))
+        center.setAppVisible(true)
+        wait(Duration.ofSeconds(2))
+        assertNotNull(center.card.value)
+    }
+
+    @Test fun aCornerMessageShownWhileHomeIsOpenIsNotRepeatedAsACard() = runTest {
+        val (data, center) = setUp()
+        data.follow(show("tt1", airs(Duration.ofMinutes(10))))
+        openHome(center)
+        wait(Duration.ofMinutes(70).plusSeconds(1))
+        assertNotNull(center.corner.value)
+        wait(Duration.ofMinutes(30))
+        assertNull(center.card.value)
     }
 
     @Test fun nothingDueNoCard() = runTest {
@@ -254,13 +304,17 @@ class CalendarReminderCenterTest {
         wait(Duration.ofSeconds(21))
         leaveHome(center)
         data.playbackActive.value = true
+        center.setPlayerVisible(true)
         wait(Duration.ofMinutes(75))
         assertNull(center.corner.value)
         data.playbackActive.value = false
-        center.setPlayerVisible(true)
         wait(Duration.ofMinutes(10))
         assertNull(center.corner.value)
         center.setPlayerVisible(false)
+        runCurrent()
+        assertEquals(2, center.corner.value?.count)
+        wait(Duration.ofSeconds(8))
+        assertNull(center.corner.value)
         wait(Duration.ofMinutes(10))
         assertNull(center.corner.value)
     }

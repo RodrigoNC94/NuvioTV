@@ -26,6 +26,7 @@ import com.nuvio.tv.data.simkl.SimklSyncRepository
 import com.nuvio.tv.data.simkl.idValue
 import com.nuvio.tv.data.simkl.simklIdValue
 import java.time.Instant
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,34 +55,128 @@ data class CalendarFollowedSnapshot(
     val complete: Boolean get() = notReady.isEmpty()
 }
 
-class CalendarWatchedIndex(private val keys: Set<String> = emptySet()) {
+/** An episode as Nuvio's own episode list numbers it. */
+data class CalendarKnownEpisode(val season: Int, val episode: Int, val name: String?, val date: LocalDate)
+
+/**
+ * What has been watched, by season and episode. Sources such as TVmaze can number a season differently from Nuvio's
+ * episode list (a short or special counted as an episode), so an episode is first matched to Nuvio's list by air date
+ * and name. A title whose Next Up has not aired yet has nothing older left to watch.
+ */
+class CalendarWatchedIndex(
+    private val keys: Set<String> = emptySet(),
+    private val episodes: Map<String, List<CalendarKnownEpisode>> = emptyMap(),
+    private val nextUpNotAired: Map<String, LocalDate> = emptyMap()
+) {
     fun isWatched(ids: CalendarIds, season: Int?, episode: Int?): Boolean {
         if (season == null || episode == null) return false
         return ids.aliases().any { "$it|$season|$episode" in keys }
     }
 
-    fun isWatched(title: CalendarTitleRecord, entry: CalendarEntry): Boolean =
-        entry.kind == CalendarEntryKind.EPISODE && isWatched(title.ids, entry.season, entry.episode)
+    fun isWatched(title: CalendarTitleRecord, entry: CalendarEntry): Boolean {
+        if (entry.kind != CalendarEntryKind.EPISODE) return false
+        val aliases = title.ids.aliases()
+        val date = entry.airDateOrNull()
+        if (date != null && aliases.any { alias -> nextUpNotAired[alias]?.let { date < it } == true }) return true
+        val known = date?.let { matchByDateAndName(aliases, entry.shownTitle, it) }
+        return if (known != null) isWatched(title.ids, known.season, known.episode)
+        else isWatched(title.ids, entry.season, entry.episode)
+    }
+
+    private fun matchByDateAndName(aliases: Set<String>, name: String?, date: LocalDate): CalendarKnownEpisode? {
+        val wanted = name?.let(::episodeNameKey)?.takeIf { it.length >= MIN_NAME } ?: return null
+        val list = aliases.firstNotNullOfOrNull { episodes[it] } ?: return null
+        return list.firstOrNull { known ->
+            val have = known.name?.let(::episodeNameKey)?.takeIf { it.length >= MIN_NAME } ?: return@firstOrNull false
+            Math.abs(java.time.temporal.ChronoUnit.DAYS.between(known.date, date)) <= 1 &&
+                (have == wanted || wanted.endsWith(have) || have.endsWith(wanted))
+        }
+    }
 
     class Builder {
         private val keys = HashSet<String>()
+        private val episodes = HashMap<String, List<CalendarKnownEpisode>>()
+        private val nextUpNotAired = HashMap<String, LocalDate>()
+        private val unreadable = HashMap<String, MutableSet<Pair<Int, Int>>>()
+        private val unreadableNextUp = HashMap<String, LocalDate>()
 
         fun add(contentId: String, season: Int?, episode: Int?) = apply {
             if (season == null || episode == null) return@apply
-            CalendarIds.fromContentId(contentId).aliases().forEach { keys += "$it|$season|$episode" }
+            val aliases = CalendarIds.fromContentId(contentId).aliases()
+            if (aliases.isEmpty()) unreadable.getOrPut(contentId, ::HashSet) += season to episode
+            aliases.forEach { keys += "$it|$season|$episode" }
+        }
+
+        /** What was recorded under an id the Calendar cannot read (such as kitsu:) counts for [ids] too. */
+        fun alias(contentId: String, ids: CalendarIds) = apply {
+            unreadable[contentId]?.forEach { (s, e) -> ids.aliases().forEach { keys += "$it|$s|$e" } }
+            unreadableNextUp[contentId]?.let { date -> ids.aliases().forEach { nextUpNotAired.merge(it, date) { a, b -> maxOf(a, b) } } }
         }
 
         fun addAll(byContent: Map<String, Set<Pair<Int, Int>>>) = apply {
             byContent.forEach { (contentId, episodes) -> episodes.forEach { (s, e) -> add(contentId, s, e) } }
         }
 
-        fun build() = CalendarWatchedIndex(keys)
+        /** Nuvio's episode list for a show, from its cached details. */
+        fun episodes(ids: CalendarIds, list: List<CalendarKnownEpisode>) = apply {
+            if (list.isEmpty()) return@apply
+            ids.aliases().forEach { episodes.putIfAbsent(it, list) }
+        }
+
+        /** Next Up points at an episode that comes out on [date]: everything out before it is watched. */
+        fun nextUpNotAired(contentId: String, date: LocalDate) = apply {
+            val aliases = CalendarIds.fromContentId(contentId).aliases()
+            if (aliases.isEmpty()) unreadableNextUp.merge(contentId, date) { a, b -> maxOf(a, b) }
+            aliases.forEach { alias ->
+                nextUpNotAired.merge(alias, date) { a, b -> maxOf(a, b) }
+            }
+        }
+
+        fun build() = CalendarWatchedIndex(keys, episodes, nextUpNotAired)
+    }
+
+    private companion object {
+        const val MIN_NAME = 4
     }
 }
 
+/** Lower case letters and digits only, so "Beavis and Butt-Head in Pleasure Washer" ends with "pleasurewasher". */
+internal fun episodeNameKey(name: String): String = name.lowercase().filter { it.isLetterOrDigit() }
+
+private fun CalendarEntry.airDateOrNull(): LocalDate? =
+    airDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        ?: airInstantMs?.let { Instant.ofEpochMilli(it).atZone(java.time.ZoneOffset.UTC).toLocalDate() }
+
 /**
- * Which services the Calendar follows. By default the library source (the Nuvio library when that is the source) for
- * saved titles and the progress source for started ones; [followOtherServices] reads every signed-in service.
+ * A title saved under an id the Calendar cannot read (an anime add-on's kitsu:, for example) takes the IMDb or TMDB id
+ * from the add-on's cached details instead of being left out.
+ */
+fun calendarResolveUnreadableIds(
+    candidates: List<CalendarTitleCandidate>,
+    cachedMeta: (type: String, id: String) -> com.nuvio.tv.domain.model.Meta?
+): List<CalendarTitleCandidate> = candidates.map { candidate ->
+    if (!candidate.ids.isEmpty) return@map candidate
+    val contentId = candidate.contentId?.takeIf(String::isNotBlank) ?: return@map candidate
+    val type = if (candidate.type == CalendarTitleType.MOVIE) "movie" else "series"
+    val meta = cachedMeta(type, contentId) ?: return@map candidate
+    val ids = CalendarIds.fromContentId(meta.imdbId?.takeIf { it.startsWith("tt") })
+        .merged(CalendarIds.fromContentId(meta.id))
+    if (ids.isEmpty) candidate else candidate.copy(ids = ids)
+}
+
+/** Nuvio's own numbering of a show's episodes, from an add-on's episode list. */
+fun calendarKnownEpisodes(videos: List<com.nuvio.tv.domain.model.Video>): List<CalendarKnownEpisode> =
+    videos.mapNotNull { video ->
+        val season = video.season ?: return@mapNotNull null
+        val episode = video.episode ?: return@mapNotNull null
+        val date = video.released?.let(::plainReleaseDate)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            ?: return@mapNotNull null
+        CalendarKnownEpisode(season, episode, video.title.takeIf(String::isNotBlank), date)
+    }
+
+/**
+ * Which services the Calendar follows. By default the Nuvio library and the library source for saved titles and the
+ * progress source for started ones; [followOtherServices] reads every signed-in service.
  */
 data class CalendarSourcePlan(
     val nuvioLibrary: Boolean,
@@ -100,7 +195,7 @@ fun calendarSourcePlan(
     if (followOtherServices) return CalendarSourcePlan(nuvioLibrary = true, libraryFrom = signedIn, progressFrom = signedIn)
     val library = effectiveLibrarySourceMode(librarySource) { it in signedIn }.providerId
     val progress = effectiveWatchProgressSource(progressSource) { it in signedIn }.providerId
-    return CalendarSourcePlan(nuvioLibrary = library == null, libraryFrom = setOfNotNull(library), progressFrom = setOfNotNull(progress))
+    return CalendarSourcePlan(nuvioLibrary = true, libraryFrom = setOfNotNull(library), progressFrom = setOfNotNull(progress))
 }
 
 /** Simkl's lists are its library; as progress source only the started ones and Dropped count. */
@@ -284,7 +379,32 @@ class CalendarFollowedSourceReader @Inject constructor(
                 )
             }
         }.orEmpty()
-        val usable = candidates.filterNot { it.ids.isEmpty }
+        nextUp.forEach { item ->
+            if (item.hasAired) return@forEach
+            val date = item.released?.let(::plainReleaseDate)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                ?: return@forEach
+            watched.nextUpNotAired(item.contentId, date)
+        }
+        val resolved = unread.runPart("unreadable ids", counts = false) {
+            calendarResolveUnreadableIds(candidates) { type, id -> metaRepository.getCachedMeta(type, id) }
+        } ?: candidates
+        resolved.forEach { candidate ->
+            if (CalendarIds.fromContentId(candidate.contentId).isEmpty && !candidate.ids.isEmpty) {
+                candidate.contentId?.let { watched.alias(it, candidate.ids) }
+            }
+        }
+        val usable = resolved.filterNot { it.ids.isEmpty }
+        unread.runPart("episode lists", counts = false) {
+            val shows = usable.filter { it.type == CalendarTitleType.SERIES } +
+                nextUp.map { CalendarTitleCandidate(CalendarIds.fromContentId(it.contentId), CalendarTitleType.SERIES, CalendarOrigin.PROGRESS, contentId = it.contentId) }
+            shows.forEach { show ->
+                val videos = listOfNotNull(show.contentId, show.ids.imdb, show.ids.tmdb?.let { "tmdb:$it" })
+                    .distinct()
+                    .firstNotNullOfOrNull { id -> metaRepository.getCachedMeta("series", id)?.videos?.takeIf { it.isNotEmpty() } }
+                    ?: return@forEach
+                watched.episodes(show.ids, calendarKnownEpisodes(videos))
+            }
+        }
         val posters = unread.runPart("posters", counts = false) {
             calendarCachedPosters(
                 usable,

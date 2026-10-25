@@ -3,6 +3,9 @@ package com.nuvio.tv.core.calendar
 import android.util.Log
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
@@ -16,13 +19,16 @@ interface CalendarRemoteSources {
     suspend fun tmdbShow(tmdbId: Long): CalendarShowDates
     suspend fun tmdbSeason(tmdbId: Long, season: Int): List<CalendarEntry>
     suspend fun tmdbFilm(tmdbId: Long, region: String): CalendarShowDates
+    /** Null when TheTVDB is off or has no regular time for the show. */
+    suspend fun tvdbAirs(ids: CalendarIds): TvdbAirs? = null
 }
 
 @Singleton
 class DefaultCalendarRemoteSources @Inject constructor(
     private val tvMaze: TvMazeCalendarClient,
     private val trakt: TraktCalendarClient,
-    private val tmdb: TmdbCalendarClient
+    private val tmdb: TmdbCalendarClient,
+    private val tvdb: TvdbCalendarClient
 ) : CalendarRemoteSources {
     override suspend fun tvMazeLookup(ids: CalendarIds) = tvMaze.lookup(ids)
     override suspend fun tvMazeShow(id: Int, now: Instant) = tvMaze.show(id, now)
@@ -31,6 +37,7 @@ class DefaultCalendarRemoteSources @Inject constructor(
     override suspend fun tmdbShow(tmdbId: Long) = tmdb.show(tmdbId)
     override suspend fun tmdbSeason(tmdbId: Long, season: Int) = tmdb.season(tmdbId, season)
     override suspend fun tmdbFilm(tmdbId: Long, region: String) = tmdb.film(tmdbId, region)
+    override suspend fun tvdbAirs(ids: CalendarIds) = tvdb.airs(ids)
 }
 
 data class CalendarFetchOutcome(
@@ -40,8 +47,9 @@ data class CalendarFetchOutcome(
 
 /**
  * Shows: TVmaze first (exact times), then Trakt's next episode for shows TVmaze does not know, then TMDB's plain dates;
- * TMDB's season adds finale marks when a TMDB id is known. Films: TMDB release dates. Any failure keeps the old dates
- * and counts towards the back-off.
+ * TMDB's season adds finale marks when a TMDB id is known. Dates without a time (most streaming shows) take TheTVDB's
+ * regular air time, and when that does not fit, Trakt's next episode gives the time. Films: TMDB release dates. Any
+ * failure keeps the old dates and counts towards the back-off.
  */
 class CalendarTitleFetcher(
     private val remote: CalendarRemoteSources,
@@ -96,20 +104,59 @@ class CalendarTitleFetcher(
                 poster = record.poster ?: dates.poster,
                 network = dates.network ?: record.network,
                 status = dates.status
-            ).withSource(CalendarSource.TVMAZE, dates.entries, now).withoutSources(CalendarSource.TRAKT_NEXT)
-            return withFinales(updated, now)
+            ).withSource(CalendarSource.TVMAZE, dates.entries, now)
+            return withFinales(withTraktTime(withTvdbTimes(updated, CalendarSource.TVMAZE, now), now), now)
         }
         val trakt = remote.traktNextEpisode(record.ids)
         if (trakt != null && trakt.entries.isNotEmpty()) return record.withSource(CalendarSource.TRAKT_NEXT, trakt.entries, now)
         val withTmdb = withTmdbId(if (trakt != null) record.withoutSources(CalendarSource.TRAKT_NEXT) else record)
         val tmdbId = withTmdb.ids.tmdb ?: return withTmdb
         val dates = remote.tmdbShow(tmdbId)
-        return withTmdb.copy(
+        val updated = withTmdb.copy(
             name = withTmdb.name ?: dates.name,
             poster = withTmdb.poster ?: dates.poster,
             network = dates.network ?: withTmdb.network,
             status = dates.status
         ).withSource(CalendarSource.TMDB, dates.entries, now)
+        return withTvdbTimes(updated, CalendarSource.TMDB, now)
+    }
+
+    /** TheTVDB's client keeps its own answers for six hours; a failed ask keeps the times found before. */
+    private suspend fun withTvdbTimes(record: CalendarTitleRecord, base: CalendarSource, now: Instant): CalendarTitleRecord {
+        val dateOnly = record.sources[base].orEmpty().filter { it.kind == CalendarEntryKind.EPISODE && !it.timeKnown && !it.isOut(now) }
+        if (dateOnly.isEmpty()) return record.withoutSources(CalendarSource.TVDB)
+        val airs = try {
+            remote.tvdbAirs(record.ids)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            return record
+        } ?: return record.withoutSources(CalendarSource.TVDB)
+        val timed = calendarTvdbTimes(dateOnly, airs, now)
+        return if (timed.isEmpty()) record.withoutSources(CalendarSource.TVDB) else record.withSource(CalendarSource.TVDB, timed, now)
+    }
+
+    /** Trakt's answer is kept for [TRAKT_TIME_RECHECK]; a failed ask keeps the old one. */
+    private suspend fun withTraktTime(record: CalendarTitleRecord, now: Instant): CalendarTitleRecord {
+        val next = record.sources[CalendarSource.TVMAZE].orEmpty()
+            .filter { it.kind == CalendarEntryKind.EPISODE && !it.isOut(now) }
+            .minByOrNull { it.sortInstant() ?: Instant.MAX }
+        if (next == null || next.timeKnown || next.airDate == null) return record.withoutSources(CalendarSource.TRAKT_NEXT)
+        if (record.sources[CalendarSource.TVDB].orEmpty().any { it.slot == next.slot }) return record.withoutSources(CalendarSource.TRAKT_NEXT)
+        val askedAt = record.sourceFetchedAtMs[CalendarSource.TRAKT_NEXT]
+        val kept = record.sources[CalendarSource.TRAKT_NEXT].orEmpty()
+        if (askedAt != null && now.toEpochMilli() - askedAt < TRAKT_TIME_RECHECK.toMillis() && kept.any { it.slot == next.slot }) {
+            return record
+        }
+        val trakt = try {
+            remote.traktNextEpisode(record.ids)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            return record
+        }
+        val timed = trakt?.entries?.let { calendarTraktTimeFor(next, it) } ?: return record.withoutSources(CalendarSource.TRAKT_NEXT)
+        return record.withSource(CalendarSource.TRAKT_NEXT, listOf(timed), now)
     }
 
     /** One TMDB season call marks the finales of the season with the next release, when that is within 60 days. */
@@ -175,5 +222,21 @@ class CalendarTitleFetcher(
         const val TAG = "CalendarFetch"
         val NOT_FOUND_RECHECK: Duration = Duration.ofDays(30)
         val FINALE_LOOKAHEAD: Duration = Duration.ofDays(60)
+        val TRAKT_TIME_RECHECK: Duration = Duration.ofHours(6)
     }
+}
+
+/**
+ * Trakt's timed release for an episode TVmaze only dates: the same episode, or the one out within a day of that date
+ * (TVmaze may number it differently), under TVmaze's number so the two merge into one release.
+ */
+fun calendarTraktTimeFor(dateOnly: CalendarEntry, trakt: List<CalendarEntry>): CalendarEntry? {
+    val date = dateOnly.airDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: return null
+    val near = trakt.filter { entry ->
+        val at = entry.airInstantMs ?: return@filter false
+        entry.kind == CalendarEntryKind.EPISODE &&
+            Math.abs(ChronoUnit.DAYS.between(date, Instant.ofEpochMilli(at).atZone(ZoneOffset.UTC).toLocalDate())) <= 1
+    }
+    val match = near.firstOrNull { it.slot == dateOnly.slot } ?: near.singleOrNull() ?: return null
+    return match.copy(season = dateOnly.season, episode = dateOnly.episode, source = CalendarSource.TRAKT_NEXT)
 }

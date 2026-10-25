@@ -116,8 +116,9 @@ enum class CalendarSource(val priority: Int) {
     TRAKT(0),
     TRAKT_NEXT(1),
     TVMAZE(2),
-    TMDB(3),
-    ADDON(4);
+    TVDB(3),
+    TMDB(4),
+    ADDON(5);
 
     val isTrakt: Boolean get() = this == TRAKT || this == TRAKT_NEXT
 }

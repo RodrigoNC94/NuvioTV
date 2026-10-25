@@ -10,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import androidx.tv.material3.Text
 import com.nuvio.tv.R
 import com.nuvio.tv.core.calendar.CALENDAR_WINDOW_OPTIONS
 import com.nuvio.tv.core.calendar.CalendarSettings
+import com.nuvio.tv.core.tracking.TrackingProviderId
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.components.PanelActionRow
 import com.nuvio.tv.ui.screens.calendar.CalendarScreenData
@@ -86,6 +88,7 @@ class CalendarSettingsViewModel @Inject constructor(
     fun setCornerMessage(enabled: Boolean) = viewModelScope.launch { data.setCornerMessage(enabled) }
     fun setIncludePersonalLists(include: Boolean) = viewModelScope.launch { data.setIncludePersonalLists(include) }
     fun setFollowOtherServices(follow: Boolean) = viewModelScope.launch { data.setFollowOtherServices(follow) }
+    suspend fun librarySource(): TrackingProviderId? = data.librarySource()
     fun setComingUpRow(enabled: Boolean) = viewModelScope.launch { data.setComingUpRow(enabled) }
     fun unhide(titleKey: String) = viewModelScope.launch { data.setHidden(titleKey, hidden = false, name = null) }
     fun unhideFromComingUp(titleKey: String) = viewModelScope.launch { data.setHiddenFromComingUp(titleKey, hidden = false) }
@@ -228,9 +231,11 @@ internal fun LayoutCalendarSection(viewModel: CalendarSettingsViewModel = hiltVi
         checked = current.includePersonalLists,
         onToggle = { viewModel.setIncludePersonalLists(!current.includePersonalLists) }
     )
+    val librarySource by produceState<TrackingProviderId?>(null, viewModel) { value = viewModel.librarySource() }
     SettingsToggleRow(
         title = stringResource(R.string.calendar_setting_other_services),
-        subtitle = stringResource(R.string.calendar_setting_other_services_sub),
+        subtitle = librarySource?.let { stringResource(R.string.calendar_setting_other_services_from, calendarServiceName(it)) }
+            ?: stringResource(R.string.calendar_setting_other_services_nuvio),
         checked = current.followOtherServices,
         onToggle = { viewModel.setFollowOtherServices(!current.followOtherServices) }
     )
@@ -362,3 +367,9 @@ private fun calendarZoneRegionNames(): Map<String, String> = mapOf(
     "Indian" to stringResource(R.string.calendar_zone_region_indian),
     "Pacific" to stringResource(R.string.calendar_zone_region_pacific)
 )
+
+private fun calendarServiceName(provider: TrackingProviderId): String = when (provider) {
+    TrackingProviderId.TRAKT -> "Trakt"
+    TrackingProviderId.SIMKL -> "Simkl"
+    TrackingProviderId.MDBLIST -> "MDBList"
+}

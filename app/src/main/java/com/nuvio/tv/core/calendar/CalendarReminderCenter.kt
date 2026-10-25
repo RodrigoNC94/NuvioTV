@@ -91,13 +91,19 @@ class CalendarReminderCenter internal constructor(
 
     /** Home is on screen with nothing over it and nothing playing. */
     private val homeFree: StateFlow<Boolean> =
-        combine(homeVisible, blocked, playerVisible, data.playbackActive) { home, blocked, player, playing ->
-            home && !blocked && !player && !playing
+        combine(homeVisible, blocked, playerVisible, data.playbackActive, appVisible) { home, blocked, player, playing, app ->
+            home && !blocked && !player && !playing && app
+        }.stateIn(scope, SharingStarted.Eagerly, false)
+
+    /** The corner message may show: the app is in front with nothing over it and nothing playing. */
+    private val cornerFree: StateFlow<Boolean> =
+        combine(blocked, playerVisible, data.playbackActive, appVisible) { blocked, player, playing, app ->
+            !blocked && !player && !playing && app
         }.stateIn(scope, SharingStarted.Eagerly, false)
 
     private val batcher = CalendarReminderBatcher()
-    private var visit = 0
-    private var cardVisit = -1
+    private val cornerShown = mutableSetOf<String>()
+    private var cornerHeld = false
     private var cardJob: Job? = null
     private var settledJob: Job? = null
     private var schedulerJob: Job? = null
@@ -182,21 +188,28 @@ class CalendarReminderCenter internal constructor(
         _openAtJustAired.value = false
     }
 
+    /**
+     * The card checks when Home opens, again when Home is back in front after something covered it (the screensaver,
+     * the player, the app away) and every [CARD_RECHECK_MS] while Home stays open. After the first check it only shows
+     * for releases the corner message has not shown.
+     */
     private fun startHomeVisit() {
-        visit += 1
-        val thisVisit = visit
         cardJob?.cancel()
         cardJob = scope.launch {
+            var first = true
             while (true) {
-                homeFree.first { it }
-                delay(CARD_SETTLE_MS)
-                if (homeFree.value) break
+                while (true) {
+                    homeFree.first { it }
+                    delay(CARD_SETTLE_MS)
+                    if (homeFree.value) break
+                }
+                if (_card.value == null && !data.settings.value?.bellOn.isNullOrEmpty()) {
+                    val due = loadDue()?.takeIf { due -> first || due.items.any { it.episodeKey !in cornerShown } }
+                    if (due != null && homeFree.value) showCard(due)
+                }
+                first = false
+                withTimeoutOrNull(CARD_RECHECK_MS) { homeFree.first { !it } }
             }
-            if (cardVisit == thisVisit || _card.value != null) return@launch
-            cardVisit = thisVisit
-            if (data.settings.value?.bellOn.isNullOrEmpty()) return@launch
-            val due = loadDue() ?: return@launch
-            if (homeFree.value) showCard(due)
         }
     }
 
@@ -258,9 +271,11 @@ class CalendarReminderCenter internal constructor(
                     continue
                 }
                 val changed = withTimeoutOrNull(remaining) {
-                    merge(data.state.drop(1), data.settings.drop(1), appVisible.drop(1)).first()
+                    merge(data.state.drop(1), data.settings.drop(1), appVisible.drop(1), cornerFree.drop(1)).first()
                 }
-                if (changed != null) deadline = minOf(deadline, nextDeadlineMs())
+                if (changed != null) {
+                    deadline = if (cornerHeld && cornerFree.value) clock.millis() else minOf(deadline, nextDeadlineMs())
+                }
             }
         }
     }
@@ -276,6 +291,8 @@ class CalendarReminderCenter internal constructor(
     private suspend fun primeAnnounced() {
         announcedProfile = data.state.value.profileId
         batcher.reset()
+        cornerShown.clear()
+        cornerHeld = false
         loadDue()?.let { batcher.nextBatch(it) }
     }
 
@@ -284,12 +301,21 @@ class CalendarReminderCenter internal constructor(
             primeAnnounced()
             return
         }
-        val due = loadDue() ?: return
+        val due = loadDue()
+        if (due == null) {
+            cornerHeld = false
+            return
+        }
+        if (data.settings.value?.cornerMessage != true || _card.value != null) {
+            batcher.nextBatch(due)
+            cornerHeld = false
+            return
+        }
+        cornerHeld = !cornerFree.value
+        if (cornerHeld) return
         val batch = batcher.nextBatch(due)
         if (batch.isEmpty()) return
-        val quiet = data.playbackActive.value || playerVisible.value || !appVisible.value || blocked.value ||
-            data.settings.value?.cornerMessage != true || _card.value != null
-        if (quiet) return
+        batch.mapTo(cornerShown) { it.episodeKey }
         val message = CalendarCornerMessage(++cornerIds, batch)
         _corner.value = message
         cornerJob?.cancel()
@@ -303,5 +329,6 @@ class CalendarReminderCenter internal constructor(
         const val TAG = "CalendarReminders"
         const val CARD_SETTLE_MS = 1_200L
         const val CORNER_MS = 8_000L
+        const val CARD_RECHECK_MS = 15 * 60_000L
     }
 }

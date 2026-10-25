@@ -90,6 +90,7 @@ import com.nuvio.tv.ui.components.LoadingIndicator
 import com.nuvio.tv.ui.components.MonochromePosterPlaceholder
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.components.PanelActionRow
+import com.nuvio.tv.ui.components.TvdbCreditLine
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.screens.home.HeroBackdropState
 import com.nuvio.tv.ui.theme.NuvioTheme
@@ -230,6 +231,11 @@ fun CalendarScreen(
                     else -> CalendarStateMessage(uiState, modeFocusRequester)
                 }
             }
+            TvdbCreditLine(
+                Modifier
+                    .align(Alignment.End)
+                    .padding(top = NuvioTheme.spacing.xs, bottom = NuvioTheme.spacing.sm)
+            )
         }
     }
 

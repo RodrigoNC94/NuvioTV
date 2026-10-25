@@ -10,6 +10,7 @@ import com.nuvio.tv.core.calendar.DefaultCalendarReminderData
 import com.nuvio.tv.core.calendar.DefaultCalendarRemoteSources
 import com.nuvio.tv.core.profile.ProfileScopedCredentialStore
 import com.nuvio.tv.data.remote.api.TvMazeApi
+import com.nuvio.tv.data.remote.api.TvdbApi
 import com.nuvio.tv.ui.screens.calendar.CalendarScreenData
 import com.nuvio.tv.ui.screens.calendar.DefaultCalendarScreenData
 import com.squareup.moshi.Moshi
@@ -59,6 +60,20 @@ abstract class CalendarModule {
         @Provides
         @Singleton
         fun provideTvMazeApi(@Named("tvmaze") retrofit: Retrofit): TvMazeApi = retrofit.create(TvMazeApi::class.java)
+
+        @Provides
+        @Singleton
+        @Named("tvdb")
+        fun provideTvdbRetrofit(@Named("validated") okHttpClient: OkHttpClient, moshi: Moshi): Retrofit =
+            Retrofit.Builder()
+                .baseUrl("https://api4.thetvdb.com/v4/")
+                .client(okHttpClient)
+                .addConverterFactory(MoshiConverterFactory.create(moshi))
+                .build()
+
+        @Provides
+        @Singleton
+        fun provideTvdbApi(@Named("tvdb") retrofit: Retrofit): TvdbApi = retrofit.create(TvdbApi::class.java)
 
         @Provides
         @CalendarClock

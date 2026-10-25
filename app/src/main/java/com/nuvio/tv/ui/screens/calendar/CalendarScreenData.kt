@@ -12,7 +12,12 @@ import com.nuvio.tv.core.calendar.CalendarSettings
 import com.nuvio.tv.core.calendar.CalendarSettingsDataStore
 import com.nuvio.tv.core.calendar.CalendarState
 import com.nuvio.tv.core.calendar.CalendarZoneProvider
+import com.nuvio.tv.core.tracking.TrackingProviderId
+import com.nuvio.tv.core.tracking.TrackingProviderRegistry
+import com.nuvio.tv.core.tracking.effectiveLibrarySourceMode
+import com.nuvio.tv.core.tracking.providerId
 import com.nuvio.tv.data.local.CachedInProgressItem
+import com.nuvio.tv.data.local.TraktSettingsDataStore
 import com.nuvio.tv.data.local.CachedNextUpItem
 import com.nuvio.tv.data.local.ContinueWatchingEnrichmentCache
 import com.nuvio.tv.domain.repository.MetaRepository
@@ -62,6 +67,8 @@ interface CalendarScreenData {
     suspend fun setCornerMessage(enabled: Boolean)
     suspend fun setIncludePersonalLists(include: Boolean)
     suspend fun setFollowOtherServices(follow: Boolean)
+    /** The service the library comes from now, or null for the Nuvio library. */
+    suspend fun librarySource(): TrackingProviderId? = null
     suspend fun setComingUpRow(enabled: Boolean)
     suspend fun setHiddenFromComingUp(titleKey: String, hidden: Boolean)
     suspend fun unhideAllFromComingUp()
@@ -85,7 +92,9 @@ class DefaultCalendarScreenData @Inject constructor(
     private val metaRepository: MetaRepository,
     private val enrichmentCache: ContinueWatchingEnrichmentCache,
     private val episodeResolver: CalendarEpisodeResolver,
-    @CalendarClock private val clock: Clock
+    @CalendarClock private val clock: Clock,
+    private val traktSettings: TraktSettingsDataStore,
+    private val trackingProviders: TrackingProviderRegistry
 ) : CalendarScreenData {
     override val state get() = refresher.state
     override val settings get() = settingsStore.settings
@@ -134,6 +143,9 @@ class DefaultCalendarScreenData @Inject constructor(
         settingsStore.setIncludePersonalLists(include)
         refresher.requestRefresh(CalendarRefreshReason.SETTINGS_CHANGED)
     }
+    override suspend fun librarySource(): TrackingProviderId? =
+        effectiveLibrarySourceMode(traktSettings.librarySourceMode.first()) { trackingProviders.isAuthenticated(it) }.providerId
+
     override suspend fun setFollowOtherServices(follow: Boolean) {
         settingsStore.setFollowOtherServices(follow)
         refresher.requestRefresh(CalendarRefreshReason.SETTINGS_CHANGED)

@@ -47,15 +47,15 @@ class CalendarSourcePlanTest {
         assertEquals(CalendarSourcePlan(nuvioLibrary = true, libraryFrom = emptySet(), progressFrom = setOf(TRAKT)), withTrakt)
     }
 
-    @Test fun eachServiceAsLibrarySourceIsTheOnlyLibraryRead() {
+    @Test fun eachServiceAsLibrarySourceIsReadWithTheNuvioLibraryAndNoOtherService() {
         mapOf(LibrarySourceMode.TRAKT to TRAKT, LibrarySourceMode.SIMKL to SIMKL, LibrarySourceMode.MDBLIST to MDBLIST)
             .forEach { (mode, provider) ->
                 val plan = calendarSourcePlan(mode, WatchProgressSource.NUVIO_SYNC, all, followOtherServices = false)
-                assertEquals(CalendarSourcePlan(nuvioLibrary = false, libraryFrom = setOf(provider), progressFrom = emptySet()), plan)
+                assertEquals(CalendarSourcePlan(nuvioLibrary = true, libraryFrom = setOf(provider), progressFrom = emptySet()), plan)
                 (all - provider).forEach { assertFalse(plan.reads(it)) }
             }
         val mixed = calendarSourcePlan(LibrarySourceMode.SIMKL, WatchProgressSource.TRAKT, all, followOtherServices = false)
-        assertEquals(CalendarSourcePlan(nuvioLibrary = false, libraryFrom = setOf(SIMKL), progressFrom = setOf(TRAKT)), mixed)
+        assertEquals(CalendarSourcePlan(nuvioLibrary = true, libraryFrom = setOf(SIMKL), progressFrom = setOf(TRAKT)), mixed)
         assertFalse(mixed.reads(MDBLIST))
     }
 
@@ -137,7 +137,7 @@ class CalendarSourcePlanTest {
         verify(exactly = 0) { traktProgress.currentWatchedShowSeeds() }
     }
 
-    @Test fun withTraktAsLibrarySourceItsListsReplaceTheNuvioLibrary() = runBlocking {
+    @Test fun withTraktAsLibrarySourceTheNuvioLibraryIsStillRead() = runBlocking {
         val entry = LibraryEntry(
             id = "tt2", type = "series", name = "Listed Show", poster = null, background = null, logo = null,
             description = null, releaseInfo = null, imdbRating = null, genres = emptyList(), addonBaseUrl = null,
@@ -147,7 +147,7 @@ class CalendarSourcePlanTest {
         val snapshot = reader(LibrarySourceMode.TRAKT, WatchProgressSource.NUVIO_SYNC, traktLibrary).read(1)
 
         assertEquals(emptyMap<String, String>(), snapshot.notReady)
-        assertEquals(listOf(CalendarOrigin.TRAKT_WATCHLIST), snapshot.candidates.map { it.origin })
+        assertEquals(listOf(CalendarOrigin.LIBRARY, CalendarOrigin.TRAKT_WATCHLIST), snapshot.candidates.map { it.origin })
         assertFalse(snapshot.traktFollowed)
     }
 

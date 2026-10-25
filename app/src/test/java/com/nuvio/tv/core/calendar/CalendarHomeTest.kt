@@ -138,6 +138,67 @@ class CalendarHomeTest {
         assertEquals(CalendarComingUpWhen.NEW, items.single().whenKind)
     }
 
+    private fun beavis(vararg extra: Pair<String, CalendarEntry>) = show(
+        "tt49022",
+        CalendarEntry(season = 4, episode = 5, title = "Old Beavis and Butt-Head in Beavis Take the Wheel", airDate = "2026-10-01"),
+        CalendarEntry(season = 4, episode = 6, title = "Humor in Uniform with Tom Anderson", airDate = "2026-10-01"),
+        CalendarEntry(season = 4, episode = 7, title = "Beavis and Butt-Head in Pleasure Washer", airDate = "2026-10-01"),
+        CalendarEntry(season = 4, episode = 8, title = "Beavis and Butt-Head in Schlongmerica", airDate = "2026-10-08"),
+        name = "Beavis"
+    )
+
+    private val nuvioBeavis = listOf(
+        CalendarKnownEpisode(4, 5, "Beavis, Take the Wheel", LocalDate.parse("2026-10-01")),
+        CalendarKnownEpisode(4, 6, "Pleasure Washer", LocalDate.parse("2026-10-01")),
+        CalendarKnownEpisode(4, 7, "Schlongmerica", LocalDate.parse("2026-10-08"))
+    )
+
+    private fun beavisWatched() = CalendarWatchedIndex.Builder().add("tt49022", 4, 5).add("tt49022", 4, 6)
+
+    @Test fun tvmazeCountingAShortStaysNewWhenOnlyNumbersAreKnown() {
+        val item = buildCalendarComingUp(listOf(beavis()), beavisWatched().build(), now, sydney).single()
+        assertEquals(CalendarComingUpWhen.NEW, item.whenKind)
+        assertEquals(7, item.entry.episode)
+    }
+
+    @Test fun episodesAreMatchedToNuviosListByDateAndName() {
+        val watched = beavisWatched().episodes(CalendarIds(imdb = "tt49022"), nuvioBeavis).build()
+        val item = buildCalendarComingUp(listOf(beavis()), watched, now, sydney).single()
+        assertEquals(8, item.entry.episode)
+        assertEquals(CalendarComingUpWhen.WEEKDAY, item.whenKind)
+        assertFalse(watched.isWatched(beavis(), beavis().entries.first { it.episode == 8 }))
+    }
+
+    @Test fun aNameMatchAllowsADayBetweenTheDatesAndNoMatchFallsBackToNumbers() {
+        val shifted = nuvioBeavis.map { it.copy(date = it.date.plusDays(1)) }
+        val watched = CalendarWatchedIndex.Builder().add("tt49022", 4, 6).episodes(CalendarIds(imdb = "tt49022"), shifted).build()
+        val title = beavis()
+        assertTrue(watched.isWatched(title, title.entries.first { it.episode == 7 }))
+        assertTrue(watched.isWatched(title, title.entries.first { it.episode == 6 }))
+        assertFalse(watched.isWatched(title, title.entries.first { it.episode == 5 }))
+    }
+
+    @Test fun nextUpNotOutYetMeansNothingOlderIsNew() {
+        val watched = beavisWatched().nextUpNotAired("tt49022", LocalDate.parse("2026-10-08")).build()
+        val item = buildCalendarComingUp(listOf(beavis()), watched, now, sydney).single()
+        assertEquals(8, item.entry.episode)
+        assertEquals(CalendarComingUpWhen.WEEKDAY, item.whenKind)
+    }
+
+    @Test fun nextUpOutTheSameDayStillShowsNew() {
+        val watched = CalendarWatchedIndex.Builder().nextUpNotAired("tt49022", LocalDate.parse("2026-10-01")).build()
+        val item = buildCalendarComingUp(listOf(beavis()), watched, now, sydney).single()
+        assertEquals(CalendarComingUpWhen.NEW, item.whenKind)
+    }
+
+    @Test fun nuviosEpisodeListNeedsANumberAndADate() {
+        fun video(s: Int?, e: Int?, released: String?) = com.nuvio.tv.domain.model.Video(
+            id = "v", title = "Pleasure Washer", released = released, thumbnail = null, season = s, episode = e, overview = null
+        )
+        val list = calendarKnownEpisodes(listOf(video(4, 6, "2026-10-01T00:00:00.000Z"), video(null, 1, "2026-10-01"), video(4, 7, null)))
+        assertEquals(listOf(CalendarKnownEpisode(4, 6, "Pleasure Washer", LocalDate.parse("2026-10-01"))), list)
+    }
+
     @Test fun oneCardPerTitleAndNewWins() {
         val title = show("tt1", at("2026-10-05T20:00", 1), at("2026-10-06T08:00", 2), at("2026-10-12T20:00", 3))
         val item = buildCalendarComingUp(listOf(title), null, now, sydney).single()

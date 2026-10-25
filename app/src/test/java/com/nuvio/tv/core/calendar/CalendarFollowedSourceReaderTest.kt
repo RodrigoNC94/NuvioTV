@@ -39,6 +39,39 @@ class CalendarFollowedSourceReaderTest {
         assertTrue(!index.isWatched(show, CalendarEntry(kind = CalendarEntryKind.MOVIE_DIGITAL, season = 1, episode = 2)))
     }
 
+    @Test fun aKitsuTitleTakesTheImdbIdFromItsCachedDetails() {
+        val anime = CalendarTitleCandidate(CalendarIds.fromContentId("kitsu:46474"), CalendarTitleType.SERIES, CalendarOrigin.LIBRARY, contentId = "kitsu:46474")
+        val unknown = anime.copy(contentId = "kitsu:1")
+        val known = CalendarTitleCandidate(CalendarIds(imdb = "tt5"), CalendarTitleType.SERIES, CalendarOrigin.LIBRARY, contentId = "tt5")
+        val meta = mockk<com.nuvio.tv.domain.model.Meta> {
+            every { imdbId } returns "tt13706018"
+            every { id } returns "kitsu:46474"
+        }
+        val asked = mutableListOf<Pair<String, String>>()
+        val out = calendarResolveUnreadableIds(listOf(anime, unknown, known)) { type, id ->
+            asked += type to id
+            meta.takeIf { id == "kitsu:46474" }
+        }
+        assertEquals(CalendarIds(imdb = "tt13706018"), out[0].ids)
+        assertEquals("kitsu:46474", out[0].contentId)
+        assertTrue(out[1].ids.isEmpty)
+        assertEquals(known, out[2])
+        assertEquals(listOf("series" to "kitsu:46474", "series" to "kitsu:1"), asked)
+    }
+
+    @Test fun watchedUnderAKitsuIdCountsOnceTheShowHasAnImdbId() {
+        val ids = CalendarIds(imdb = "tt13706018")
+        val index = CalendarWatchedIndex.Builder()
+            .add("kitsu:46474", 1, 3)
+            .nextUpNotAired("kitsu:46474", java.time.LocalDate.parse("2026-10-30"))
+            .alias("kitsu:46474", ids)
+            .build()
+        val show = CalendarTitleRecord("series:imdb:tt13706018", CalendarTitleType.SERIES, ids)
+        assertTrue(index.isWatched(ids, 1, 3))
+        assertTrue(index.isWatched(show, CalendarEntry(season = 1, episode = 5, airDate = "2026-10-23")))
+        assertFalse(index.isWatched(show, CalendarEntry(season = 1, episode = 6, airDate = "2026-10-30")))
+    }
+
     @Test fun anAddonReleasedValueKeepsOnlyItsDate() {
         assertEquals("2026-10-10", plainReleaseDate("2026-10-10T00:00:00.000Z"))
         assertEquals("2026-10-10", plainReleaseDate("2026-10-10"))
