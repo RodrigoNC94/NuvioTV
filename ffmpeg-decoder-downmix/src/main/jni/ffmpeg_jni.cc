@@ -79,6 +79,9 @@ static const AVSampleFormat OUTPUT_FORMAT_PCM_16BIT = AV_SAMPLE_FMT_S16;
 static const AVSampleFormat OUTPUT_FORMAT_PCM_FLOAT = AV_SAMPLE_FMT_FLT;
 // Default center level when no downmix metadata is present (-3 dB).
 static const double DEFAULT_CENTER_MIX_LEVEL = M_SQRT1_2;
+// LFE folded into the front channels when the output has no LFE, at -6 dB. FFmpeg drops it
+// by default, which loses the bass on stereo downmixes.
+static const double LFE_MIX_LEVEL = 0.5;
 // Kodi AudioEngine limiter defaults. The limiter sits after rematrixing and
 // catches decoded/remixed float peaks without permanently lowering the mix.
 static const float LIMITER_DEFAULT_SAMPLE_RATE = 48000.0f;
@@ -883,6 +886,7 @@ int configureResampler(DecoderContext* decoderContext, AVFrame* frame,
 
   if (isDownmixActive) {
     av_opt_set_double(resampleContext, "center_mix_level", centerMixLevel, 0);
+    av_opt_set_double(resampleContext, "lfe_mix_level", LFE_MIX_LEVEL, 0);
     if ((decoderContext->output_sample_format == AV_SAMPLE_FMT_FLT ||
          decoderContext->output_sample_format == AV_SAMPLE_FMT_FLTP) &&
         (inputSampleFormat == AV_SAMPLE_FMT_FLT ||

@@ -6,6 +6,8 @@ import com.nuvio.tv.ui.components.PanelEyebrow
 import com.nuvio.tv.ui.components.PanelActionRow
 import com.nuvio.tv.ui.components.PlayerPanelRow
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import com.nuvio.tv.ui.v2.player.v2PlayerPanel
@@ -61,6 +63,7 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.nuvio.tv.R
+import com.nuvio.tv.data.local.NightModeLevel
 import com.nuvio.tv.ui.screens.detail.requestFocusAfterFrames
 import com.nuvio.tv.ui.util.languageCodeToName
 import java.util.Locale
@@ -75,12 +78,15 @@ internal fun AudioSelectionOverlay(
     audioDelayMs: Int,
     audioAmplificationDb: Int,
     isAmplificationAvailable: Boolean,
+    nightMode: NightModeLevel,
     centerMixLevelDb: Int,
     isCenterMixAvailable: Boolean,
+    dialogueBoostState: DialogueBoostState,
     persistAmplification: Boolean,
     onTrackSelected: (Int) -> Unit,
     onAudioDelayChange: (Int) -> Unit,
     onAmplificationChange: (Int) -> Unit,
+    onNightModeChange: (NightModeLevel) -> Unit,
     onCenterMixLevelChange: (Int) -> Unit,
     onPersistAmplificationChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
@@ -101,9 +107,9 @@ internal fun AudioSelectionOverlay(
     val currentDb = audioAmplificationDb.coerceIn(AUDIO_AMPLIFICATION_MIN_DB, AUDIO_AMPLIFICATION_MAX_DB)
     val canDecreaseAmp = isAmplificationAvailable && currentDb > AUDIO_AMPLIFICATION_MIN_DB
     val canIncreaseAmp = isAmplificationAvailable && currentDb < AUDIO_AMPLIFICATION_MAX_DB
-    val currentCenterMixDb = centerMixLevelDb.coerceIn(CENTER_MIX_LEVEL_MIN_DB, CENTER_MIX_LEVEL_MAX_DB)
-    val canDecreaseCenterMix = isCenterMixAvailable && currentCenterMixDb > CENTER_MIX_LEVEL_MIN_DB
-    val canIncreaseCenterMix = isCenterMixAvailable && currentCenterMixDb < CENTER_MIX_LEVEL_MAX_DB
+    val currentCenterMixDb = centerMixLevelDb.coerceIn(DIALOGUE_BOOST_MIN_DB, DIALOGUE_BOOST_MAX_DB)
+    val canDecreaseCenterMix = isCenterMixAvailable && currentCenterMixDb > DIALOGUE_BOOST_MIN_DB
+    val canIncreaseCenterMix = isCenterMixAvailable && currentCenterMixDb < DIALOGUE_BOOST_MAX_DB
 
     var lastFocusedAudioIndex by rememberSaveable { mutableStateOf<Int?>(null) }
     var pendingControlFocusTarget by rememberSaveable {
@@ -205,8 +211,10 @@ internal fun AudioSelectionOverlay(
                     audioDelayMs = audioDelayMs,
                     audioAmplificationDb = audioAmplificationDb,
                     isAmplificationAvailable = isAmplificationAvailable,
+                    nightMode = nightMode,
                     centerMixLevelDb = centerMixLevelDb,
                     isCenterMixAvailable = isCenterMixAvailable,
+                    dialogueBoostState = dialogueBoostState,
                     persistAmplification = persistAmplification,
                     delayMinusFocusRequester = delayMinusFocusRequester,
                     delayPlusFocusRequester = delayPlusFocusRequester,
@@ -221,6 +229,7 @@ internal fun AudioSelectionOverlay(
                         pendingControlFocusTarget = focusTarget
                         onAmplificationChange(nextDb)
                     },
+                    onNightModeChange = onNightModeChange,
                     onCenterMixLevelChange = onCenterMixLevelChange,
                     onPersistAmplificationChange = onPersistAmplificationChange
                 )
@@ -323,8 +332,10 @@ private fun AudioControlsContent(
     audioDelayMs: Int,
     audioAmplificationDb: Int,
     isAmplificationAvailable: Boolean,
+    nightMode: NightModeLevel,
     centerMixLevelDb: Int,
     isCenterMixAvailable: Boolean,
+    dialogueBoostState: DialogueBoostState,
     persistAmplification: Boolean,
     delayMinusFocusRequester: FocusRequester,
     delayPlusFocusRequester: FocusRequester,
@@ -336,18 +347,25 @@ private fun AudioControlsContent(
     leftFocusRequester: FocusRequester,
     onAudioDelayChange: (Int) -> Unit,
     onAmplificationChange: (Int, AudioControlFocusTarget) -> Unit,
+    onNightModeChange: (NightModeLevel) -> Unit,
     onCenterMixLevelChange: (Int) -> Unit,
     onPersistAmplificationChange: (Boolean) -> Unit
 ) {
+    val nightMinusFocusRequester = remember { FocusRequester() }
+    val nightPlusFocusRequester = remember { FocusRequester() }
+    val nightLevels = NightModeLevel.entries
+    val nightIndex = nightLevels.indexOf(nightMode)
+    val canDecreaseNight = isAmplificationAvailable && nightIndex > 0
+    val canIncreaseNight = isAmplificationAvailable && nightIndex < nightLevels.lastIndex
     val currentDelayMs = audioDelayMs.coerceIn(AUDIO_DELAY_MIN_MS, AUDIO_DELAY_MAX_MS)
     val canDecreaseDelay = currentDelayMs > AUDIO_DELAY_MIN_MS
     val canIncreaseDelay = currentDelayMs < AUDIO_DELAY_MAX_MS
     val currentDb = audioAmplificationDb.coerceIn(AUDIO_AMPLIFICATION_MIN_DB, AUDIO_AMPLIFICATION_MAX_DB)
     val canDecreaseAmp = isAmplificationAvailable && currentDb > AUDIO_AMPLIFICATION_MIN_DB
     val canIncreaseAmp = isAmplificationAvailable && currentDb < AUDIO_AMPLIFICATION_MAX_DB
-    val currentCenterMixDb = centerMixLevelDb.coerceIn(CENTER_MIX_LEVEL_MIN_DB, CENTER_MIX_LEVEL_MAX_DB)
-    val canDecreaseCenterMix = isCenterMixAvailable && currentCenterMixDb > CENTER_MIX_LEVEL_MIN_DB
-    val canIncreaseCenterMix = isCenterMixAvailable && currentCenterMixDb < CENTER_MIX_LEVEL_MAX_DB
+    val currentCenterMixDb = centerMixLevelDb.coerceIn(DIALOGUE_BOOST_MIN_DB, DIALOGUE_BOOST_MAX_DB)
+    val canDecreaseCenterMix = isCenterMixAvailable && currentCenterMixDb > DIALOGUE_BOOST_MIN_DB
+    val canIncreaseCenterMix = isCenterMixAvailable && currentCenterMixDb < DIALOGUE_BOOST_MAX_DB
 
     val firstDelayFocusRequester = if (canDecreaseDelay) {
         delayMinusFocusRequester
@@ -366,9 +384,31 @@ private fun AudioControlsContent(
         canIncreaseCenterMix -> centerPlusFocusRequester
         else -> persistFocusRequester
     }
+    val firstNightFocusRequester = when {
+        canDecreaseNight -> nightMinusFocusRequester
+        canIncreaseNight -> nightPlusFocusRequester
+        else -> firstCenterFocusRequester
+    }
+    val nightUpFocusRequester = when {
+        canDecreaseAmp -> ampMinusFocusRequester
+        canIncreaseAmp -> ampPlusFocusRequester
+        else -> firstDelayFocusRequester
+    }
+    val centerUpFocusRequester = when {
+        canDecreaseNight -> nightMinusFocusRequester
+        canIncreaseNight -> nightPlusFocusRequester
+        else -> firstAmpFocusRequester
+    }
+    val nightPlusLeftFocusRequester = if (canDecreaseNight) {
+        nightMinusFocusRequester
+    } else {
+        leftFocusRequester
+    }
     val persistUpFocusRequester = when {
         canDecreaseCenterMix -> centerMinusFocusRequester
         canIncreaseCenterMix -> centerPlusFocusRequester
+        canDecreaseNight -> nightMinusFocusRequester
+        canIncreaseNight -> nightPlusFocusRequester
         canDecreaseAmp -> ampMinusFocusRequester
         canIncreaseAmp -> ampPlusFocusRequester
         canDecreaseDelay -> delayMinusFocusRequester
@@ -396,11 +436,15 @@ private fun AudioControlsContent(
         canDecreaseAmp -> ampMinusFocusRequester
         else -> leftFocusRequester
     }
-    val centerHelperText = if (isCenterMixAvailable) {
-        stringResource(R.string.audio_center_mix_help)
-    } else {
-        stringResource(R.string.audio_center_mix_unavailable)
-    }
+    val centerHelperText = stringResource(
+        when (dialogueBoostState) {
+            DialogueBoostState.AVAILABLE -> R.string.audio_dialogue_boost_help
+            DialogueBoostState.PASSTHROUGH -> R.string.audio_night_mode_unavailable
+            DialogueBoostState.STEREO_TRACK -> R.string.audio_dialogue_boost_stereo
+            DialogueBoostState.MIXED_TO_STEREO -> R.string.audio_dialogue_boost_mixed
+            DialogueBoostState.MPV_MULTICHANNEL -> R.string.audio_dialogue_boost_mpv_multichannel
+        }
+    )
 
     val amplificationHelperText = when {
         !isAmplificationAvailable -> stringResource(R.string.audio_mix_unavailable)
@@ -419,6 +463,7 @@ private fun AudioControlsContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
             .padding(top = NuvioTheme.spacing.xs, bottom = NuvioTheme.spacing.sm),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -483,7 +528,7 @@ private fun AudioControlsContent(
                 minusLeftFocusRequester = leftFocusRequester,
                 plusLeftFocusRequester = ampPlusLeftFocusRequester,
                 upFocusRequester = firstDelayFocusRequester,
-                downFocusRequester = firstCenterFocusRequester,
+                downFocusRequester = firstNightFocusRequester,
                 onDecrease = {
                     val nextDb = currentDb - 1
                     val target = if (nextDb <= AUDIO_AMPLIFICATION_MIN_DB && canIncreaseAmp) {
@@ -511,8 +556,44 @@ private fun AudioControlsContent(
             )
 
             AdjustmentSection(
-                title = stringResource(R.string.audio_center_mix_label),
-                valueText = stringResource(R.string.audio_center_mix_value_db, currentCenterMixDb),
+                title = stringResource(R.string.audio_night_mode_label),
+                valueText = stringResource(nightModeLabelRes(nightMode)),
+                helperText = if (isAmplificationAvailable) {
+                    stringResource(R.string.audio_night_mode_help)
+                } else {
+                    stringResource(R.string.audio_night_mode_unavailable)
+                },
+                canDecrease = canDecreaseNight,
+                canIncrease = canIncreaseNight,
+                minusFocusRequester = nightMinusFocusRequester,
+                plusFocusRequester = nightPlusFocusRequester,
+                minusLeftFocusRequester = leftFocusRequester,
+                plusLeftFocusRequester = nightPlusLeftFocusRequester,
+                upFocusRequester = nightUpFocusRequester,
+                downFocusRequester = firstCenterFocusRequester,
+                onDecrease = {
+                    val next = nightLevels[nightIndex - 1]
+                    onNightModeChange(next)
+                    if (next == nightLevels.first()) {
+                        runCatching { nightPlusFocusRequester.requestFocus() }
+                    }
+                },
+                onIncrease = {
+                    val next = nightLevels[nightIndex + 1]
+                    onNightModeChange(next)
+                    if (next == nightLevels.last()) {
+                        runCatching { nightMinusFocusRequester.requestFocus() }
+                    }
+                }
+            )
+
+            AdjustmentSection(
+                title = stringResource(R.string.audio_dialogue_boost_label),
+                valueText = if (currentCenterMixDb == 0) {
+                    stringResource(R.string.audio_night_mode_off)
+                } else {
+                    stringResource(R.string.audio_dialogue_boost_value_db, currentCenterMixDb)
+                },
                 helperText = centerHelperText,
                 canDecrease = canDecreaseCenterMix,
                 canIncrease = canIncreaseCenterMix,
@@ -520,19 +601,19 @@ private fun AudioControlsContent(
                 plusFocusRequester = centerPlusFocusRequester,
                 minusLeftFocusRequester = leftFocusRequester,
                 plusLeftFocusRequester = centerPlusLeftFocusRequester,
-                upFocusRequester = firstAmpFocusRequester,
+                upFocusRequester = centerUpFocusRequester,
                 downFocusRequester = persistFocusRequester,
                 onDecrease = {
                     val nextDb = currentCenterMixDb - 1
                     onCenterMixLevelChange(nextDb)
-                    if (nextDb <= CENTER_MIX_LEVEL_MIN_DB && canIncreaseCenterMix) {
+                    if (nextDb <= DIALOGUE_BOOST_MIN_DB && canIncreaseCenterMix) {
                         runCatching { centerPlusFocusRequester.requestFocus() }
                     }
                 },
                 onIncrease = {
                     val nextDb = currentCenterMixDb + 1
                     onCenterMixLevelChange(nextDb)
-                    if (nextDb >= CENTER_MIX_LEVEL_MAX_DB && canDecreaseCenterMix) {
+                    if (nextDb >= DIALOGUE_BOOST_MAX_DB && canDecreaseCenterMix) {
                         runCatching { centerMinusFocusRequester.requestFocus() }
                     }
                 }
@@ -735,6 +816,13 @@ private fun StepCard(
             )
         }
     }
+}
+
+internal fun nightModeLabelRes(level: NightModeLevel): Int = when (level) {
+    NightModeLevel.OFF -> R.string.audio_night_mode_off
+    NightModeLevel.LIGHT -> R.string.audio_night_mode_light
+    NightModeLevel.MEDIUM -> R.string.audio_night_mode_medium
+    NightModeLevel.STRONG -> R.string.audio_night_mode_strong
 }
 
 private enum class AudioControlFocusTarget {

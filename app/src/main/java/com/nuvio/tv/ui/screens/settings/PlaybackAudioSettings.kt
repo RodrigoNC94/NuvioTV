@@ -14,12 +14,14 @@ import com.nuvio.tv.data.local.AVAILABLE_SUBTITLE_LANGUAGES
 import com.nuvio.tv.data.local.AudioLanguageOption
 import com.nuvio.tv.data.local.AudioOutputChannels
 import com.nuvio.tv.data.local.DeniedCodecHandling
+import com.nuvio.tv.data.local.NightModeLevel
 import com.nuvio.tv.data.local.PlayerPreference
 import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.SurroundChannelTarget
 import com.nuvio.tv.data.local.SurroundFormatMode
 import com.nuvio.tv.data.local.displayName
 import com.nuvio.tv.ui.screens.player.PlayerTunnelAvSyncPolicy
+import com.nuvio.tv.ui.screens.player.nightModeLabelRes
 
 /** Format names in learned rejection entries ("route::GROUP"), in passthrough settings order. */
 internal fun learnedRejectionFormatLabels(entries: Set<String>): String {
@@ -52,6 +54,15 @@ internal fun PlaybackAudioSection(
     val isExoEngine = settings.usesExoPlayerEngine
 
     SettingsNote(text = stringResource(R.string.audio_passthrough_info))
+
+    SettingsSectionLabel(text = stringResource(R.string.audio_listening_section))
+    SettingsActionRow(
+        title = stringResource(R.string.audio_night_mode_label),
+        subtitle = stringResource(R.string.audio_night_mode_settings_sub),
+        value = stringResource(nightModeLabelRes(settings.nightMode)),
+        enabled = enabled,
+        onClick = { onOpenDialog(PlaybackDialog.NIGHT_MODE) }
+    )
 
     SettingsActionRow(
         title = stringResource(R.string.audio_preferred_lang),
@@ -342,6 +353,14 @@ internal fun AudioSettingsDialogs(
             },
             onDismiss = onDismiss
         )
+        PlaybackDialog.NIGHT_MODE -> NightModeDialog(
+            selectedLevel = settings.nightMode,
+            onLevelSelected = { level ->
+                onUpdate { setNightMode(level) }
+                onDismiss()
+            },
+            onDismiss = onDismiss
+        )
         PlaybackDialog.AUDIO_OUTPUT_CHANNELS -> AudioOutputChannelsDialog(
             selectedChannels = settings.audioOutputChannels,
             onChannelsSelected = { channels ->
@@ -461,6 +480,47 @@ private fun SurroundFormatModeDialog(
         onDismiss = onDismiss,
         width = 460.dp,
         maxHeight = 320.dp
+    )
+}
+
+@Composable
+private fun NightModeDialog(
+    selectedLevel: NightModeLevel,
+    onLevelSelected: (NightModeLevel) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val options = listOf(
+        SettingsPickerOption(
+            NightModeLevel.OFF,
+            stringResource(R.string.audio_night_mode_off),
+            stringResource(R.string.audio_night_mode_off_desc)
+        ),
+        SettingsPickerOption(
+            NightModeLevel.LIGHT,
+            stringResource(R.string.audio_night_mode_light),
+            stringResource(R.string.audio_night_mode_light_desc)
+        ),
+        SettingsPickerOption(
+            NightModeLevel.MEDIUM,
+            stringResource(R.string.audio_night_mode_medium),
+            stringResource(R.string.audio_night_mode_medium_desc)
+        ),
+        SettingsPickerOption(
+            NightModeLevel.STRONG,
+            stringResource(R.string.audio_night_mode_strong),
+            stringResource(R.string.audio_night_mode_strong_desc)
+        )
+    )
+
+    SettingsSingleChoiceDialog(
+        title = stringResource(R.string.audio_night_mode_label),
+        subtitle = stringResource(R.string.audio_night_mode_dialog_subtitle),
+        options = options,
+        selectedValue = selectedLevel,
+        onOptionSelected = onLevelSelected,
+        onDismiss = onDismiss,
+        width = 460.dp,
+        maxHeight = 420.dp
     )
 }
 
