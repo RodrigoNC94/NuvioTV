@@ -289,7 +289,7 @@ community-tested.
 
 This is a modified version of [NuvioTV](https://github.com/NuvioMedia/NuvioTV), changed by ysosrs123
 from July 2026 onwards. Every change is in this repository's history on top of the official release
-it builds on (currently 1.1.0-beta.7). It is licensed under the
+it builds on (currently 1.1.0-beta.8). It is licensed under the
 [GNU General Public License v3.0](./LICENSE), the same as NuvioTV. All upstream copyright notices,
 licence headers and author attributions are kept. Full credit to the NuvioTV maintainers and contributors.
 

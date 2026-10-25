@@ -19,7 +19,7 @@ body:
     attributes:
       label: Nuvio Arc version
       description: Settings > About
-      placeholder: e.g. 1.1.0-nt.7
+      placeholder: e.g. 1.1.0-nt.8
     validations:
       required: true
   - type: textarea
