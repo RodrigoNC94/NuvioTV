@@ -49,6 +49,55 @@ internal fun playbackLanguageTokens(code: String?): List<String> {
 private fun languageFlag(iso1: String, region: String?): String? =
     if (iso1 == "pt" && region == "BR") "🇧🇷" else LANGUAGE_FLAGS[iso1]
 
+/**
+ * The audio track that is playing: the one the player reports by id, else the one selected. Right
+ * after a switch the selection has moved but the player still plays the old track for a moment.
+ */
+internal fun playingAudioTrack(tracks: List<TrackInfo>, info: PlayerMediaInfo): TrackInfo? =
+    info.audioTrackId?.let { id -> tracks.firstOrNull { it.trackId == id } } ?: tracks.firstOrNull { it.isSelected }
+
+/**
+ * ExoPlayer reports no audio format for a moment while it switches tracks, and mpv no channel
+ * count while it reopens the decoder; keep the last rather than drop those badges and bring them
+ * back. Not when audio is off: then it is gone.
+ */
+internal fun PlayerMediaInfo.keepingAudioOf(previous: PlayerMediaInfo, audioSelected: Boolean): PlayerMediaInfo = when {
+    !audioSelected -> this
+    audioCodec == null && previous.audioCodec != null -> copy(
+        audioCodec = previous.audioCodec,
+        audioProfile = previous.audioProfile,
+        audioChannels = previous.audioChannels,
+        audioTrackId = previous.audioTrackId,
+        audioLanguage = previous.audioLanguage
+    )
+    audioChannels == null && audioTrackId == previous.audioTrackId -> copy(audioChannels = previous.audioChannels)
+    else -> this
+}
+
+/**
+ * Whether the release name speaks for [track]: it names the main audio (TrueHD.7.1.Atmos), taken
+ * as the first track of that codec family that is not commentary or audio description. So a second
+ * E-AC-3 track, like a 2.0 commentary, does not take the Atmos of the first.
+ */
+internal fun releaseDescribesTrack(tracks: List<TrackInfo>, track: TrackInfo?): Boolean {
+    if (track == null) return true
+    if (track.role in SECONDARY_AUDIO_ROLES) return false
+    val family = audioFamily(track.codec)
+    return tracks.firstOrNull { it.role !in SECONDARY_AUDIO_ROLES && audioFamily(it.codec) == family }?.index == track.index
+}
+
+/** E-AC-3 and E-AC-3-JOC, or dts and DTS-HD, are one family; null when the track names no codec. */
+private fun audioFamily(codec: String?): String? {
+    val key = codec?.let(::codecKey)?.takeIf { it.isNotEmpty() } ?: return null
+    return when {
+        key.startsWith("EAC3") -> "EAC3"
+        key.startsWith("DTS") -> "DTS"
+        else -> key
+    }
+}
+
+private val SECONDARY_AUDIO_ROLES = setOf(TrackRole.COMMENTARY, TrackRole.AUDIO_DESCRIPTION)
+
 private fun resolutionTokens(info: PlayerMediaInfo): List<String> {
     val width = info.videoWidth ?: return emptyList()
     val height = info.videoHeight ?: return emptyList()

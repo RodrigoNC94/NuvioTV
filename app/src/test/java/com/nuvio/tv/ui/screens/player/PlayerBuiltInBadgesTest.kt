@@ -100,4 +100,19 @@ class PlayerBuiltInBadgesTest {
     fun `nothing known gives no badges`() {
         assertEquals(emptyList<Int>(), builtInPlayerBadges(PlayerMediaInfo(), ""))
     }
+
+    @Test
+    fun `atmos from the release name skips a track it does not speak for`() {
+        val info = PlayerMediaInfo(audioCodec = "E-AC-3", audioChannels = 2)
+        val release = "Film.2160p.WEB-DL.DDP5.1.Atmos.H.265-GRP"
+        assertEquals(true, R.drawable.badge_atmos in builtInPlayerBadges(info, release))
+        assertEquals(false, R.drawable.badge_atmos in builtInPlayerBadges(info, release, audioFromRelease = false))
+        assertEquals(true, R.drawable.badge_webdl in builtInPlayerBadges(info, release, audioFromRelease = false))
+    }
+
+    @Test
+    fun `atmos from the mpv audio profile`() {
+        val info = PlayerMediaInfo(audioCodec = "TrueHD", audioProfile = "Dolby TrueHD + Dolby Atmos")
+        assertEquals(true, R.drawable.badge_atmos in builtInPlayerBadges(info, ""))
+    }
 }

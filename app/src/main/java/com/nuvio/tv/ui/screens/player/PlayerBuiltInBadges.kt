@@ -5,9 +5,10 @@ import com.nuvio.tv.R
 /**
  * The fork's own badge pictures for what is playing, used when no badge pack is imported.
  * Picture format, resolution, codec and channels come from the player; only Atmos (when the
- * codec family can carry it) and the source type come from the release name.
+ * codec family can carry it) and the source type come from the release name. [audioFromRelease]
+ * is false when the release name does not speak for the playing audio track.
  */
-internal fun builtInPlayerBadges(info: PlayerMediaInfo, releaseText: String): List<Int> {
+internal fun builtInPlayerBadges(info: PlayerMediaInfo, releaseText: String, audioFromRelease: Boolean = true): List<Int> {
     val out = mutableListOf<Int>()
     val width = info.videoWidth ?: 0
     val height = info.videoHeight ?: 0
@@ -24,11 +25,12 @@ internal fun builtInPlayerBadges(info: PlayerMediaInfo, releaseText: String): Li
         "HDR10" in info.hdr -> out += R.drawable.badge_hdr10
         "HLG" in info.hdr -> out += R.drawable.badge_hdr
     }
+    val audioRelease = if (audioFromRelease) release else ""
     val codec = info.audioCodec.orEmpty().uppercase()
     val profile = info.audioProfile.orEmpty().uppercase()
     val audio = when {
         codec == "TRUEHD" -> R.drawable.badge_truehd
-        codec.startsWith("DTS") && (profile.contains("MA") || releaseSaysDtsHdMa(codec, release)) ->
+        codec.startsWith("DTS") && (profile.contains("MA") || releaseSaysDtsHdMa(codec, audioRelease)) ->
             R.drawable.badge_dts_hd_ma
         codec == "DTS-HD" || codec == "DTS" && profile.contains("HD") -> R.drawable.badge_dts_hd
         codec == "DTS" -> R.drawable.badge_dts
@@ -37,7 +39,7 @@ internal fun builtInPlayerBadges(info: PlayerMediaInfo, releaseText: String): Li
         else -> null
     }
     audio?.let { out += it }
-    if (codec == "E-AC-3-JOC" || releaseSaysAtmos(codec, release)) out += R.drawable.badge_atmos
+    if (codec == "E-AC-3-JOC" || profile.contains("ATMOS") || releaseSaysAtmos(codec, audioRelease)) out += R.drawable.badge_atmos
     val channels = info.audioChannels ?: 0
     when {
         channels >= 8 -> out += R.drawable.badge_ch_7_1

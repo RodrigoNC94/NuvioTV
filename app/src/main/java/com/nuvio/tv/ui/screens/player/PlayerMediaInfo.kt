@@ -13,6 +13,9 @@ data class PlayerMediaInfo(
     val audioCodec: String? = null,
     val audioProfile: String? = null,
     val audioChannels: Int? = null,
+    /** The playing audio track, as [TrackInfo.trackId] names it, and its language. */
+    val audioTrackId: String? = null,
+    val audioLanguage: String? = null,
     val hdr: List<String> = emptyList(),
     val bitDepth: Int? = null
 )
@@ -37,6 +40,8 @@ internal fun mpvMediaInfo(property: (String) -> String?): PlayerMediaInfo =
         audioCodec = property("current-tracks/audio/codec")?.let(::mpvCodecLabel),
         audioProfile = property("current-tracks/audio/codec-profile"),
         audioChannels = property("audio-params/channel-count")?.toIntOrNull()?.takeIf { it > 0 },
+        audioTrackId = property("current-tracks/audio/id"),
+        audioLanguage = property("current-tracks/audio/lang"),
         hdr = buildList {
             if (!property("current-tracks/video/dolby-vision-profile").isNullOrBlank()) add("DV")
             when (property("video-params/gamma")) {
@@ -54,6 +59,8 @@ private fun exoMediaInfo(video: Format?, audio: Format?): PlayerMediaInfo =
         videoHeight = video?.height?.takeIf { it > 0 },
         audioCodec = audio?.sampleMimeType?.let(::exoCodecLabel),
         audioChannels = audio?.channelCount?.takeIf { it > 0 },
+        audioTrackId = audio?.id,
+        audioLanguage = audio?.language,
         hdr = video?.hdrFormats().orEmpty(),
         bitDepth = video?.colorInfo?.lumaBitdepth?.takeIf { it > 0 } ?: video?.codecs?.let(::codecsBitDepth)
     )

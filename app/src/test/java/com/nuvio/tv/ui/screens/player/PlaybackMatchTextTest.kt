@@ -185,6 +185,51 @@ class PlaybackMatchTextTest {
         assertEquals(emptyList<String>(), playbackLanguageTokens(null))
     }
 
+    private val main = TrackInfo(index = 0, name = "English", language = "en", trackId = "2", codec = "E-AC-3-JOC", channelCount = 6)
+    private val commentary = TrackInfo(index = 1, name = "Commentary", language = "en", trackId = "3", codec = "E-AC-3", channelCount = 2)
+    private val french = TrackInfo(index = 2, name = "French", language = "fr", trackId = "4", codec = "AC-3", channelCount = 6)
+    private val described = TrackInfo(index = 3, name = "AD", language = "en", trackId = "5", codec = "AC-3", role = TrackRole.AUDIO_DESCRIPTION)
+    private val tracks = listOf(main, commentary, french, described)
+
+    @Test
+    fun `the release name speaks only for the first track of its codec family`() {
+        assertEquals(true, releaseDescribesTrack(tracks, main))
+        assertEquals(false, releaseDescribesTrack(tracks, commentary))
+        assertEquals(true, releaseDescribesTrack(tracks, french))
+        assertEquals(false, releaseDescribesTrack(tracks, described))
+        assertEquals(true, releaseDescribesTrack(emptyList(), null))
+    }
+
+    @Test
+    fun `a second e-ac-3 track does not take atmos from the release name`() {
+        val release = "Film.2160p.WEB-DL.DDP5.1.Atmos.H.265-GRP"
+        val info = PlayerMediaInfo(audioCodec = "E-AC-3", audioChannels = 2, audioTrackId = "3")
+        val playing = playingAudioTrack(tracks, info)
+        assertEquals(commentary, playing)
+        val text = playbackMatchText(info, emptyList(), release.takeIf { releaseDescribesTrack(tracks, playing) }.orEmpty())
+        assertEquals(false, "Atmos" in text)
+    }
+
+    @Test
+    fun `badges follow the playing track while the selection runs ahead`() {
+        val switching = tracks.map { it.copy(isSelected = it == french) }
+        assertEquals(main, playingAudioTrack(switching, PlayerMediaInfo(audioTrackId = "2")))
+        assertEquals(french.copy(isSelected = true), playingAudioTrack(switching, PlayerMediaInfo()))
+        assertEquals(french.copy(isSelected = true), playingAudioTrack(switching, PlayerMediaInfo(audioTrackId = "99")))
+    }
+
+    @Test
+    fun `audio badges hold through the gap in a switch`() {
+        val before = PlayerMediaInfo(videoWidth = 1920, audioCodec = "E-AC-3", audioChannels = 6, audioTrackId = "2", audioLanguage = "en")
+        val gap = PlayerMediaInfo(videoWidth = 1920)
+        assertEquals(before, gap.keepingAudioOf(before, audioSelected = true))
+        assertEquals(gap, gap.keepingAudioOf(before, audioSelected = false))
+        val reopening = before.copy(audioChannels = null)
+        assertEquals(before, reopening.keepingAudioOf(before, audioSelected = true))
+        val after = PlayerMediaInfo(videoWidth = 1920, audioCodec = "AC-3", audioTrackId = "4", audioLanguage = "fr")
+        assertEquals(after, after.keepingAudioOf(before, audioSelected = true))
+    }
+
     @Test
     fun `shows nothing before playback info loads`() {
         assertEquals(emptyList<String>(), matchedNames(PlayerMediaInfo()))

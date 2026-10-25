@@ -30,8 +30,9 @@ sealed interface PlayerBadge {
 internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiState): List<PlayerBadge> {
     val filters = uiState.playerBadgeFilters
     val enabled = uiState.showPlayerBadges
-    var mediaInfo by remember { mutableStateOf(PlayerMediaInfo()) }
-    var releaseText by remember { mutableStateOf("") }
+    // A new stream starts clean, so its row never carries the last stream's audio.
+    var mediaInfo by remember(uiState.currentStreamUrl) { mutableStateOf(PlayerMediaInfo()) }
+    var releaseText by remember(uiState.currentStreamUrl) { mutableStateOf("") }
     val selectedAudio = uiState.audioTracks.firstOrNull { it.isSelected }
     LaunchedEffect(
         enabled,
@@ -44,21 +45,29 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
     ) {
         if (!enabled || !uiState.showControls || uiState.isBuffering) return@LaunchedEffect
         // Read again while the row shows: adaptive streams change resolution, and mpv knows the picture only once decoded.
+        var quickReads = 0
         while (true) {
-            val info = viewModel.playerMediaInfo()
+            val info = viewModel.playerMediaInfo().keepingAudioOf(mediaInfo, audioSelected = selectedAudio != null)
             if (info != mediaInfo) mediaInfo = info
             val release = viewModel.playingReleaseText()
             if (release != releaseText) releaseText = release
-            delay(BADGE_REFRESH_MS)
+            // Until the player catches up with a switch, look again sooner so the row follows it; capped
+            // in case a source names its tracks differently from the player and the ids never meet.
+            val switching = info.audioTrackId != null && selectedAudio?.trackId != null && info.audioTrackId != selectedAudio.trackId
+            delay(if (switching && quickReads++ < MAX_SWITCH_READS) SWITCH_REFRESH_MS else BADGE_REFRESH_MS)
         }
     }
     if (!enabled) return emptyList()
+    // Follow the track the player is playing, which lags the selection for a moment after a switch.
+    val playingAudio = playingAudioTrack(uiState.audioTracks, mediaInfo)
+    val audioFromRelease = releaseDescribesTrack(uiState.audioTracks, playingAudio)
     if (filters.isEmpty()) {
-        return remember(mediaInfo, releaseText) {
-            builtInPlayerBadges(mediaInfo, releaseText).map { PlayerBadge.BuiltIn(it) }
+        return remember(mediaInfo, releaseText, audioFromRelease) {
+            builtInPlayerBadges(mediaInfo, releaseText, audioFromRelease).map { PlayerBadge.BuiltIn(it) }
         }
     }
-    val text = playbackMatchText(mediaInfo, playbackLanguageTokens(selectedAudio?.language), releaseText)
+    val language = mediaInfo.audioLanguage ?: playingAudio?.language
+    val text = playbackMatchText(mediaInfo, playbackLanguageTokens(language), releaseText.takeIf { audioFromRelease }.orEmpty())
     return remember(text, filters) {
         StreamBadgeMatcher.matchedBadges(listOfNotNull(text.takeIf { it.isNotBlank() }), filters)
             .filter { it.imageURL.isNotBlank() }
@@ -113,3 +122,5 @@ internal fun PlayerBadges(
 
 private val PLAYER_BADGE_HEIGHT = 20.dp
 private const val BADGE_REFRESH_MS = 1_000L
+private const val SWITCH_REFRESH_MS = 250L
+private const val MAX_SWITCH_READS = 12
