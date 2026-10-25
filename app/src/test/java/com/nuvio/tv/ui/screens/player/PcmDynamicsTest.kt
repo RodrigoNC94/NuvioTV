@@ -9,6 +9,7 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.log10
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.sin
 
 class PcmDynamicsTest {
@@ -66,14 +67,33 @@ class PcmDynamicsTest {
     }
 
     @Test
-    fun `night mode turns loud passages down far more than quiet ones`() {
+    fun `night mode lifts quiet passages and never turns loud ones down`() {
         for (level in listOf(NightModeLevel.LIGHT, NightModeLevel.MEDIUM, NightModeLevel.STRONG)) {
-            val loudChange = db(steadyPeak(dynamics(level = level), 0.9f)) - db(0.9f)
+            val loudChange = db(steadyPeak(dynamics(level = level), 0.85f)) - db(0.85f)
             val talkChange = db(steadyPeak(dynamics(level = level), 0.1f)) - db(0.1f)
             val quietChange = db(steadyPeak(dynamics(level = level), 0.01f)) - db(0.01f)
-            assertTrue("$level loud $loudChange", loudChange < -3f)
-            assertTrue("$level quiet $quietChange", quietChange > 0f)
-            assertTrue("$level talk $talkChange vs loud $loudChange", talkChange > loudChange + 3f)
+            assertTrue("$level loud $loudChange", loudChange > -0.1f)
+            assertTrue("$level talk $talkChange vs loud $loudChange", talkChange > loudChange)
+            assertTrue("$level quiet $quietChange vs loud $loudChange", quietChange > loudChange + 5f)
+        }
+    }
+
+    @Test
+    fun `bass under quiet speech keeps its level`() {
+        // a loud low rumble, the case that used to be pulled down by 7 to 16 dB
+        for (level in listOf(NightModeLevel.LIGHT, NightModeLevel.MEDIUM, NightModeLevel.STRONG)) {
+            val d = dynamics(level = level)
+            val rate = 48_000
+            val frame = FloatArray(2)
+            var peak = 0f
+            d.prepareBuffer()
+            for (i in 0 until 2 * rate) {
+                val v = 0.5f * sin(2.0 * PI * 40.0 * i / rate).toFloat() + 0.03f * sin(2.0 * PI * 300.0 * i / rate).toFloat()
+                frame.fill(v)
+                d.processFrame(frame)
+                if (i > rate) peak = max(peak, abs(frame[0]))
+            }
+            assertTrue("$level rumble ${db(peak) - db(0.53f)}", db(peak) >= db(0.53f) - 0.1f)
         }
     }
 
@@ -202,9 +222,23 @@ class PcmDynamicsTest {
     fun `static curve matches the presets`() {
         val medium = PcmDynamics.presetFor(NightModeLevel.MEDIUM)
         // well below threshold: only the make-up gain
-        assertEquals(6f, PcmDynamics.compressorTargetDb(0.01f, medium), 0.01f)
-        // 30 dB over a 3:1 threshold: 20 dB down, plus 6 dB make-up
-        assertEquals(-14f, PcmDynamics.compressorTargetDb(1f, medium), 0.05f)
+        assertEquals(10f, PcmDynamics.compressorTargetDb(0.01f, medium), 0.01f)
+        // 15 dB over a 3:1 threshold: 10 dB down, cancelling the 10 dB make-up
+        assertEquals(0f, PcmDynamics.compressorTargetDb(1f, medium), 0.05f)
         assertEquals(0f, PcmDynamics.compressorTargetDb(1f, null), 0f)
+    }
+
+    @Test
+    fun `no preset turns anything below full scale down`() {
+        for (level in listOf(NightModeLevel.LIGHT, NightModeLevel.MEDIUM, NightModeLevel.STRONG)) {
+            val preset = PcmDynamics.presetFor(level)
+            assertEquals("$level at full scale", 0f, PcmDynamics.compressorTargetDb(1f, preset), 0.05f)
+            var db = -90f
+            while (db <= 0f) {
+                val change = PcmDynamics.compressorTargetDb(10f.pow(db / 20f), preset)
+                assertTrue("$level at $db dB: $change", change >= -0.05f)
+                db += 0.5f
+            }
+        }
     }
 }

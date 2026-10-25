@@ -20,7 +20,7 @@ internal fun mpvSoundFilterChain(gainDb: Int, nightMode: NightModeLevel, stereoD
         if (preset != null) {
             add(
                 "acompressor=threshold=${linear(preset.thresholdDb)}:ratio=${number(preset.ratio)}" +
-                    ":attack=15:release=350:knee=2:makeup=${linear(preset.makeupDb)}" +
+                    ":attack=10:release=350:knee=2:makeup=${linear(preset.makeupDb)}" +
                     ":detection=peak:link=maximum"
             )
         }

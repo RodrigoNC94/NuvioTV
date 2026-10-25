@@ -2145,20 +2145,20 @@
     <string name="audio_night_mode_light">Light</string>
     <string name="audio_night_mode_medium">Medium</string>
     <string name="audio_night_mode_strong">Strong</string>
-    <string name="audio_night_mode_help">Turns loud moments down and lifts quiet ones.</string>
+    <string name="audio_night_mode_help">Lifts quiet moments. Loud ones stay as they were mixed.</string>
     <string name="audio_night_mode_unavailable">Off during passthrough: sound goes to your amplifier untouched.</string>
-    <string name="audio_night_mode_settings_sub">Turns loud moments down and lifts quiet ones. Works on sound the app decodes, not during passthrough.</string>
+    <string name="audio_night_mode_settings_sub">Lifts quiet moments, loud ones stay as they were mixed. Works on sound the app decodes, not during passthrough.</string>
     <string name="audio_night_mode_dialog_subtitle">Evens out loud and quiet moments. Works on TV speakers, soundbars and amplifiers fed PCM. Passthrough sound is never changed.</string>
     <string name="audio_night_mode_off_desc">Sound as it was mixed.</string>
-    <string name="audio_night_mode_light_desc">Takes the edge off the loudest moments.</string>
-    <string name="audio_night_mode_medium_desc">Evenings. Loud scenes calmer, quiet speech easier to hear.</string>
+    <string name="audio_night_mode_light_desc">A gentle lift for quiet scenes and soft speech.</string>
+    <string name="audio_night_mode_medium_desc">Evenings. Quiet speech and effects come up, loud scenes keep their punch.</string>
     <string name="audio_dialogue_boost_label">Dialogue boost</string>
     <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
     <string name="audio_dialogue_boost_help">Raises the centre channel, where most speech is. Off to +12 dB.</string>
     <string name="audio_dialogue_boost_stereo">This track is stereo, so there is no separate speech channel to raise.</string>
     <string name="audio_dialogue_boost_mixed">The sound reaches the app already mixed to stereo. Turn on downmix in the audio settings to use this.</string>
     <string name="audio_dialogue_boost_mpv_multichannel">With MPV this works when the sound is mixed to stereo, for example on TV speakers.</string>
-    <string name="audio_night_mode_strong_desc">Late nights and small rooms. The most even sound, with less punch in action scenes.</string>
+    <string name="audio_night_mode_strong_desc">Late nights and small rooms. The most even sound. Everything gets louder, so turn the TV down a little.</string>
     <string name="audio_maintain_original_audio_on_downmix_title">Maintain original audio on downmix</string>
     <string name="audio_maintain_original_audio_on_downmix_subtitle">When disabled, downmix normalization can reduce overall volume.</string>
 

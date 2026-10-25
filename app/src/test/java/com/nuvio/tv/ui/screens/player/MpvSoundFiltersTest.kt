@@ -26,9 +26,9 @@ class MpvSoundFiltersTest {
     fun `night mode uses the shared preset numbers`() {
         val chain = mpvSoundFilterChain(0, NightModeLevel.MEDIUM)
         assertFalse(chain.contains("volume="))
-        // -30 dB threshold, 3:1, +6 dB make-up
-        assertTrue(chain, chain.contains("acompressor=threshold=0.0316:ratio=3.0000"))
-        assertTrue(chain, chain.contains("makeup=1.9953"))
+        // -15 dB threshold, 3:1, +10 dB make-up
+        assertTrue(chain, chain.contains("acompressor=threshold=0.1778:ratio=3.0000"))
+        assertTrue(chain, chain.contains("makeup=3.1623"))
     }
 
     @Test

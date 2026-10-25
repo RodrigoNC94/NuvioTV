@@ -10,6 +10,10 @@ import kotlin.math.pow
 /**
  * Gain, a centre channel boost, night mode compression and a peak limiter for interleaved float PCM.
  *
+ * Night mode only lifts. Each preset's threshold sits where its make-up gain is used up at full
+ * scale, so quiet passages come up by the full make-up, louder ones by less, and nothing is turned
+ * below how it was mixed. Loud effects and bass keep their level; the limiter catches the peaks.
+ *
  * Feed-forward with no look-ahead, so it adds no latency. All channels share one
  * detector and one gain, which keeps the channel balance and the stereo image.
  * Nothing is allocated after [configure].
@@ -175,7 +179,7 @@ internal class PcmDynamics {
         private const val GAIN_SMOOTH_SECONDS = 0.02f
         private const val ENVELOPE_ATTACK_SECONDS = 0.002f
         private const val ENVELOPE_RELEASE_SECONDS = 0.15f
-        private const val COMPRESSOR_ATTACK_SECONDS = 0.015f
+        private const val COMPRESSOR_ATTACK_SECONDS = 0.01f
         private const val COMPRESSOR_RELEASE_SECONDS = 0.35f
         private const val LIMITER_HOLD_SECONDS = 0.025f
         private const val LIMITER_RELEASE_SECONDS = 0.1f
@@ -183,9 +187,10 @@ internal class PcmDynamics {
         private const val MAKEUP_FADE_START_DB = -66f
         private const val MAKEUP_FADE_RANGE_DB = 12f
 
-        private val LIGHT = Preset(thresholdDb = -24f, ratio = 2f, makeupDb = 3f)
-        private val MEDIUM = Preset(thresholdDb = -30f, ratio = 3f, makeupDb = 6f)
-        private val STRONG = Preset(thresholdDb = -36f, ratio = 4f, makeupDb = 9f)
+        // threshold = -makeup * ratio / (ratio - 1), so the gain is back to unity at 0 dBFS
+        private val LIGHT = Preset(thresholdDb = -12f, ratio = 2f, makeupDb = 6f)
+        private val MEDIUM = Preset(thresholdDb = -15f, ratio = 3f, makeupDb = 10f)
+        private val STRONG = Preset(thresholdDb = -20f, ratio = 4f, makeupDb = 15f)
 
         /**
          * Front centre position in PCM as Android and ExoPlayer deliver it (FL FR FC LFE ...). Only the 5.1 and
