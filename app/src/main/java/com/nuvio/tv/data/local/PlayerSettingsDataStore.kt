@@ -164,10 +164,52 @@ data class SubtitleStyleSettings(
     val outlineWidth: Int = 2, // 1-5
     val bitmapSize: Int = 100, // Independent image-subtitle scale (50-200)
     val font: AppFont? = null, // null retains each renderer's existing default
-    val edgeStyle: SubtitleEdgeStyle? = null // null preserves the legacy outline toggle
+    val edgeStyle: SubtitleEdgeStyle? = null, // null preserves the legacy outline toggle
+    val hdrStyleEnabled: Boolean = false,
+    val hdrTextColor: Int = Color.White.toArgb(),
+    val hdrBrightness: Int = HDR_BRIGHTNESS_DEFAULT // 0-100, see hdrBrightnessFactor
 ) {
     val effectiveEdgeStyle: SubtitleEdgeStyle
         get() = edgeStyle ?: if (outlineEnabled) SubtitleEdgeStyle.OUTLINE else SubtitleEdgeStyle.NONE
+
+    /**
+     * The style to render with: on HDR/Dolby Vision video with the override enabled, the HDR text
+     * color replaces the text color and every subtitle color is dimmed by the HDR brightness.
+     */
+    fun forVideo(isHdrVideo: Boolean): SubtitleStyleSettings {
+        if (!isHdrVideo || !hdrStyleEnabled) return this
+        val factor = hdrBrightnessFactor(hdrBrightness)
+        return copy(
+            textColor = scaleColorBrightness(hdrTextColor, factor),
+            backgroundColor = scaleColorBrightness(backgroundColor, factor),
+            outlineColor = scaleColorBrightness(outlineColor, factor)
+        )
+    }
+
+    /** The style the in-player editors show: on HDR video with the override enabled, its text color is the HDR one. */
+    fun editableForVideo(isHdrVideo: Boolean): SubtitleStyleSettings {
+        if (!isHdrVideo || !hdrStyleEnabled) return this
+        return copy(textColor = hdrTextColor)
+    }
+
+    companion object {
+        const val HDR_BRIGHTNESS_MIN = 0
+        const val HDR_BRIGHTNESS_MAX = 100
+        /** 58 ends white at 180/255, the level the HDR control dimming uses. */
+        const val HDR_BRIGHTNESS_DEFAULT = 58
+
+        /** Maps the 0-100 setting onto 30%-100% of full brightness, so 0 still leaves readable text. */
+        private fun hdrBrightnessFactor(brightness: Int): Float =
+            (0.7f * brightness.coerceIn(HDR_BRIGHTNESS_MIN, HDR_BRIGHTNESS_MAX) + 30f) / 100f
+
+        private fun scaleColorBrightness(color: Int, factor: Float): Int {
+            val alpha = (color ushr 24) and 0xFF
+            val red = (((color shr 16) and 0xFF) * factor).toInt()
+            val green = (((color shr 8) and 0xFF) * factor).toInt()
+            val blue = ((color and 0xFF) * factor).toInt()
+            return (alpha shl 24) or (red shl 16) or (green shl 8) or blue
+        }
+    }
 }
 
 /**
@@ -252,6 +294,7 @@ data class PlayerSettings(
     val autoSwitchInternalPlayerOnError: Boolean = false,
     val useLibass: Boolean = false,
     val libassRenderType: LibassRenderType = LibassRenderType.OVERLAY_OPEN_GL,
+    val libassRenderScale: LibassRenderScale = LibassRenderScale.FULL,
     val subtitleStyle: SubtitleStyleSettings = SubtitleStyleSettings(),
     val bufferSettings: BufferSettings = BufferSettings(),
     // Audio settings
@@ -279,6 +322,7 @@ data class PlayerSettings(
     val audioAmplificationDb: Int = 0,
     val centerMixLevelDb: Int = 0,
     val persistAudioAmplification: Boolean = false,
+    val nightMode: NightModeLevel = NightModeLevel.OFF,
     val rememberAudioDelayPerDevice: Boolean = true,
     val preferredAudioLanguage: String = AudioLanguageOption.DEVICE,
     val secondaryPreferredAudioLanguage: String? = null,
@@ -291,6 +335,7 @@ data class PlayerSettings(
     val osdClockEnabled: Boolean = true,
     val skipIntroEnabled: Boolean = true,
     val chaptersEnabled: Boolean = true,
+    val seekingMode: SeekingMode = SeekingMode.BALANCED,
     val parentalGuideEnabled: Boolean = true,
     val autoSkipSegmentTypes: Set<AutoSkipSegmentType> = emptySet(),
     // Dolby Vision settings (libdovi conversion). dv7HandlingMode == HDR10_BASE_LAYER
@@ -476,6 +521,11 @@ enum class VodCacheSizeMode {
     AUTO, MANUAL
 }
 
+/** How a held seek key speeds up and how long a seek waits on the thumbnail while the film plays. */
+enum class SeekingMode {
+    GENTLE, BALANCED, FAST
+}
+
 enum class FrameRateMatchingMode {
     OFF, START, START_STOP
 }
@@ -524,7 +574,27 @@ enum class InternalPlayerEngine {
 }
 
 enum class LibassRenderType {
-    CUES, EFFECTS_CANVAS, EFFECTS_OPEN_GL, OVERLAY_CANVAS, OVERLAY_OPEN_GL
+    // Legacy values kept for backward compatibility with persisted preferences.
+    // The new libass module always uses the SurfaceView atlas pipeline.
+    CUES, EFFECTS_CANVAS, EFFECTS_OPEN_GL, OVERLAY_CANVAS, OVERLAY_OPEN_GL;
+
+    companion object {
+        val DEFAULT = OVERLAY_OPEN_GL
+    }
+}
+
+/**
+ * Subtitle render resolution for the libass atlas pipeline. Lowering the scale
+ * reduces rasterization cost (proportional to pixel area) at the expense of
+ * sharpness - GL upscales the result to the full surface. Useful on weak TV
+ * hardware where heavy typesetting exceeds the frame budget at full resolution.
+ */
+enum class LibassRenderScale(val scale: Float, val label: String) {
+    FULL(1.0f, "1:1"),
+    THREE_QUARTER(0.75f, "\u00BE"),
+    HALF(0.5f, "\u00BD"),
+    THIRD(0.33f, "\u2153"),
+    QUARTER(0.25f, "\u00BC")
 }
 /**
  * How DV7 streams should be handled at playback time.
@@ -636,8 +706,8 @@ class PlayerSettingsDataStore @Inject constructor(
         private const val FEATURE = "player_settings"
         private const val AUDIO_AMPLIFICATION_DB_MIN = 0
         private const val AUDIO_AMPLIFICATION_DB_MAX = 10
-        private const val CENTER_MIX_LEVEL_DB_MIN = -10
-        private const val CENTER_MIX_LEVEL_DB_MAX = 30
+        private const val CENTER_MIX_LEVEL_DB_MIN = 0
+        private const val CENTER_MIX_LEVEL_DB_MAX = 12
     }
 
     private fun store(profileId: Int = profileManager.activeProfileId.value) =
@@ -652,6 +722,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val autoSwitchInternalPlayerOnErrorKey = booleanPreferencesKey("auto_switch_internal_player_on_error")
     private val useLibassKey = booleanPreferencesKey("use_libass")
     private val libassRenderTypeKey = stringPreferencesKey("libass_render_type")
+    private val libassRenderScaleKey = stringPreferencesKey("libass_render_scale")
     private val decoderPriorityKey = intPreferencesKey("decoder_priority")
     private val downmixEnabledKey = booleanPreferencesKey("downmix_enabled")
     private val audioOutputChannelsKey = stringPreferencesKey("audio_output_channels")
@@ -685,6 +756,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val audioAmplificationDbKey = intPreferencesKey("audio_amplification_db")
     private val centerMixLevelDbKey = intPreferencesKey("center_mix_level_db")
     private val persistAudioAmplificationKey = booleanPreferencesKey("persist_audio_amplification")
+    private val nightModeKey = stringPreferencesKey("night_mode")
     private val rememberAudioDelayPerDeviceKey = booleanPreferencesKey("remember_audio_delay_per_device")
     private val preferredAudioLanguageKey = stringPreferencesKey("preferred_audio_language")
     private val secondaryPreferredAudioLanguageKey = stringPreferencesKey("secondary_preferred_audio_language")
@@ -697,6 +769,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val osdClockEnabledKey = booleanPreferencesKey("osd_clock_enabled")
     private val skipIntroEnabledKey = booleanPreferencesKey("skip_intro_enabled")
     private val chaptersEnabledKey = booleanPreferencesKey("player_chapters_enabled")
+    private val seekingModeKey = stringPreferencesKey("player_seeking_mode")
     private val parentalGuideEnabledKey = booleanPreferencesKey("parental_guide_enabled")
     private val autoSkipSegmentTypesKey = stringSetPreferencesKey("auto_skip_segment_types")
 
@@ -787,6 +860,9 @@ class PlayerSettingsDataStore @Inject constructor(
     private val subtitleOutlineWidthKey = intPreferencesKey("subtitle_outline_width")
     private val subtitleFontKey = stringPreferencesKey("subtitle_font")
     private val subtitleEdgeStyleKey = stringPreferencesKey("subtitle_edge_style")
+    private val subtitleHdrStyleEnabledKey = booleanPreferencesKey("subtitle_hdr_style_enabled")
+    private val subtitleHdrTextColorKey = intPreferencesKey("subtitle_hdr_text_color")
+    private val subtitleHdrBrightnessKey = intPreferencesKey("subtitle_hdr_brightness")
 
     // Buffer settings keys
     private val minBufferMsKey = intPreferencesKey("min_buffer_ms")
@@ -980,6 +1056,10 @@ class PlayerSettingsDataStore @Inject constructor(
                     prefs[migrationBufferBudgetManagedExoDoneKey] = true
                 }
                 prefs[migrationVodCacheBackBufferZeroedDoneKey] = true
+                // The HDR subtitle style started out as part of "Dim controls in HDR": it is copied once, then set apart.
+                if (prefs[subtitleHdrStyleEnabledKey] == null) {
+                    prefs[subtitleHdrStyleEnabledKey] = prefs[dimHdrOverlaysKey] ?: false
+                }
 
                 val min = prefs[minBufferMsKey]
                 val max = prefs[maxBufferMsKey]
@@ -1121,6 +1201,9 @@ class PlayerSettingsDataStore @Inject constructor(
                 libassRenderType = prefs[libassRenderTypeKey]?.let {
                     try { LibassRenderType.valueOf(it) } catch (e: Exception) { LibassRenderType.OVERLAY_OPEN_GL }
                 } ?: LibassRenderType.OVERLAY_OPEN_GL,
+                libassRenderScale = prefs[libassRenderScaleKey]?.let {
+                    try { LibassRenderScale.valueOf(it) } catch (e: Exception) { LibassRenderScale.FULL }
+                } ?: LibassRenderScale.FULL,
                 decoderPriority = prefs[decoderPriorityKey] ?: 1,
                 downmixEnabled =
                     prefs[downmixEnabledKey]
@@ -1173,6 +1256,7 @@ class PlayerSettingsDataStore @Inject constructor(
                     CENTER_MIX_LEVEL_DB_MAX
                 ),
                 persistAudioAmplification = prefs[persistAudioAmplificationKey] ?: false,
+                nightMode = NightModeLevel.fromKey(prefs[nightModeKey]),
                 rememberAudioDelayPerDevice = prefs[rememberAudioDelayPerDeviceKey] ?: true,
                 preferredAudioLanguage = normalizeSelectableLanguageCode(
                     prefs[preferredAudioLanguageKey] ?: AudioLanguageOption.DEVICE
@@ -1188,6 +1272,8 @@ class PlayerSettingsDataStore @Inject constructor(
                 osdClockEnabled = prefs[osdClockEnabledKey] ?: true,
                 skipIntroEnabled = prefs[skipIntroEnabledKey] ?: true,
                 chaptersEnabled = prefs[chaptersEnabledKey] ?: true,
+                seekingMode = prefs[seekingModeKey]?.let { v -> SeekingMode.entries.firstOrNull { it.name == v } }
+                    ?: SeekingMode.BALANCED,
                 parentalGuideEnabled = prefs[parentalGuideEnabledKey] ?: true,
                 autoSkipSegmentTypes = prefs[autoSkipSegmentTypesKey]
                     ?.mapNotNull(AutoSkipSegmentType::fromStoredValue)
@@ -1342,7 +1428,10 @@ class PlayerSettingsDataStore @Inject constructor(
                         outlineColor = prefs[subtitleOutlineColorKey] ?: Color.Black.toArgb(),
                         outlineWidth = prefs[subtitleOutlineWidthKey] ?: 2,
                         font = parseSubtitleFont(prefs[subtitleFontKey]),
-                        edgeStyle = resolveSubtitleEdgeStyle(prefs[subtitleEdgeStyleKey], prefs[subtitleOutlineEnabledKey])
+                        edgeStyle = resolveSubtitleEdgeStyle(prefs[subtitleEdgeStyleKey], prefs[subtitleOutlineEnabledKey]),
+                        hdrStyleEnabled = prefs[subtitleHdrStyleEnabledKey] ?: (prefs[dimHdrOverlaysKey] ?: false),
+                        hdrTextColor = prefs[subtitleHdrTextColorKey] ?: Color.White.toArgb(),
+                        hdrBrightness = prefs[subtitleHdrBrightnessKey] ?: SubtitleStyleSettings.HDR_BRIGHTNESS_DEFAULT
                     )
                 },
                 bufferSettings = BufferSettings(
@@ -1645,6 +1734,12 @@ class PlayerSettingsDataStore @Inject constructor(
         }
     }
 
+    suspend fun setNightMode(level: NightModeLevel) {
+        store().edit { prefs ->
+            prefs[nightModeKey] = level.key
+        }
+    }
+
     suspend fun setCenterMixLevelDb(db: Int) {
         store().edit { prefs ->
             prefs[centerMixLevelDbKey] = db.coerceIn(
@@ -1695,7 +1790,12 @@ class PlayerSettingsDataStore @Inject constructor(
     }
 
     suspend fun setDimHdrOverlays(enabled: Boolean) {
-        store().edit { it[dimHdrOverlaysKey] = enabled }
+        store().edit { prefs ->
+            if (prefs[subtitleHdrStyleEnabledKey] == null) {
+                prefs[subtitleHdrStyleEnabledKey] = prefs[dimHdrOverlaysKey] ?: false
+            }
+            prefs[dimHdrOverlaysKey] = enabled
+        }
     }
 
     suspend fun setPauseOverlayEnabled(enabled: Boolean) {
@@ -1719,6 +1819,12 @@ class PlayerSettingsDataStore @Inject constructor(
     suspend fun setChaptersEnabled(enabled: Boolean) {
         store().edit { prefs ->
             prefs[chaptersEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setSeekingMode(mode: SeekingMode) {
+        store().edit { prefs ->
+            prefs[seekingModeKey] = mode.name
         }
     }
 
@@ -2002,6 +2108,7 @@ class PlayerSettingsDataStore @Inject constructor(
             "pt-br", "pt_br", "br", "pob" -> "pt-br"
             "pt-pt", "pt_pt", "por" -> "pt"
             "forced", "force", "forc" -> SUBTITLE_LANGUAGE_FORCED
+            "iw", "heb", "hbo" -> "he"
             "zh-cn", "zh_cn" -> "zh-CN"
             "zh-tw", "zh_tw" -> "zh-TW"
             "en-au", "en_au" -> "en-AU"
@@ -2109,6 +2216,15 @@ class PlayerSettingsDataStore @Inject constructor(
     suspend fun setLibassRenderType(renderType: LibassRenderType) {
         store().edit { prefs ->
             prefs[libassRenderTypeKey] = renderType.name
+        }
+    }
+
+    /**
+     * Set the libass subtitle render scale (resolution reduction for performance).
+     */
+    suspend fun setLibassRenderScale(scale: LibassRenderScale) {
+        store().edit { prefs ->
+            prefs[libassRenderScaleKey] = scale.name
         }
     }
 
@@ -2256,10 +2372,22 @@ class PlayerSettingsDataStore @Inject constructor(
             prefs[subtitleOutlineWidthKey] = defaults.outlineWidth
             prefs[subtitleVerticalOffsetKey] = defaults.verticalOffset
             prefs[subtitleBackgroundColorKey] = defaults.backgroundColor
+            prefs.remove(subtitleHdrTextColorKey)
+            prefs.remove(subtitleHdrBrightnessKey)
         }
     }
     suspend fun setSubtitleOutlineColor(color: Int) { store().edit { it[subtitleOutlineColorKey] = color } }
     suspend fun setSubtitleOutlineWidth(width: Int) { store().edit { it[subtitleOutlineWidthKey] = width.coerceIn(1, 5) } }
+    suspend fun setSubtitleHdrStyleEnabled(enabled: Boolean) { store().edit { it[subtitleHdrStyleEnabledKey] = enabled } }
+    suspend fun setSubtitleHdrTextColor(color: Int) { store().edit { it[subtitleHdrTextColorKey] = color } }
+    suspend fun setSubtitleHdrBrightness(brightness: Int) {
+        store().edit {
+            it[subtitleHdrBrightnessKey] = brightness.coerceIn(
+                SubtitleStyleSettings.HDR_BRIGHTNESS_MIN,
+                SubtitleStyleSettings.HDR_BRIGHTNESS_MAX
+            )
+        }
+    }
 
     suspend fun setUseForcedSubtitles(enabled: Boolean) {
         store().edit { prefs ->

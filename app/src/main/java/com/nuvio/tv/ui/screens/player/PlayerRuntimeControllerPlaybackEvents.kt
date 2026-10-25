@@ -16,6 +16,7 @@ import com.nuvio.tv.core.tracking.TrackingScrobbleEvent
 import com.nuvio.tv.core.tracking.buildTrackingMediaReference
 import com.nuvio.tv.core.tracking.scrobbleDiagnosticIdentity
 import com.nuvio.tv.data.local.InternalPlayerEngine
+import com.nuvio.tv.data.local.NightModeLevel
 import com.nuvio.tv.data.local.SubtitleStyleSettings
 import com.nuvio.tv.data.mediaserver.ServerItemRef
 import com.nuvio.tv.data.repository.PlaybackIssueErrorInput
@@ -23,6 +24,7 @@ import com.nuvio.tv.data.repository.PlaybackIssuePlaybackSettingsInput
 import com.nuvio.tv.data.repository.PlaybackIssueReportInput
 import com.nuvio.tv.data.repository.SkipInterval
 import com.nuvio.tv.domain.model.WatchProgress
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
@@ -33,10 +35,10 @@ import kotlinx.coroutines.launch
 
 internal const val AUDIO_AMPLIFICATION_MIN_DB = 0
 internal const val AUDIO_AMPLIFICATION_MAX_DB = 10
-internal const val CENTER_MIX_LEVEL_MIN_DB = -10
-internal const val CENTER_MIX_LEVEL_MAX_DB = 30
-internal const val AUDIO_DELAY_MIN_MS = -60000
-internal const val AUDIO_DELAY_MAX_MS = 60000
+internal const val DIALOGUE_BOOST_MIN_DB = 0
+internal const val DIALOGUE_BOOST_MAX_DB = 12
+internal const val AUDIO_DELAY_MIN_MS = com.nuvio.tv.domain.model.AUDIO_DELAY_MIN_MS
+internal const val AUDIO_DELAY_MAX_MS = com.nuvio.tv.domain.model.AUDIO_DELAY_MAX_MS
 internal const val AUDIO_DELAY_STEP_MS = 25
 internal const val AUDIO_DELAY_HOLD_STEP_MS = 50
 internal const val AUDIO_DELAY_HOLD_FAST_STEP_MS = 100
@@ -45,20 +47,158 @@ internal const val AUDIO_DELAY_HOLD_FAST_THRESHOLD_MS = 2000L
 internal const val AUDIO_DELAY_HOLD_REPEAT_INTERVAL_MS = 100L
 internal const val WATCH_PROGRESS_SAVE_INTERVAL_MS = 90_000L
 
-internal fun PlayerRuntimeController.applyAudioDelay(
-    delayMs: Int,
-    persistForCurrentRoute: Boolean = true
+/**
+ * Audio delay split into its sources, so the stream hint and the user's tweak on that stream
+ * never end up in the per-device delay. The player always gets [totalMs].
+ */
+internal data class AudioDelayParts(
+    /** Per-device delay (stored per route when "remember per device" is on). */
+    val deviceMs: Int = 0,
+    /** `behaviorHints.audioDelayMs` of the current stream. */
+    val streamMs: Int = 0,
+    /** User adjustment made while a stream delay is active; never persisted, dropped on stream change. */
+    val sessionAdjustMs: Int = 0,
+    /**
+     * `behaviorHints.audioDelayLanguage` of the current stream: when set, the stream delay only
+     * applies to the tracks in this language (the ones coming from the addon's audio source).
+     */
+    val streamLanguage: String? = null,
+    /** False while the selected audio track is not in [streamLanguage] (e.g. the video's original audio). */
+    val streamAudioActive: Boolean = true
 ) {
-    val clampedDelayMs = delayMs.coerceIn(AUDIO_DELAY_MIN_MS, AUDIO_DELAY_MAX_MS)
-    audioDelayUs.set(clampedDelayMs.toLong() * 1000L)
-    _uiState.update { it.copy(audioDelayMs = clampedDelayMs) }
-    if (isUsingMpvEngine()) {
-        mpvView?.setAudioDelayMs(clampedDelayMs)
+    private val hasActiveStreamDelay: Boolean
+        get() = streamMs != 0 && streamAudioActive
+
+    val totalMs: Int
+        get() {
+            val streamPartMs = if (streamAudioActive) streamMs.toLong() + sessionAdjustMs else 0L
+            return (deviceMs.toLong() + streamPartMs)
+                .coerceIn(AUDIO_DELAY_MIN_MS.toLong(), AUDIO_DELAY_MAX_MS.toLong())
+                .toInt()
+        }
+
+    /** Content offset of the stream's audio source (hint + user's tweak), without the device delay. */
+    val streamSourceOffsetMs: Int
+        get() = (streamMs.toLong() + sessionAdjustMs)
+            .coerceIn(AUDIO_DELAY_MIN_MS.toLong(), AUDIO_DELAY_MAX_MS.toLong())
+            .toInt()
+
+    /** Value to save for the current route, or null while a stream delay is active. */
+    val persistableDeviceMs: Int?
+        get() = deviceMs.takeIf { !hasActiveStreamDelay }
+
+    /** The user picked [totalMs] in the Audio panel. */
+    fun withManualTotal(totalMs: Int): AudioDelayParts {
+        val clampedTotalMs = totalMs.coerceIn(AUDIO_DELAY_MIN_MS, AUDIO_DELAY_MAX_MS)
+        return when {
+            streamMs == 0 -> copy(deviceMs = clampedTotalMs, sessionAdjustMs = 0)
+            // Original audio selected: the stream delay is not in play, so this is a device tweak.
+            !streamAudioActive -> copy(deviceMs = clampedTotalMs)
+            else -> copy(sessionAdjustMs = clampedTotalMs - deviceMs - streamMs)
+        }
     }
-    if (persistForCurrentRoute) {
-        persistAudioDelayForCurrentRoute(clampedDelayMs)
+
+    fun withStream(streamMs: Int, streamLanguage: String? = null): AudioDelayParts =
+        copy(
+            streamMs = streamMs.coerceIn(AUDIO_DELAY_MIN_MS, AUDIO_DELAY_MAX_MS),
+            sessionAdjustMs = 0,
+            streamLanguage = streamLanguage?.takeIf { it.isNotBlank() },
+            streamAudioActive = true
+        )
+
+    fun withStreamAudioActive(active: Boolean): AudioDelayParts =
+        copy(streamAudioActive = active || streamLanguage == null)
+
+    fun withDevice(deviceMs: Int): AudioDelayParts =
+        copy(deviceMs = deviceMs.coerceIn(AUDIO_DELAY_MIN_MS, AUDIO_DELAY_MAX_MS))
+}
+
+/** Decides which selected tracks belong to the stream's audio source (`behaviorHints.audioDelayLanguage`). */
+internal object StreamDelayScope {
+    /** Without a language every audio track gets the stream delay; unknown selection keeps it until tracks load. */
+    fun appliesToAudio(streamLanguage: String?, selectedAudioLanguage: String?, hasSelectedAudio: Boolean): Boolean =
+        streamLanguage == null ||
+            !hasSelectedAudio ||
+            PlayerSubtitleUtils.matchesLanguageCode(selectedAudioLanguage, streamLanguage)
+
+    /** Only embedded tracks in the stream language are shifted; addon subtitles follow the video. */
+    fun appliesToSubtitle(
+        streamLanguage: String?,
+        selectedInternalSubtitleLanguage: String?,
+        hasSelectedInternalSubtitle: Boolean,
+        addonSubtitleActive: Boolean
+    ): Boolean =
+        streamLanguage != null &&
+            hasSelectedInternalSubtitle &&
+            !addonSubtitleActive &&
+            PlayerSubtitleUtils.matchesLanguageCode(selectedInternalSubtitleLanguage, streamLanguage)
+}
+
+/** Audio panel change: [delayMs] is the new total delay shown to the user. */
+internal fun PlayerRuntimeController.applyAudioDelay(delayMs: Int) {
+    audioDelayParts = audioDelayParts.withManualTotal(delayMs)
+    applyEffectiveAudioDelay()
+    audioDelayParts.persistableDeviceMs?.let { persistAudioDelayForCurrentRoute(it) }
+}
+
+/** Pushes the current total delay to the UI state and the active engine. */
+internal fun PlayerRuntimeController.applyEffectiveAudioDelay() {
+    val totalMs = audioDelayParts.totalMs
+    audioDelayUs.set(totalMs.toLong() * 1000L)
+    _uiState.update { it.copy(audioDelayMs = totalMs) }
+    if (isUsingMpvEngine()) {
+        mpvView?.setAudioDelayMs(totalMs)
+    }
+    applyStreamSubtitleOffset()
+}
+
+/** A new stream was selected: swap in its delay hint and drop the tweak made on the previous one. */
+internal fun PlayerRuntimeController.applyStreamAudioDelay(streamDelayMs: Int?, streamLanguage: String? = null) {
+    audioDelayParts = audioDelayParts.withStream(streamDelayMs ?: 0, streamLanguage)
+    syncStreamDelayWithSelectedTracks(forceApply = true)
+}
+
+/** Re-evaluates which selected tracks come from the stream's audio source and applies the delays. */
+internal fun PlayerRuntimeController.syncStreamDelayWithSelectedTracks(forceApply: Boolean = false) {
+    val state = _uiState.value
+    val selectedAudio = state.audioTracks.getOrNull(state.selectedAudioTrackIndex)
+    val audioActive = StreamDelayScope.appliesToAudio(
+        streamLanguage = audioDelayParts.streamLanguage,
+        selectedAudioLanguage = selectedAudio?.language,
+        hasSelectedAudio = selectedAudio != null
+    )
+    val updatedParts = audioDelayParts.withStreamAudioActive(audioActive)
+    if (forceApply || updatedParts != audioDelayParts) {
+        audioDelayParts = updatedParts
+        applyEffectiveAudioDelay()
+    } else {
+        applyStreamSubtitleOffset()
     }
 }
+
+/**
+ * Embedded subtitles from the stream's audio source share its timeline, so they get the same
+ * content offset. Kept apart from the user's subtitle delay, which is persisted per video.
+ */
+internal fun PlayerRuntimeController.applyStreamSubtitleOffset() {
+    val state = _uiState.value
+    val selectedSubtitle = state.subtitleTracks.getOrNull(state.selectedSubtitleTrackIndex)
+    val applies = StreamDelayScope.appliesToSubtitle(
+        streamLanguage = audioDelayParts.streamLanguage,
+        selectedInternalSubtitleLanguage = selectedSubtitle?.language,
+        hasSelectedInternalSubtitle = selectedSubtitle != null,
+        addonSubtitleActive = state.selectedAddonSubtitle != null
+    )
+    val offsetUs = if (applies) audioDelayParts.streamSourceOffsetMs.toLong() * 1000L else 0L
+    if (streamSubtitleDelayUs.getAndSet(offsetUs) == offsetUs) return
+    if (isUsingMpvEngine()) {
+        mpvView?.setSubtitleDelayMs(mpvSubtitleDelayMs(state.subtitleDelayMs))
+    }
+}
+
+/** mpv has a single `sub-delay`: the user's subtitle delay plus the stream source offset. */
+internal fun PlayerRuntimeController.mpvSubtitleDelayMs(userDelayMs: Int): Int =
+    userDelayMs + (streamSubtitleDelayUs.get() / 1000L).toInt()
 
 internal fun PlayerRuntimeController.skipActiveInterval(): Boolean {
     return skipInterval(_uiState.value.activeSkipInterval ?: return false)
@@ -92,19 +232,12 @@ internal fun PlayerRuntimeController.applyAudioAmplification(db: Int) {
     // dead slider. MPV always decodes, so bypass only applies on ExoPlayer.
     val isAudioAmplificationAvailable =
         isUsingMpvEngine() || (_exoPlayer != null && !isAudioOutputBypassing)
-    val wasActive = gainAudioProcessor.isGainEnabled()
+    val wasActive = gainAudioProcessor.isProcessingEnabled()
     gainAudioProcessor.setGainDb(if (isAudioAmplificationAvailable) clampedDb else AUDIO_AMPLIFICATION_MIN_DB)
-    val isActiveNow = gainAudioProcessor.isGainEnabled()
-
-    if (wasActive != isActiveNow && !isUsingMpvEngine()) {
-        playbackSpeedAwareAudioSink?.notifyAudioProcessingRequirementChanged()
-        _exoPlayer?.let { player ->
-            player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().build()
-        }
-    }
+    onSoundProcessingChanged(wasActive)
 
     if (isUsingMpvEngine()) {
-        mpvView?.applyAudioAmplificationDb(clampedDb)
+        mpvView?.applyAudioAmplificationDb(clampedDb, _uiState.value.nightMode)
     }
     _uiState.update {
         it.copy(
@@ -114,9 +247,39 @@ internal fun PlayerRuntimeController.applyAudioAmplification(db: Int) {
     }
 }
 
+internal fun PlayerRuntimeController.applyNightMode(level: NightModeLevel) {
+    val wasActive = gainAudioProcessor.isProcessingEnabled()
+    gainAudioProcessor.setNightMode(level)
+    onSoundProcessingChanged(wasActive)
+    _uiState.update { it.copy(nightMode = level) }
+    if (isUsingMpvEngine()) {
+        mpvView?.applyAudioAmplificationDb(_uiState.value.audioAmplificationDb, level)
+    }
+}
+
+/**
+ * Adding the processor needs the sink to rebuild its chain. Turning everything off does
+ * not: the processor eases back to unity and drops out at the next flush, so the level
+ * does not jump mid-scene. During passthrough nothing is rebuilt; the next PCM
+ * configuration picks the setting up.
+ */
+private fun PlayerRuntimeController.onSoundProcessingChanged(wasActive: Boolean) {
+    if (wasActive || !gainAudioProcessor.isProcessingEnabled() || isUsingMpvEngine() || isAudioOutputBypassing) return
+    playbackSpeedAwareAudioSink?.notifyAudioProcessingRequirementChanged()
+    _exoPlayer?.let { player ->
+        player.trackSelectionParameters = player.trackSelectionParameters.buildUpon().build()
+    }
+}
+
 internal fun PlayerRuntimeController.applyCenterMixLevel(db: Int) {
-    val clampedDb = db.coerceIn(CENTER_MIX_LEVEL_MIN_DB, CENTER_MIX_LEVEL_MAX_DB)
+    val clampedDb = db.coerceIn(DIALOGUE_BOOST_MIN_DB, DIALOGUE_BOOST_MAX_DB)
     ffmpegAudioRenderer?.setCenterMixLevelDb(clampedDb)
+    val wasActive = gainAudioProcessor.isProcessingEnabled()
+    gainAudioProcessor.setCenterGainDb(clampedDb)
+    onSoundProcessingChanged(wasActive)
+    if (isUsingMpvEngine()) {
+        mpvView?.applyDialogueBoostDb(clampedDb)
+    }
     _uiState.update { state ->
         state.copy(centerMixLevelDb = clampedDb)
     }
@@ -130,8 +293,15 @@ internal fun PlayerRuntimeController.updateAudioControlAvailability(
     // See applyAudioAmplification.
     val isAudioAmplificationAvailable =
         isUsingMpvEngine() || (_exoPlayer != null && !isAudioOutputBypassing)
-    val isCenterMixAvailable =
-        ffmpegAudioRenderer?.isCenterMixActive() == true && (selectedTrack?.channelCount ?: 0) > 2
+    val dialogueBoostState = dialogueBoostState(
+        isMpv = isUsingMpvEngine(),
+        isBypassing = _exoPlayer != null && isAudioOutputBypassing,
+        trackChannels = selectedTrack?.channelCount ?: 0,
+        ffmpegDownmixActive = ffmpegAudioRenderer?.isCenterMixActive() == true,
+        pcmChannels = gainAudioProcessor.pcmChannelCount,
+        mpvOutputChannels = if (isUsingMpvEngine()) mpvView?.audioOutputChannelCount() ?: 0 else 0
+    )
+    val isCenterMixAvailable = dialogueBoostState == DialogueBoostState.AVAILABLE
     val clampedDb = _uiState.value.audioAmplificationDb
         .coerceIn(AUDIO_AMPLIFICATION_MIN_DB, AUDIO_AMPLIFICATION_MAX_DB)
     gainAudioProcessor.setGainDb(
@@ -140,7 +310,8 @@ internal fun PlayerRuntimeController.updateAudioControlAvailability(
     _uiState.update { state ->
         state.copy(
             isAudioAmplificationAvailable = isAudioAmplificationAvailable,
-            isCenterMixAvailable = isCenterMixAvailable
+            isCenterMixAvailable = isCenterMixAvailable,
+            dialogueBoostState = dialogueBoostState
         )
     }
 }
@@ -224,6 +395,7 @@ internal fun PlayerRuntimeController.startProgressUpdates() {
                         durationMs = playerDuration
                     )
                     val playingNow = view.isPlayingNow()
+                    subtitleCueTracker.updateText(view.currentSubtitleText())
                     val cacheBuffering = view.isPausedForCacheNow() || view.isCoreIdleNow()
                     var firstFrameReady = hasRenderedFirstFrame
                         if (!firstFrameReady) {
@@ -819,35 +991,39 @@ internal fun PlayerRuntimeController.saveWatchProgressInternal(position: Long, d
         .copy(progressPercent = fallbackPercent)
 
     scope.launch(kotlinx.coroutines.NonCancellable) {
-        val effectiveContentId = watchProgressRepository.normalizeParentContentId(
-            parentContentId = progress.contentId,
-            videoId = progress.videoId,
-            profileId = profileId
-        )
-        val normalizedProgress = progress.copy(contentId = effectiveContentId)
-        if (normalizedProgress.isCompleted()) {
-            if (!hasMarkedCurrentEpisodeCompleted) {
-                hasMarkedCurrentEpisodeCompleted = true
-                watchProgressRepository.markAsCompleted(
+        try {
+            val effectiveContentId = watchProgressRepository.normalizeParentContentId(
+                parentContentId = progress.contentId,
+                videoId = progress.videoId,
+                profileId = profileId
+            )
+            val normalizedProgress = progress.copy(contentId = effectiveContentId)
+            if (normalizedProgress.isCompleted()) {
+                if (!hasMarkedCurrentEpisodeCompleted) {
+                    hasMarkedCurrentEpisodeCompleted = true
+                    watchProgressRepository.markAsCompleted(
+                        normalizedProgress,
+                        profileId = profileId,
+                        broadcastTrackingHistory = false
+                    )
+                }
+                runCatching { tvRecommendationManager.onProgressRemoved(normalizedProgress.contentId) }
+            } else if (!hasMarkedCurrentEpisodeCompleted) {
+                // Only save in-progress when the episode has not already been
+                // marked as completed during this playback session.  After
+                // natural playback completion the player can report stale
+                // position/duration values (e.g. duration=0 → fallbackPercent=5)
+                // which would overwrite the completed entry in the mutation
+                // store and push an incorrect low-progress value to remote.
+                watchProgressRepository.saveProgress(
                     normalizedProgress,
                     profileId = profileId,
-                    broadcastTrackingHistory = false
+                    syncRemote = syncRemote
                 )
+                runCatching { tvRecommendationManager.updateSingleWatchNextProgram(normalizedProgress) }
             }
-            runCatching { tvRecommendationManager.onProgressRemoved(normalizedProgress.contentId) }
-        } else if (!hasMarkedCurrentEpisodeCompleted) {
-            // Only save in-progress when the episode has not already been
-            // marked as completed during this playback session.  After
-            // natural playback completion the player can report stale
-            // position/duration values (e.g. duration=0 → fallbackPercent=5)
-            // which would overwrite the completed entry in the mutation
-            // store and push an incorrect low-progress value to remote.
-            watchProgressRepository.saveProgress(
-                normalizedProgress,
-                profileId = profileId,
-                syncRemote = syncRemote
-            )
-            runCatching { tvRecommendationManager.updateSingleWatchNextProgram(normalizedProgress) }
+        } catch (error: IOException) {
+            Log.w(PlayerRuntimeController.TAG, "Watch progress could not be saved", error)
         }
     }
 }
@@ -1180,7 +1356,7 @@ internal fun PlayerRuntimeController.setSubtitleDelayMs(targetMs: Int, showOverl
 
     subtitleDelayUs.set(newDelayMs.toLong() * 1000L)
     if (isUsingMpvEngine()) {
-        mpvView?.setSubtitleDelayMs(newDelayMs)
+        mpvView?.setSubtitleDelayMs(mpvSubtitleDelayMs(newDelayMs))
     }
     if (showOverlay) {
         _uiState.update {
@@ -1268,6 +1444,24 @@ internal fun PlayerRuntimeController.pauseForSeekThumbnails(): Boolean? {
     player.pause()
     cancelPauseOverlay()
     return true
+}
+
+/**
+ * Small boxes, 4K: the player held for the thumbnails lets go of its decoders and buffer. The title, the position and
+ * the track choices stay; [loadAgainAfterSeekThumbnails] loads it again.
+ */
+internal fun PlayerRuntimeController.letGoForSeekThumbnails(): Boolean {
+    if (isUsingMpvEngine() || partyBridge?.inParty == true) return false
+    val player = _exoPlayer ?: return false
+    if (player.playWhenReady || player.playbackState == Player.STATE_IDLE || player.playerError != null) return false
+    player.stop()
+    return true
+}
+
+internal fun PlayerRuntimeController.loadAgainAfterSeekThumbnails(play: Boolean) {
+    val player = _exoPlayer ?: return
+    if (player.playbackState == Player.STATE_IDLE && player.playerError == null) player.prepare()
+    if (play && !player.playWhenReady) player.play()
 }
 
 internal fun PlayerRuntimeController.cancelPauseOverlay() {
@@ -1426,8 +1620,11 @@ fun PlayerRuntimeController.onEvent(event: PlayerEvent) {
                 }
                 return
             }
-            if (scrubGlideJob?.isActive == true && scrubGlideForward == event.forward) return
-            startScrubGlide(event.forward, holdStart)
+            if (scrubGlideJob?.isActive == true && scrubGlideForward == event.forward) {
+                scrubStepChase?.repeat(event.eventTime, event.forward)
+                return
+            }
+            startScrubGlide(event.forward, holdStart, repeatAt = event.eventTime)
         }
         is PlayerEvent.OnPreviewSeekBy -> {
             if (_playbackTimeline.value.isLive) return
@@ -1480,7 +1677,11 @@ fun PlayerRuntimeController.onEvent(event: PlayerEvent) {
             releaseScrubHold()
             pendingPreviewSeekPosition = null
             _uiState.update { it.copy(pendingPreviewSeekPosition = null, previewThumbPositionMs = null) }
-            seekPlaybackTo(event.position, SeekParameters.CLOSEST_SYNC)
+            seekPlaybackTo(
+                event.position,
+                if (event.exact) SeekParameters.EXACT else SeekParameters.CLOSEST_SYNC,
+                exact = event.exact
+            )
             updatePlaybackTimeline(currentPosition = event.position)
             scheduleProgressSyncAfterSeek()
             if (_uiState.value.showControls) {
@@ -1537,8 +1738,14 @@ fun PlayerRuntimeController.onEvent(event: PlayerEvent) {
                 )
             }
         }
+        is PlayerEvent.OnSetNightMode -> {
+            applyNightMode(event.level)
+            scope.launch {
+                playerSettingsDataStore.setNightMode(event.level)
+            }
+        }
         is PlayerEvent.OnSetCenterMixLevelDb -> {
-            val clampedDb = event.db.coerceIn(CENTER_MIX_LEVEL_MIN_DB, CENTER_MIX_LEVEL_MAX_DB)
+            val clampedDb = event.db.coerceIn(DIALOGUE_BOOST_MIN_DB, DIALOGUE_BOOST_MAX_DB)
             applyCenterMixLevel(clampedDb)
             if (_uiState.value.persistAudioAmplification) {
                 scope.launch {
@@ -1939,8 +2146,18 @@ fun PlayerRuntimeController.onEvent(event: PlayerEvent) {
         is PlayerEvent.OnSetSubtitleSize -> {
             scope.launch { playerSettingsDataStore.setSubtitleSize(event.size) }
         }
+        is PlayerEvent.OnSetSubtitleHdrBrightness -> {
+            scope.launch { playerSettingsDataStore.setSubtitleHdrBrightness(event.brightness) }
+        }
         is PlayerEvent.OnSetSubtitleTextColor -> {
-            scope.launch { playerSettingsDataStore.setSubtitleTextColor(event.color) }
+            val editingHdr = _uiState.value.isEditingHdrSubtitleStyle
+            scope.launch {
+                if (editingHdr) {
+                    playerSettingsDataStore.setSubtitleHdrTextColor(event.color)
+                } else {
+                    playerSettingsDataStore.setSubtitleTextColor(event.color)
+                }
+            }
         }
         is PlayerEvent.OnSetSubtitleBold -> {
             scope.launch { playerSettingsDataStore.setSubtitleBold(event.bold) }
@@ -1961,8 +2178,16 @@ fun PlayerRuntimeController.onEvent(event: PlayerEvent) {
             scope.launch { playerSettingsDataStore.setSubtitleVerticalOffset(event.offset) }
         }
         PlayerEvent.OnResetSubtitleDefaults -> {
+            val editingHdr = _uiState.value.isEditingHdrSubtitleStyle
+            val keptTextColor = _uiState.value.subtitleStyle.textColor
             scope.launch {
                 playerSettingsDataStore.resetSubtitleAppearance()
+                if (editingHdr) {
+                    val defaults = SubtitleStyleSettings()
+                    playerSettingsDataStore.setSubtitleTextColor(keptTextColor)
+                    playerSettingsDataStore.setSubtitleHdrTextColor(defaults.hdrTextColor)
+                    playerSettingsDataStore.setSubtitleHdrBrightness(defaults.hdrBrightness)
+                }
             }
         }
         PlayerEvent.OnToggleAspectRatio -> {
@@ -2209,11 +2434,17 @@ private fun PlayerRuntimeController.commitPendingSeek() {
     }
 }
 
-/** Seek keys while playing settle first ([SeekSettle]); paused or in a party they seek on release. */
-private fun PlayerRuntimeController.seekSettleApplies(): Boolean =
-    seekSettle.open || (!userPausedManually && partyBridge?.inParty != true && hasActivePlayIntent())
+/** Seek keys while playing settle first ([SeekSettle]); paused, in a party or without thumbnails they seek on release. */
+private fun PlayerRuntimeController.seekSettleApplies(): Boolean = SeekSettle.applies(
+    open = seekSettle.open,
+    userPaused = userPausedManually,
+    inParty = partyBridge?.inParty == true,
+    playing = hasActivePlayIntent(),
+    thumbnails = SeekThumbnails.pausesPlaybackWhileScrubbing(),
+    mode = seekingMode
+)
 
-/** The last key of a run came up: playback holds on the target for [SeekSettle.SETTLE_MS], then seeks. */
+/** The last key of a run came up: playback holds on the target for [SeekSettle.waitMs], then seeks. */
 private fun PlayerRuntimeController.startSeekSettle() {
     pendingPreviewSeekExpiryJob?.cancel()
     holdPlaybackForScrub(always = true)
@@ -2227,7 +2458,7 @@ private fun PlayerRuntimeController.startSeekSettle() {
     }
     seekSettleJob?.cancel()
     seekSettleJob = scope.launch {
-        kotlinx.coroutines.delay(SeekSettle.SETTLE_MS)
+        kotlinx.coroutines.delay(SeekSettle.waitMs(afterHold = scrubHoldClock.releasedAfterHold, mode = seekingMode))
         seekSettleJob = null
         finishSeekSettle(seek = true, reason = "timeout")
     }
@@ -2321,8 +2552,10 @@ internal fun PlayerRuntimeController.releaseScrubHold() {
 /**
  * Moves the seek cursor every frame while the key is held, from its first repeat until the commit. Thumbnails,
  * the time and the timeline follow every [PlayerScrubRates.GLIDE_PUBLISH_MS]; [ScrubGlide] carries every frame.
+ * On Fast the cursor follows the stepped target of [PlayerScrubRates.StepChase] until it gets there, even when a
+ * TV sends the release late.
  */
-internal fun PlayerRuntimeController.startScrubGlide(forward: Boolean, holdStart: Long) {
+internal fun PlayerRuntimeController.startScrubGlide(forward: Boolean, holdStart: Long, repeatAt: Long) {
     stopScrubGlide()
     scrubTapBase = null
     val end = (currentPlaybackDurationMs().takeIf { it > 0L } ?: Long.MAX_VALUE / 4).toDouble()
@@ -2330,6 +2563,11 @@ internal fun PlayerRuntimeController.startScrubGlide(forward: Boolean, holdStart
     var cursor = (pendingPreviewSeekPosition ?: currentPlaybackPositionMs()?.coerceAtLeast(0L) ?: 0L)
         .toDouble().coerceIn(0.0, end)
     scrubGlideForward = forward
+    val chase = if (seekingMode == com.nuvio.tv.data.local.SeekingMode.FAST) {
+        PlayerScrubRates.StepChase(cursor, end).also { it.repeat(repeatAt, forward) }
+    } else null
+    scrubStepChase = chase
+    val filmMs = currentPlaybackDurationMs().coerceAtLeast(0L)
     ScrubGlide.positionMs = cursor.toLong()
     ScrubGlide.active = true
     publishScrubGlide(cursor.toLong())
@@ -2341,13 +2579,20 @@ internal fun PlayerRuntimeController.startScrubGlide(forward: Boolean, holdStart
             val now = android.os.SystemClock.uptimeMillis()
             val dt = (now - last).coerceIn(0L, 100L)
             last = now
-            if (!scrubHoldClock.moving(now)) {
-                ScrubGlide.speed = 0f
-                continue
+            if (chase != null) {
+                val speed = chase.advance(dt)
+                cursor = chase.cursorMs
+                // The strip's spacing follows the fastest speed of this hold, so it never squeezes back while slowing.
+                ScrubGlide.speed = maxOf(ScrubGlide.speed, speed.toFloat())
+            } else {
+                if (!scrubHoldClock.moving(now)) {
+                    ScrubGlide.speed = 0f
+                    continue
+                }
+                val speed = PlayerScrubRates.glideSpeed(now - holdStart, seekingMode, filmMs, scrubHoldClock.fromTv)
+                cursor = (cursor + (if (forward) speed else -speed) * dt).coerceIn(0.0, end)
+                ScrubGlide.speed = speed.toFloat()
             }
-            val speed = PlayerScrubRates.glideSpeed(now - holdStart, scrubHoldClock.fromTv)
-            cursor = (cursor + (if (forward) speed else -speed) * dt).coerceIn(0.0, end)
-            ScrubGlide.speed = speed.toFloat()
             ScrubGlide.positionMs = cursor.toLong()
             if (now - lastPublish >= PlayerScrubRates.GLIDE_PUBLISH_MS) {
                 lastPublish = now
@@ -2373,6 +2618,7 @@ private fun PlayerRuntimeController.publishScrubGlide(positionMs: Long) {
 internal fun PlayerRuntimeController.stopScrubGlide() {
     val job = scrubGlideJob ?: return
     scrubGlideJob = null
+    scrubStepChase = null
     job.cancel()
     if (ScrubGlide.active) pendingPreviewSeekPosition = ScrubGlide.positionMs
     ScrubGlide.stop()
@@ -2460,6 +2706,14 @@ private fun PlayerRuntimeController.sampleAutoSpeedup(player: Player, positionMs
     // A guessed start runs several downloads before the first sample; their memory comes off the buffer as usual.
     if (keeper != null && keeper.lentBytes == 0L && AutoSpeedup.downloads > 1) keeper.setLentBytes(AutoSpeedup.lentBytes())
     val before = AutoSpeedup.downloads
+    val fileBitrate = AutoSpeedup.fileBitrate(
+        PlaybackByteCounter.contentLengthFor(currentStreamUrl),
+        currentVideoSize,
+        player.duration
+    )
+    val targetBytes = control?.allocatorTargetBytes()?.toLong() ?: 0L
+    val maxBufferMs = control?.maxBufferMs?.toLong() ?: 0L
+    val bufferTargetMs = AutoSpeedup.bufferTargetMs(maxBufferMs, targetBytes, fileBitrate)
     val changed = AutoSpeedup.onPlayerSample(
         AutoSpeedupPolicy.Sample(
             nowMs = nowMs,
@@ -2472,17 +2726,26 @@ private fun PlayerRuntimeController.sampleAutoSpeedup(player: Player, positionMs
             bufferFull = bufferFull,
             roomBytes = roomBytes,
             swapLow = AutoSpeedup.swapLow(nowMs) { com.nuvio.tv.core.player.thumbnail.MemoryGovernor.readMeminfo() },
-            fileBitrate = AutoSpeedup.fileBitrate(
-                PlaybackByteCounter.contentLengthFor(currentStreamUrl),
-                currentVideoSize,
-                player.duration
-            ),
+            fileBitrate = fileBitrate,
             idleBytes = control?.bufferAllocator?.availableBytes?.toLong() ?: 0L,
             userBudget = userBudget,
-            maxBufferMs = control?.maxBufferMs?.toLong() ?: 0L
+            maxBufferMs = maxBufferMs,
+            playerBytes = PlaybackByteCounter.snapshot().readBytes,
+            bufferedMs = player.bufferedPosition,
+            bufferTargetMs = bufferTargetMs,
+            seekAtMs = lastSeekWallMs
         )
     )
-    if (!changed) return
+    AutoSpeedup.logMemoryPlan(nowMs, control?.bufferAllocator?.totalBytesAllocated?.toLong() ?: 0L, targetBytes,
+        bufferMemoryKeeper?.pressureLevel ?: 0, roomBytes)
+    if (!changed) {
+        // A new piece size changes what the downloads hold with the same count.
+        val lent = AutoSpeedup.lentBytes()
+        if (keeper != null && keeper.lentBytes > 0L && keeper.lentBytes != lent && AutoSpeedup.downloads > 1) {
+            keeper.setLentBytes(lent)
+        }
+        return
+    }
     if (AutoSpeedup.downloads > before) {
         keeper?.setLentBytes(AutoSpeedup.lentBytes())
     } else {

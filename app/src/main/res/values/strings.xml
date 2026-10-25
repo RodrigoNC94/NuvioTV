@@ -439,6 +439,10 @@
     <string name="about_version">Version %1$s</string>
     <string name="about_update_banner_title">Automatic update banner</string>
     <string name="about_update_banner_subtitle">Show a banner when a new version is available</string>
+    <string name="about_update_auto_install_title">Install updates automatically</string>
+    <string name="about_update_auto_install_subtitle">Download new versions in the background and install them while the device is idle</string>
+    <string name="about_update_auto_install_notice_title">Notify after automatic updates</string>
+    <string name="about_update_auto_install_notice_subtitle">Show a banner on the next launch after the app updates itself</string>
     <string name="about_update_channel_title">Update channel</string>
     <string name="about_update_channel_subtitle">Choose the type of app updates to receive</string>
     <string name="about_check_updates">Check for updates</string>
@@ -1057,19 +1061,15 @@
     <string name="sub_outline">Outline</string>
     <string name="sub_outline_sub">Add outline around subtitle text for better visibility</string>
     <string name="sub_outline_color">Outline color</string>
+    <string name="sub_hdr_style">Separate HDR / Dolby Vision style</string>
+    <string name="sub_hdr_style_sub">Use a different text color and a dimmer brightness for subtitles on HDR and Dolby Vision video</string>
+    <string name="sub_hdr_text_color">HDR text color</string>
+    <string name="sub_hdr_brightness">HDR subtitle brightness</string>
     <string name="sub_advanced_section">Advanced subtitle rendering</string>
     <string name="sub_libass">Use libass for ASS/SSA subtitles</string>
     <string name="sub_libass_sub">Experimental: advanced ASS/SSA rendering (styles, positioning, animations)</string>
-    <string name="sub_libass_mode">Libass render mode</string>
-    <string name="sub_mode_overlay_gl">Overlay OpenGL (recommended)</string>
-    <string name="sub_mode_overlay_gl_sub">Best quality with HDR support. Renders subtitles on a separate thread.</string>
-    <string name="sub_mode_overlay_canvas">Overlay Canvas</string>
-    <string name="sub_mode_effects_gl">Effects OpenGL</string>
-    <string name="sub_mode_effects_gl_sub">Animation support using Media3 effects. Faster than Canvas.</string>
-    <string name="sub_mode_effects_canvas">Effects Canvas</string>
-    <string name="sub_mode_effects_canvas_sub">Animation support using Media3 effects with Canvas rendering.</string>
-    <string name="sub_mode_standard">Standard cues</string>
-    <string name="sub_mode_standard_sub">Basic subtitle rendering without animation support. Most compatible.</string>
+    <string name="sub_libass_render_scale">Subtitle render resolution</string>
+    <string name="sub_libass_render_scale_sub">Lower resolution improves performance on heavy typesetting at the cost of sharpness</string>
     <string name="sub_org_none">None (default order)</string>
     <string name="sub_org_by_lang">By language</string>
     <string name="sub_org_by_addon">By addon</string>
@@ -1586,6 +1586,11 @@
     <string name="settings_stream_badges_section">Fusion style</string>
     <string name="settings_stream_size_badges_title">Size badges</string>
     <string name="settings_stream_size_badges_description">Show file size badges in stream results and player source panels.</string>
+    <string name="settings_stream_badges_in_player_title">Show in player</string>
+    <string name="settings_stream_badges_in_player_description">Show badges for the video and audio that is playing under the player title. Uses Arc\'s own badges, or your badge pack if it matches plain text, like 2160p or Atmos.</string>
+    <string name="settings_stream_player_badges_title">Player badges</string>
+    <string name="settings_stream_player_badges_description">Choose the badge pack the player uses.</string>
+    <string name="settings_stream_player_badges_same">Same as stream badges</string>
     <string name="settings_stream_addon_logo_title">Addon logo</string>
     <string name="settings_stream_addon_logo_description">Show addon logo and name next to stream sources.</string>
     <string name="settings_stream_display_section">Display</string>
@@ -2015,6 +2020,8 @@
     <string name="player_engine_switching_title">Switching player engine</string>
     <string name="player_engine_switching_message">Startup failed. Switching to %1$s…</string>
     <string name="player_engine_switching_manual_message">Switching to %1$s...</string>
+    <string name="player_engine_switch_title">Switch to %1$s?</string>
+    <string name="player_engine_switch_message">The video will reload from where you are.</string>
     <string name="playback_show_loading_status">Show loading status</string>
     <string name="playback_show_loading_status_sub">Display step-by-step progress while the player is initializing.</string>
     <string name="player_sync_line">Sync line</string>
@@ -2132,6 +2139,26 @@
     <string name="audio_center_mix_value_db">%1$d dB</string>
     <string name="audio_center_mix_help">Center mix level in dB relative to metadata or default (-3 dB)</string>
     <string name="audio_center_mix_unavailable">Center mix is only available when FFmpeg downmix is active.</string>
+    <string name="audio_listening_section">Listening</string>
+    <string name="audio_night_mode_label">Night mode</string>
+    <string name="audio_night_mode_off">Off</string>
+    <string name="audio_night_mode_light">Light</string>
+    <string name="audio_night_mode_medium">Medium</string>
+    <string name="audio_night_mode_strong">Strong</string>
+    <string name="audio_night_mode_help">Turns loud moments down and lifts quiet ones.</string>
+    <string name="audio_night_mode_unavailable">Off during passthrough: sound goes to your amplifier untouched.</string>
+    <string name="audio_night_mode_settings_sub">Turns loud moments down and lifts quiet ones. Works on sound the app decodes, not during passthrough.</string>
+    <string name="audio_night_mode_dialog_subtitle">Evens out loud and quiet moments. Works on TV speakers, soundbars and amplifiers fed PCM. Passthrough sound is never changed.</string>
+    <string name="audio_night_mode_off_desc">Sound as it was mixed.</string>
+    <string name="audio_night_mode_light_desc">Takes the edge off the loudest moments.</string>
+    <string name="audio_night_mode_medium_desc">Evenings. Loud scenes calmer, quiet speech easier to hear.</string>
+    <string name="audio_dialogue_boost_label">Dialogue boost</string>
+    <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
+    <string name="audio_dialogue_boost_help">Raises the centre channel, where most speech is. Off to +12 dB.</string>
+    <string name="audio_dialogue_boost_stereo">This track is stereo, so there is no separate speech channel to raise.</string>
+    <string name="audio_dialogue_boost_mixed">The sound reaches the app already mixed to stereo. Turn on downmix in the audio settings to use this.</string>
+    <string name="audio_dialogue_boost_mpv_multichannel">With MPV this works when the sound is mixed to stereo, for example on TV speakers.</string>
+    <string name="audio_night_mode_strong_desc">Late nights and small rooms. The most even sound, with less punch in action scenes.</string>
     <string name="audio_maintain_original_audio_on_downmix_title">Maintain original audio on downmix</string>
     <string name="audio_maintain_original_audio_on_downmix_subtitle">When disabled, downmix normalization can reduce overall volume.</string>
 
@@ -2168,6 +2195,9 @@
     <string name="subtitle_style_bold">Bold</string>
     <string name="subtitle_style_text_color">Text color</string>
     <string name="subtitle_style_text_opacity">Text opacity</string>
+    <string name="subtitle_style_text_color_hdr">Text color (HDR)</string>
+    <string name="subtitle_style_text_opacity_hdr">Text opacity (HDR)</string>
+    <string name="subtitle_style_brightness_hdr">Brightness (HDR)</string>
     <string name="subtitle_style_outline">Outline</string>
     <string name="subtitle_style_bottom_offset">Bottom offset</string>
     <string name="subtitle_style_defaults">Defaults</string>
@@ -2648,6 +2678,7 @@
     <string name="update_checking">Checking for updates…</string>
     <string name="update_waiting_for_stable">You’ll receive the next stable release when it becomes available</string>
     <string name="update_download_complete">Download complete. Ready to install.</string>
+    <string name="update_installed_automatically">Updated automatically while the device was idle</string>
     <string name="update_up_to_date">System is up to date. Latest changes:</string>
     <string name="update_close">Close</string>
     <string name="update_open_settings">Open Settings</string>
@@ -2727,8 +2758,6 @@
     <string name="player_error_failed_start_torrent">Failed to start torrent: %1$s</string>
 
     <!-- Playback subtitle settings -->
-    <string name="sub_mode_overlay_canvas_sub">HDR support with canvas rendering. May block UI thread.</string>
-    <string name="sub_mode_effects_warning">Heavy: may drop frames on 4K and turns off tunnelled playback.</string>
 
     <string name="ratings_season_label">S%1$d</string>
     <string name="ratings_episode_label">E%1$d</string>
@@ -3797,7 +3826,7 @@
     <string name="player_pill_next_episode">Next episode</string>
     <string name="ui_scale_title">Interface scale</string>
     <string name="ui_scale_group_subtitle" formatted="false">Scale the whole interface between 85% and 115%</string>
-    <string name="panel_audio_adjustments">Delay and gain</string>
+    <string name="panel_audio_adjustments">Sound adjustments</string>
     <string name="panel_audio_back_to_tracks">Back to tracks</string>
     <string name="theme_color_glass">Glass</string>
     <string name="v2_control_speed">Speed</string>
@@ -3824,8 +3853,8 @@
     <string name="v2_settings_background_midnight">Midnight blue</string>
     <string name="v2_settings_background_charcoal">Charcoal</string>
     <string name="layout_trailer_feathered">Feathered trailer window</string>
-    <string name="playback_dim_hdr_overlays">Dim controls and subtitles in HDR</string>
-    <string name="playback_dim_hdr_overlays_sub">Softer controls and bright subtitle highlights during HDR, HLG and Dolby Vision playback. Video brightness is unchanged. Native ASS styling is preserved.</string>
+    <string name="playback_dim_hdr_overlays">Dim controls in HDR</string>
+    <string name="playback_dim_hdr_overlays_sub">Softer player controls during HDR, HLG and Dolby Vision playback. Video brightness is unchanged. Subtitles in HDR follow the HDR style in the subtitle settings.</string>
     <string name="subtitle_bitmap_style_note">Image subtitle size is saved separately from text subtitle size. Font, outline and colour are part of the image.</string>
     <string name="subtitle_bitmap_mpv_note">MPV does not support image subtitle resizing. Use ExoPlayer to adjust image subtitle size independently from text.</string>
     <string name="subtitle_style_image_size">Image subtitle size</string>
@@ -3910,6 +3939,14 @@
     <string name="subtitle_edge_drop_shadow">Drop shadow</string>
     <string name="subtitle_shadow_note">A subtle dark shadow. On MPV, this replaces the background box.</string>
     <string name="subtitle_font_and_weight">Font and weight</string>
+    <string name="playback_seeking">Seeking</string>
+    <string name="playback_seeking_sub">How fast a held left or right speeds up, and how long the film waits on the thumbnail before it jumps. Without thumbnails it always jumps as soon as you let go.</string>
+    <string name="playback_seeking_gentle">Gentle</string>
+    <string name="playback_seeking_gentle_desc">Slow and steady. Every thumbnail goes by; waits 2 s before it jumps.</string>
+    <string name="playback_seeking_balanced">Balanced</string>
+    <string name="playback_seeking_balanced_desc">Starts slow, then speeds up. Waits a moment before it jumps.</string>
+    <string name="playback_seeking_fast">Fast</string>
+    <string name="playback_seeking_fast_desc">Like the official app. Big steps, jumps as soon as you let go.</string>
     <string name="seek_thumbnails_title">Seek thumbnails</string>
     <string name="seek_thumbnails_subtitle">Thumbnails of the title above the progress bar while you seek.</string>
     <string name="seek_thumbnails_mode_off">Off</string>
@@ -3924,6 +3961,7 @@
     <string name="seek_thumbnails_prepare_off_desc">Start playing at once; thumbnails are made while paused and after you stop watching.</string>
     <string name="seek_thumbnails_prepare_on">On</string>
     <string name="seek_thumbnails_prepare_on_desc">Make a title\'s seek thumbnails before it starts. \"Start watching now\" or Back starts playback at any time.</string>
+    <string name="seek_thumbnails_prepare_on_small_desc">On this device, 4K films load after their thumbnails are made.</string>
     <string name="seek_thumbnails_before_play_title">Thumbnails before play</string>
     <string name="seek_thumbnails_before_play_subtitle">How many thumbnails are made before a title starts playing. The rest follow while you watch, down to the usual detail.</string>
     <string name="seek_thumbnails_before_play_full">Full</string>
@@ -3946,6 +3984,7 @@
     <string name="seek_thumbnails_ready_detail">%1$d thumbnails · starting playback</string>
     <string name="seek_thumbnails_time_left_seconds">About %1$d s left</string>
     <string name="seek_thumbnails_time_left_minutes">About %1$d min %2$d s left</string>
+    <string name="seek_thumbnails_film_loads_after">4K on this device: the film loads when this is done</string>
     <string name="seek_thumbnails_count">%1$d of %2$d</string>
     <string name="seek_thumbnails_start_now">Start watching now</string>
     <string name="seek_thumbnails_settings_hint">Turn this on or off in Settings › Playback › Player Interface</string>
@@ -4126,4 +4165,7 @@
     <string name="detail_episode_synopsis_none">No synopsis for this episode yet.</string>
     <string name="player_track_role_commentary">Commentary</string>
     <string name="player_track_role_audio_description">Audio description</string>
+    <string name="stream_resume_from_time">Resume from %1$s</string>
+    <string name="stream_resume_from_percent">Resume from %1$d%%</string>
+    <string name="tvdb_metadata_credit">Metadata provided by %1$s</string>
 </resources>

@@ -455,6 +455,7 @@ class MetaDetailsViewModel @Inject constructor(
         observeTraktCommentsAvailability()
         observeLibraryState()
         observeWatchProgress()
+        observeMovieResumeProgress()
         observeWatchedEpisodes()
         observeMovieWatched()
         observeRelatedWatchedStatus()
@@ -788,6 +789,17 @@ class MetaDetailsViewModel @Inject constructor(
                 reevaluateSeriesWatchedBadge()
                 calculateNextToWatch()
             }
+        }
+    }
+
+    private fun observeMovieResumeProgress() {
+        if (!itemType.equals("movie", ignoreCase = true)) return
+
+        viewModelScope.launch {
+            _effectiveContentId
+                .flatMapLatest { contentId -> watchProgressRepository.getProgress(contentId) }
+                .distinctUntilChanged()
+                .collectLatest { calculateNextToWatch() }
         }
     }
 
@@ -2280,9 +2292,11 @@ class MetaDetailsViewModel @Inject constructor(
         val meta = _uiState.value.meta ?: return
         val progressMap = _uiState.value.episodeProgressMap
         val watchedEpisodes = _uiState.value.watchedEpisodes
-        val fromData = hasNextToWatchData(progressMap, watchedEpisodes, serverStates.size)
-        // Don't let an observer-driven recompute from empty progress
-        // clobber a good nextToWatch that the applyMetaWithEnrichment refine already set.
+        val isSeries = meta.apiType.equals("series", ignoreCase = true) ||
+            meta.apiType.equals("tv", ignoreCase = true)
+        // Movie resume always follows its own progress; for series, a recompute from empty progress
+        // must not clobber a good nextToWatch that the applyMetaWithEnrichment refine already set.
+        val fromData = !isSeries || hasNextToWatchData(progressMap, watchedEpisodes, serverStates.size)
         if (!fromData && _uiState.value.nextToWatch != null) {
             return
         }

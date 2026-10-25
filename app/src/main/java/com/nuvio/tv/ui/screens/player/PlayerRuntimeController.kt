@@ -35,6 +35,7 @@ import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
 import com.nuvio.tv.data.local.DeviceLocalPlayerPreferences
 import com.nuvio.tv.data.local.StreamLinkCacheDataStore
+import com.nuvio.tv.core.streams.StreamBadgeMatcher
 import com.nuvio.tv.data.local.StreamBadgeSettingsDataStore
 import com.nuvio.tv.data.local.BingeGroupCacheDataStore
 import com.nuvio.tv.data.local.StreamAutoPlayMode
@@ -56,6 +57,7 @@ import com.nuvio.tv.domain.repository.StreamRepository
 import com.nuvio.tv.domain.repository.WatchProgressRepository
 import androidx.media3.session.MediaSession
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -531,6 +533,12 @@ class PlayerRuntimeController(
     internal var activeSidecarGeneration: Long = 0L // AutoSync hook
     internal var activeSidecarSubtitleKey: String? = null
     internal var sidecarTimedCues: List<androidx.media3.extractor.text.CuesWithTiming> = emptyList()
+        set(value) {
+            field = value
+            subtitleCueTracker.setPrescannedTexts(
+                value.flatMap { it.cues }.mapNotNull { it.text?.toString()?.takeIf(String::isNotBlank) }
+            )
+        }
     internal val subtitlePresentation = SubtitlePresentation()
     internal var lastSidecarCueSignature: Long? = null
     internal var exoSubtitleViewRef: WeakReference<androidx.media3.ui.SubtitleView>? = null
@@ -635,6 +643,9 @@ class PlayerRuntimeController(
     internal var scrubHoldPaused = false
     internal var scrubGlideJob: Job? = null
     internal var scrubGlideForward = true
+    internal var seekingMode = com.nuvio.tv.data.local.SeekingMode.BALANCED
+    /** Fast seeking: the stepped target the glide follows; null on Gentle and Balanced. */
+    internal var scrubStepChase: PlayerScrubRates.StepChase? = null
     internal val scrubHoldClock = ScrubHoldClock()
     internal var scrubTapFrom: Long? = null
     /** Playback position at the first tap of a run of seek taps, until the commit or a hold; null without one. */
@@ -656,6 +667,8 @@ class PlayerRuntimeController(
     internal var serverChapters: List<PlayerChapter> = emptyList()
     internal var serverChaptersFetchedKey: String? = null
     internal var chaptersLogKey: String? = null
+    internal var mpvChapters: List<PlayerChapter> = emptyList()
+    internal var mpvChaptersStreamUrl: String? = null
     internal var parentalGuideEnabled: Boolean = false
     internal var autoSkipSegmentTypes: Set<AutoSkipSegmentType> = emptySet()
     internal var playerSettingsInitialized: Boolean = false
@@ -722,6 +735,8 @@ class PlayerRuntimeController(
     internal var mpvHardwareDecodeModeSetting: MpvHardwareDecodeMode = MpvHardwareDecodeMode.AUTO_SAFE
     internal var mpvPreferredAudioLanguages: List<String> = emptyList()
     internal var currentStreamBingeGroup: String? = navigationArgs.bingeGroup
+    // Per-device delay + current stream's behaviorHints.audioDelayMs + the user's tweak on that stream.
+    internal var audioDelayParts: AudioDelayParts = AudioDelayParts().withStream(navigationArgs.audioDelayMs ?: 0, navigationArgs.audioDelayLanguage)
     internal var hasAppliedRememberedAudioSelection: Boolean = false
     internal var hasInitializedAudioAmplificationForSession: Boolean = false
     internal var hasInitializedCenterMixForSession: Boolean = false
@@ -752,14 +767,20 @@ class PlayerRuntimeController(
     internal var lastSkipIntervalEvaluationUptimeMs: Long = 0L
     internal var lastNextEpisodeEvaluationUptimeMs: Long = 0L
     internal var bufferLogJob: Job? = null
-    internal val gainAudioProcessor = GainAudioProcessor()
+    internal val gainAudioProcessor = GainAudioProcessor().also { processor ->
+        processor.onPcmChannelCountChanged = {
+            scope.launch(Dispatchers.Main) { updateAudioControlAvailability() }
+        }
+    }
     internal var loudnessEnhancer: LoudnessEnhancer? = null
     internal var trackSelector: DefaultTrackSelector? = null
     internal var currentMediaSession: MediaSession? = null
     internal var ffmpegAudioRenderer: FfmpegAudioRenderer? = null
     internal var mpvView: NuvioMpvSurfaceView? = null
+    internal val subtitleCueTracker = SubtitleCueTracker()
     internal var mpvInitializationInProgress: Boolean = false
     internal var mpvMediaLoadPrepared: Boolean = false
+    internal var lastMpvOutputChannels: Int = -1
     internal var mpvTrackRefreshJob: Job? = null
     internal var mpvTrackRefreshInProgress: Boolean = false
     internal val mpvTrackRefreshGate = MpvTrackRefreshGate()
@@ -816,6 +837,8 @@ class PlayerRuntimeController(
     internal val seekProgressSyncDebounceMs = 700L
     internal val audioDelayUs = AtomicLong(0L)
     internal val subtitleDelayUs = AtomicLong(0L)
+    // Offset for embedded subtitles from the stream's audio source; never persisted.
+    internal val streamSubtitleDelayUs = AtomicLong(0L)
     internal var pendingPreviewSeekPosition: Long?
         get() = _uiState.value.pendingPreviewSeekPosition
         set(value) {
@@ -885,6 +908,8 @@ class PlayerRuntimeController(
     // 404/410): auto-failover skips them and the source panel greys them out.
     internal val deadSourceStreamUrls: MutableSet<String> = mutableSetOf()
     internal var deadSourceFailoverCount: Int = 0
+    /** A saved link that failed has had its source asked for a fresh link once. */
+    internal var freshLinkForReusedLinkTried: Boolean = false
     /** Media server versions already asked again after a 404/410 since this play started. */
     internal val serverDeadAnswerRetried = mutableSetOf<String>()
     internal var hasRetriedAfterMimeOverrideClear: Boolean = false
@@ -997,6 +1022,25 @@ class PlayerRuntimeController(
         // Fork: observePlayerStatsHud() deliberately not armed, upstream stats HUD stays permanently dormant.
         observeDeviceLocalTransparentLetterbox()
         observeDeviceLocalTunneledSurfaceFill()
+        observeStreamDelayTrackSelection()
+    }
+
+    // The stream delay hint can be scoped to a language: re-apply it whenever the selected tracks change.
+    private fun observeStreamDelayTrackSelection() {
+        scope.launch {
+            _uiState
+                .map { state ->
+                    val audio = state.audioTracks.getOrNull(state.selectedAudioTrackIndex)
+                    val subtitle = state.subtitleTracks.getOrNull(state.selectedSubtitleTrackIndex)
+                    listOf(
+                        audio != null, audio?.language,
+                        subtitle != null, subtitle?.language,
+                        state.selectedAddonSubtitle != null
+                    )
+                }
+                .distinctUntilChanged()
+                .collect { syncStreamDelayWithSelectedTracks() }
+        }
     }
 
     private fun observeTorrentSettings() {
@@ -1014,7 +1058,13 @@ class PlayerRuntimeController(
                     it.copy(
                         showFileSizeBadges = settings.showFileSizeBadges,
                         showAddonLogo = settings.showAddonLogo,
-                        streamBadgePlacement = settings.badgePlacement
+                        streamBadgePlacement = settings.badgePlacement,
+                        showPlayerBadges = settings.showInPlayer,
+                        playerBadgeFilters = if (settings.showInPlayer) {
+                            StreamBadgeMatcher.compile(settings.rules.forPlayer(settings.playerBadgeSource))
+                        } else {
+                            emptyList()
+                        }
                     )
                 }
             }

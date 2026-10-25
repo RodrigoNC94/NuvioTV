@@ -101,6 +101,7 @@ internal fun SubtitleSelectionOverlay(
     addonSubtitles: List<Subtitle>,
     selectedAddonSubtitle: Subtitle?,
     subtitleStyle: SubtitleStyleSettings,
+    isEditingHdrStyle: Boolean = false,
     subtitleDelayMs: Int,
     installedSubtitleAddonOrder: List<String>,
     isLoadingAddons: Boolean,
@@ -301,6 +302,7 @@ internal fun SubtitleSelectionOverlay(
                 }
                 SubtitleStyleRail(
                     subtitleStyle = subtitleStyle,
+                    isEditingHdrStyle = isEditingHdrStyle,
                     subtitleDelayMs = subtitleDelayMs,
                     listState = styleListState,
                     onMoveLeft = {},
@@ -401,6 +403,7 @@ internal fun SubtitleSelectionOverlay(
 @Composable
 private fun SubtitleStyleRail(
     subtitleStyle: SubtitleStyleSettings,
+    isEditingHdrStyle: Boolean,
     subtitleDelayMs: Int,
     listState: LazyListState,
     onMoveLeft: () -> Unit,
@@ -534,7 +537,11 @@ private fun SubtitleStyleRail(
                 }
                 item {
                     OverlaySectionCard(
-                        title = stringResource(R.string.subtitle_style_text_color),
+                        title = if (isEditingHdrStyle) {
+                            stringResource(R.string.subtitle_style_text_color_hdr)
+                        } else {
+                            stringResource(R.string.subtitle_style_text_color)
+                        },
                         modifier = styleCardModifier
                     ) {
                         ColorChipRow(
@@ -550,7 +557,11 @@ private fun SubtitleStyleRail(
                 }
                 item {
                     OverlaySectionCard(
-                        title = stringResource(R.string.subtitle_style_text_opacity),
+                        title = if (isEditingHdrStyle) {
+                            stringResource(R.string.subtitle_style_text_opacity_hdr)
+                        } else {
+                            stringResource(R.string.subtitle_style_text_opacity)
+                        },
                         modifier = styleCardModifier
                     ) {
                         val currentColor = Color(subtitleStyle.textColor)
@@ -572,6 +583,30 @@ private fun SubtitleStyleRail(
                             incrementFocusKey = StyleFocusKey.OpacityIncrease,
                             onFocusChanged = onStyleFocused
                         )
+                    }
+                }
+                if (isEditingHdrStyle) {
+                    item {
+                        OverlaySectionCard(
+                            title = stringResource(R.string.subtitle_style_brightness_hdr),
+                            modifier = styleCardModifier
+                        ) {
+                            StepperRow(
+                                value = "${subtitleStyle.hdrBrightness}%",
+                                onDecrease = {
+                                    dispatchStyleEvent(PlayerEvent.OnSetSubtitleHdrBrightness(subtitleStyle.hdrBrightness - 10))
+                                },
+                                onIncrease = {
+                                    dispatchStyleEvent(PlayerEvent.OnSetSubtitleHdrBrightness(subtitleStyle.hdrBrightness + 10))
+                                },
+                                onMoveLeft = onMoveLeft,
+                                decrementFocusRequester = focusRequesters[StyleFocusKey.HdrBrightnessDecrease],
+                                incrementFocusRequester = focusRequesters[StyleFocusKey.HdrBrightnessIncrease],
+                                decrementFocusKey = StyleFocusKey.HdrBrightnessDecrease,
+                                incrementFocusKey = StyleFocusKey.HdrBrightnessIncrease,
+                                onFocusChanged = onStyleFocused
+                            )
+                        }
                     }
                 }
                 item {
@@ -1028,6 +1063,8 @@ private object StyleFocusKey {
     const val TextColorPrefix = "text_color"
     const val OpacityDecrease = "opacity_decrease"
     const val OpacityIncrease = "opacity_increase"
+    const val HdrBrightnessDecrease = "hdr_brightness_decrease"
+    const val HdrBrightnessIncrease = "hdr_brightness_increase"
     const val OutlineColorPrefix = "outline_color"
 }
 
@@ -1067,6 +1104,8 @@ private fun rememberStyleFocusRequesters(): Map<String, FocusRequester> {
             StyleFocusKey.FontFamily,
             StyleFocusKey.OpacityDecrease,
             StyleFocusKey.OpacityIncrease,
+            StyleFocusKey.HdrBrightnessDecrease,
+            StyleFocusKey.HdrBrightnessIncrease,
             StyleFocusKey.OutlineToggle,
             StyleFocusKey.OffsetDecrease,
             StyleFocusKey.OffsetIncrease,

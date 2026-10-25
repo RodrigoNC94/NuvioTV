@@ -135,13 +135,39 @@ class ProfileManager @Inject constructor(
         if (profileDataStore.profilesList.first().none { it.id == id }) return@withLock false
         // A cancelled waiter cannot enter. An admitted retirement must finish its metadata cleanup.
         withContext(NonCancellable) {
-            credentialStores.forEach { store -> store.removeProfile(id) }
-            snapshotStorage.clearProfile(id, retire = true)
-            deleteProfileDataAsync(id)
+            removeLocalProfileData(id)
             profileDataStore.deleteProfile(id)
             profiles.first { entries -> entries.none { it.id == id } }
             true
         }
+    }
+
+    /**
+     * Replaces the profile list with the account's list from the server. Profiles missing from it
+     * were deleted on another device, so their local data goes too: profile ids are reused, and
+     * the next profile created with the same id would otherwise inherit it.
+     */
+    suspend fun replaceAllProfiles(remoteProfiles: List<UserProfile>) {
+        val previousIds = profileDataStore.profilesList.first().map { it.id }.toSet()
+        profileDataStore.replaceAllProfiles(remoteProfiles)
+        onProfilesReplaced(previousIds, remoteProfiles)
+    }
+
+    /** Clears local data of profiles that a server replacement removed from [previousIds]. */
+    suspend fun onProfilesReplaced(previousIds: Set<Int>, remoteProfiles: List<UserProfile>) =
+        snapshotStorage.lifecycleMutex.withLock {
+            withContext(NonCancellable) {
+                val remoteIds = remoteProfiles.map { it.id }.toSet()
+                (previousIds - remoteIds).forEach { id -> removeLocalProfileData(id) }
+                (remoteIds - previousIds).forEach { id -> factory.markProfileCreated(id) }
+            }
+        }
+
+    private suspend fun removeLocalProfileData(id: Int) {
+        if (id == 1) return
+        credentialStores.forEach { store -> store.removeProfile(id) }
+        snapshotStorage.clearProfile(id, retire = true)
+        deleteProfileDataAsync(id)
     }
 
     suspend fun updateProfile(profile: UserProfile): Boolean = snapshotStorage.lifecycleMutex.withLock {
@@ -159,7 +185,8 @@ class ProfileManager @Inject constructor(
         val dataStoreDir = File(context.filesDir, "datastore")
         if (dataStoreDir.exists()) {
             dataStoreDir.listFiles()?.forEach { file ->
-                if (file.name.endsWith(suffixWithExtension)) {
+                // Shadow copies too: a store that fails to parse is restored from its .bak.
+                if (file.name.endsWith(suffixWithExtension) || file.name.endsWith("$suffixWithExtension.bak")) {
                     file.delete()
                 }
             }
@@ -168,6 +195,13 @@ class ProfileManager @Inject constructor(
         val pluginCodeDir = File(context.filesDir, "plugin_code_p${profileId}")
         if (pluginCodeDir.exists()) {
             pluginCodeDir.deleteRecursively()
+        }
+
+        // Continue Watching cache that Home shows before its pipeline has run.
+        File(context.filesDir, "cw_enrichment").listFiles()?.forEach { file ->
+            if (file.name == "inprogress_$profileId.json" || file.name == "nextup_$profileId.json") {
+                file.delete()
+            }
         }
     }
 }

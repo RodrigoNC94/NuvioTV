@@ -834,16 +834,6 @@
 <string name="sub_advanced_section">Rendering avanzato sottotitoli</string>
 <string name="sub_libass">Usa libass per sottotitoli ASS/SSA</string>
 <string name="sub_libass_sub">Sperimentale: rendering ASS/SSA avanzato (stili, posizionamento, animazioni)</string>
-<string name="sub_libass_mode">Modalità rendering Libass</string>
-<string name="sub_mode_overlay_gl">Overlay OpenGL (Consigliato)</string>
-<string name="sub_mode_overlay_gl_sub">Migliore qualità con supporto HDR. Esegue il rendering dei sottotitoli su un thread separato.</string>
-<string name="sub_mode_overlay_canvas">Canvas sovrapposto</string>
-<string name="sub_mode_effects_gl">Effetti OpenGL</string>
-<string name="sub_mode_effects_gl_sub">Supporto animazioni tramite effetti Media3. Più veloce di Canvas.</string>
-<string name="sub_mode_effects_canvas">Effetti Canvas</string>
-<string name="sub_mode_effects_canvas_sub">Supporto animazioni tramite effetti Media3 con rendering Canvas.</string>
-<string name="sub_mode_standard">Cues standard</string>
-<string name="sub_mode_standard_sub">Rendering base dei sottotitoli senza supporto animazioni. Massima compatibilità.</string>
 <string name="sub_org_none">Nessuna (ordine predefinito)</string>
 <string name="sub_org_by_lang">Per lingua</string>
 <string name="sub_org_by_addon">Per addon</string>
@@ -2317,7 +2307,6 @@
 <string name="player_error_failed_start_torrent">Impossibile avviare il torrent: %1$s</string>
 
     <!-- Playback subtitle settings -->
-<string name="sub_mode_overlay_canvas_sub">Supporto HDR con rendering canvas. Potrebbe bloccare il thread UI.</string>
 
 <string name="ratings_season_label">S%1$d</string>
 <string name="ratings_episode_label">E%1$d</string>
@@ -3194,7 +3183,7 @@
     <string name="playback_section_stream_selection_desc">Come viene scelto un flusso quando premi Riproduci.</string>
     <string name="playback_section_up_next">In arrivo</string>
     <string name="playback_section_up_next_desc">Riproduzione automatica dell\'episodio successivo e suggerimenti al termine della visione.</string>
-    <string name="playback_section_skip">SALTA SEGMENTI</string>
+    <string name="playback_section_skip">Salta segmenti</string>
     <string name="playback_section_skip_desc">Salta sigle iniziali, riepiloghi e titoli di coda.</string>
     <string name="playback_section_interface">Interfaccia del lettore</string>
     <string name="playback_section_interface_desc">Miniature, overlay, orologio e dettagli mostrati durante la riproduzione.</string>
@@ -3369,8 +3358,8 @@
     <string name="autosync_toast_failed_no_reference">Sincronizzazione non riuscita: questo video non contiene sottotitoli incorporati da confrontare.</string>
     <string name="autosync_toast_failed_unsupported">Sincronizzazione non riuscita: Auto Sync non supporta questo formato di sottotitoli.</string>
     <string name="autosync_label_synced">Sincronizzato automaticamente</string>
-
-    <!-- Nuvio-test additions -->
+    <string name="stream_resume_from_time">Riprendi da %1$s</string>
+    <string name="stream_resume_from_percent">Riprendi dal %1$d%%</string>
     <string name="cw_no_artwork">Nessuna immagine</string>
     <string name="detail_eyebrow_episodes">Episodi</string>
     <string name="detail_trailer_error_age_restricted">Questo trailer è soggetto a limiti di età su YouTube e non può essere riprodotto qui.</string>
@@ -3556,6 +3545,26 @@
     <string name="player_layout_more_hidden_help">Altro e le azioni del suo menu sono nascosti. Mostra Altro per ripristinare il suo menu, oppure sposta un\'azione fuori da Altro per mostrarla direttamente.</string>
     <string name="player_layout_more_fixed_help">Premi OK per nascondere/mostrare Altro. Resta all\'estrema destra. Sposta le altre azioni oltre il confine del suo menu per cambiare cosa contiene.</string>
     <string name="player_error_placeholder_stream">Questo stream sembra una schermata di errore del provider, non il video. Prova un\'altra sorgente.</string>
+    <string name="audio_listening_section">Ascolto</string>
+    <string name="audio_night_mode_label">Modalità notte</string>
+    <string name="audio_night_mode_off">Disattivata</string>
+    <string name="audio_night_mode_light">Leggera</string>
+    <string name="audio_night_mode_medium">Media</string>
+    <string name="audio_night_mode_strong">Forte</string>
+    <string name="audio_night_mode_help">Abbassa i momenti forti e alza quelli deboli.</string>
+    <string name="audio_night_mode_unavailable">Disattivata in passthrough: l\'audio arriva all\'amplificatore senza modifiche.</string>
+    <string name="audio_night_mode_settings_sub">Abbassa i momenti forti e alza quelli deboli. Funziona sull\'audio decodificato dall\'app, non in passthrough.</string>
+    <string name="audio_night_mode_dialog_subtitle">Livella i momenti forti e quelli deboli. Funziona su altoparlanti TV, soundbar e amplificatori che ricevono PCM. L\'audio in passthrough non viene mai modificato.</string>
+    <string name="audio_night_mode_off_desc">L\'audio come è stato mixato.</string>
+    <string name="audio_night_mode_light_desc">Attenua i momenti più forti.</string>
+    <string name="audio_night_mode_medium_desc">Per la sera. Scene forti più calme, dialoghi sommessi più chiari.</string>
+    <string name="audio_dialogue_boost_label">Potenziamento dialoghi</string>
+    <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
+    <string name="audio_dialogue_boost_help">Alza il canale centrale, dove si trova gran parte del parlato. Da Disattivato a +12 dB.</string>
+    <string name="audio_dialogue_boost_stereo">Questa traccia è stereo, quindi non c\'è un canale voce separato da alzare.</string>
+    <string name="audio_dialogue_boost_mixed">L\'audio arriva all\'app già mixato in stereo. Per usarlo, attiva il downmix nelle impostazioni audio.</string>
+    <string name="audio_dialogue_boost_mpv_multichannel">Con MPV funziona quando l\'audio è mixato in stereo, ad esempio sugli altoparlanti della TV.</string>
+    <string name="audio_night_mode_strong_desc">Per la notte fonda e le stanze piccole. Il suono più uniforme, con meno impatto nelle scene d\'azione.</string>
     <string name="subtitle_panel_languages">Lingue</string>
     <string name="library_sort_released_desc">Data di uscita ↓</string>
     <string name="library_sort_released_asc">Data di uscita ↑</string>
@@ -3579,7 +3588,6 @@
     <string name="library_transfer_copy">Copia</string>
     <string name="library_transfer_move">Sposta (copia, poi rimuovi dall\'origine)</string>
     <string name="library_transfer_none">Niente da copiare</string>
-    <string name="sub_mode_effects_warning">Pesante: può perdere fotogrammi in 4K e disattiva la riproduzione tunneled.</string>
     <string name="cd_playback_stats">Statistiche di riproduzione</string>
     <string name="player_stats_unavailable_mpv">Le statistiche non sono disponibili con il motore libmpv</string>
     <string name="player_dead_source_failover">Sorgente non disponibile - passaggio alla successiva (%1$d/%2$d)</string>
@@ -3790,7 +3798,7 @@
     <string name="player_pill_next_episode">Prossimo episodio</string>
     <string name="ui_scale_title">Scala dell\'interfaccia</string>
     <string name="ui_scale_group_subtitle">Ridimensiona tutta l\'interfaccia dall\'85% al 115%</string>
-    <string name="panel_audio_adjustments">Ritardo e guadagno</string>
+    <string name="panel_audio_adjustments">Regolazioni audio</string>
     <string name="panel_audio_back_to_tracks">Torna alle tracce</string>
     <string name="v2_glass_preset">Preset vetro</string>
     <string name="v2_glass_clear">Trasparente</string>
@@ -3814,8 +3822,6 @@
     <string name="v2_settings_background_midnight">Blu notte</string>
     <string name="v2_settings_background_charcoal">Antracite</string>
     <string name="layout_trailer_feathered">Finestra trailer con bordi sfumati</string>
-    <string name="playback_dim_hdr_overlays">Attenua controlli e sottotitoli in HDR</string>
-    <string name="playback_dim_hdr_overlays_sub">Controlli più tenui e sottotitoli meno abbaglianti durante la riproduzione HDR, HLG e Dolby Vision. La luminosità del video non cambia. Lo stile ASS nativo viene mantenuto.</string>
     <string name="subtitle_bitmap_style_note">La dimensione dei sottotitoli immagine è salvata separatamente da quella dei sottotitoli di testo. Font, bordo e colore fanno parte dell\'immagine.</string>
     <string name="subtitle_bitmap_mpv_note">MPV non supporta il ridimensionamento dei sottotitoli immagine. Usa ExoPlayer per regolarne la dimensione separatamente dal testo.</string>
     <string name="subtitle_style_image_size">Dimensione sottotitoli immagine</string>
@@ -3900,6 +3906,14 @@
     <string name="subtitle_edge_drop_shadow">Ombra esterna</string>
     <string name="subtitle_shadow_note">Un\'ombra scura e discreta. Su MPV sostituisce il riquadro di sfondo.</string>
     <string name="subtitle_font_and_weight">Font e peso</string>
+    <string name="playback_seeking">Scorrimento</string>
+    <string name="playback_seeking_sub">Quanto rapidamente accelera tenere premuto sinistra o destra, e quanto il film aspetta sulla miniatura prima di saltare. Senza miniature salta sempre appena rilasci il tasto.</string>
+    <string name="playback_seeking_gentle">Delicato</string>
+    <string name="playback_seeking_gentle_desc">Lento e costante. Passano tutte le miniature; aspetta 2 s prima di saltare.</string>
+    <string name="playback_seeking_balanced">Bilanciato</string>
+    <string name="playback_seeking_balanced_desc">Parte lento, poi accelera. Aspetta un attimo prima di saltare.</string>
+    <string name="playback_seeking_fast">Veloce</string>
+    <string name="playback_seeking_fast_desc">Come l\'app ufficiale. Passi grandi, salta appena rilasci il tasto.</string>
     <string name="seek_thumbnails_title">Miniature di scorrimento</string>
     <string name="seek_thumbnails_subtitle">Miniature del titolo sopra la barra di avanzamento mentre scorri il video.</string>
     <string name="seek_thumbnails_mode_off">Disattivato</string>
@@ -3914,6 +3928,7 @@
     <string name="seek_thumbnails_prepare_off_desc">La riproduzione parte subito; le miniature vengono create in pausa e dopo che hai smesso di guardare.</string>
     <string name="seek_thumbnails_prepare_on">Attivo</string>
     <string name="seek_thumbnails_prepare_on_desc">Crea le miniature di scorrimento di un titolo prima che inizi. \"Inizia a guardare ora\" o Indietro avvia la riproduzione in qualsiasi momento.</string>
+    <string name="seek_thumbnails_prepare_on_small_desc">Su questo dispositivo i film 4K si caricano dopo che le loro miniature sono state create.</string>
     <string name="seek_thumbnails_before_play_title">Miniature prima della riproduzione</string>
     <string name="seek_thumbnails_before_play_subtitle">Quante miniature vengono create prima che un titolo inizi. Le altre seguono mentre guardi, fino al dettaglio abituale.</string>
     <string name="seek_thumbnails_before_play_full">Completo</string>
@@ -3936,6 +3951,7 @@
     <string name="seek_thumbnails_ready_detail">%1$d miniature · avvio della riproduzione</string>
     <string name="seek_thumbnails_time_left_seconds">Circa %1$d s rimanenti</string>
     <string name="seek_thumbnails_time_left_minutes">Circa %1$d min %2$d s rimanenti</string>
+    <string name="seek_thumbnails_film_loads_after">4K su questo dispositivo: il film si carica quando questo è finito</string>
     <string name="seek_thumbnails_count">%1$d di %2$d</string>
     <string name="seek_thumbnails_start_now">Inizia a guardare ora</string>
     <string name="seek_thumbnails_settings_hint">Attiva o disattiva in Impostazioni › Riproduzione › Player Interface</string>
@@ -4080,4 +4096,30 @@
     <string name="detail_episode_synopsis_none">Ancora nessuna descrizione per questo episodio.</string>
     <string name="player_track_role_commentary">Commento</string>
     <string name="player_track_role_audio_description">Audiodescrizione</string>
+
+    <!-- Nuvio-test additions -->
+    <string name="about_update_auto_install_title">Installa aggiornamenti automaticamente</string>
+    <string name="about_update_auto_install_subtitle">Scarica le nuove versioni in background e installale quando il dispositivo è inattivo</string>
+    <string name="about_update_auto_install_notice_title">Avvisa dopo gli aggiornamenti automatici</string>
+    <string name="about_update_auto_install_notice_subtitle">Mostra un banner all\'avvio successivo dopo che l\'app si è aggiornata da sola</string>
+    <string name="sub_hdr_style">Stile separato HDR / Dolby Vision</string>
+    <string name="sub_hdr_style_sub">Usa un colore del testo diverso e una luminosità più bassa per i sottotitoli dei video HDR e Dolby Vision</string>
+    <string name="sub_hdr_text_color">Colore del testo HDR</string>
+    <string name="sub_hdr_brightness">Luminosità sottotitoli HDR</string>
+    <string name="sub_libass_render_scale">Risoluzione di rendering sottotitoli</string>
+    <string name="sub_libass_render_scale_sub">Una risoluzione più bassa migliora le prestazioni con typesetting pesante, a scapito della nitidezza</string>
+    <string name="settings_stream_badges_in_player_title">Mostra nel player</string>
+    <string name="settings_stream_badges_in_player_description">Mostra i badge del video e dell\'audio in riproduzione sotto il titolo nel player. Usa i badge di Arc, o il tuo pacchetto di badge se corrisponde a testo semplice, come 2160p o Atmos.</string>
+    <string name="settings_stream_player_badges_title">Badge del player</string>
+    <string name="settings_stream_player_badges_description">Scegli il pacchetto di badge usato dal player.</string>
+    <string name="settings_stream_player_badges_same">Uguale ai badge dei flussi</string>
+    <string name="player_engine_switch_title">Passare a %1$s?</string>
+    <string name="player_engine_switch_message">Il video verrà ricaricato dal punto in cui sei.</string>
+    <string name="subtitle_style_text_color_hdr">Colore Testo (HDR)</string>
+    <string name="subtitle_style_text_opacity_hdr">Opacità testo (HDR)</string>
+    <string name="subtitle_style_brightness_hdr">Luminosità (HDR)</string>
+    <string name="update_installed_automatically">Aggiornata automaticamente mentre il dispositivo era inattivo</string>
+    <string name="playback_dim_hdr_overlays">Attenua i controlli in HDR</string>
+    <string name="playback_dim_hdr_overlays_sub">Controlli del player più tenui durante la riproduzione HDR, HLG e Dolby Vision. La luminosità del video non cambia. I sottotitoli in HDR seguono lo stile HDR nelle impostazioni dei sottotitoli.</string>
+    <string name="tvdb_metadata_credit">Metadati forniti da %1$s</string>
 </resources>

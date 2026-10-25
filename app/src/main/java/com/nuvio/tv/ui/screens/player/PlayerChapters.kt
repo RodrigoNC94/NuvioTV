@@ -77,6 +77,8 @@ internal object PlayerChapters {
     fun fromMetadata(metadata: ChaptersMetadata, locale: Locale = Locale.getDefault()): List<PlayerChapter> =
         storyChapters(metadata.chapters.map { it.startUs / 1000 to chosenName(it.names.map { name -> name.text to name.language }, locale) })
 
+    fun fromMpv(chapters: List<PlayerChapter>): List<PlayerChapter> = storyChapters(chapters.map { it.startMs to it.title })
+
     /** Recaps, intros and openings are segments, not chapters: they leave; fewer than two left means no chapters. */
     private fun storyChapters(chapters: List<Pair<Long, String?>>): List<PlayerChapter> {
         val kept = chapters.filterNot { (_, name) -> name != null && isSegmentName(name) }

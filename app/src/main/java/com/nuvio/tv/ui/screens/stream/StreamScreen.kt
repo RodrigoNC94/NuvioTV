@@ -16,6 +16,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,6 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -139,6 +141,18 @@ fun StreamScreen(
     onAutoPlayResolved: (StreamPlaybackInfo) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val watchProgress by viewModel.watchProgress.collectAsStateWithLifecycle()
+    val resumeProgress = streamResumeProgress(watchProgress, startFromBeginning)
+    val resumePositionMs = resumeProgress?.position?.takeIf { it > 0L }
+    val resumePercent = resumeProgress?.progressPercentage?.takeIf { it > 0f }
+    val resumeText = when {
+        resumePositionMs != null -> stringResource(
+            R.string.stream_resume_from_time,
+            com.nuvio.tv.ui.screens.detail.formatPlaybackTime(resumePositionMs)
+        )
+        resumePercent != null -> stringResource(R.string.stream_resume_from_percent, (resumePercent * 100).toInt())
+        else -> null
+    }
     val playerPreference by viewModel.playerPreference.collectAsStateWithLifecycle(
         initialValue = null
     )
@@ -463,6 +477,7 @@ fun StreamScreen(
                 // Right side - Streams container
                 RightStreamSection(
                     isLoading = uiState.isLoading,
+                    resumeText = resumeText,
                     error = uiState.error,
                     streams = uiState.filteredStreams,
                     partyFingerprint = viewModel.partyFingerprint,
@@ -763,6 +778,7 @@ private const val FOCUS_WARM_SETTLE_MS = 500L
 @Composable
 private fun RightStreamSection(
     isLoading: Boolean,
+    resumeText: String?,
     error: String?,
     streams: List<Stream>,
     partyFingerprint: com.nuvio.tv.core.party.PartyFingerprint? = null,
@@ -876,6 +892,9 @@ private fun RightStreamSection(
         modifier = modifier
             .padding(top = NuvioTheme.spacing.xxxl, end = NuvioTheme.spacing.xxxl, bottom = NuvioTheme.spacing.xxxl)
     ) {
+        resumeText?.let { text ->
+            StreamResumePill(text = text, modifier = Modifier.padding(bottom = NuvioTheme.spacing.sm))
+        }
         val chipRowHeight = NuvioTheme.spacing.huge
 
         // Addon filter chips
@@ -983,6 +1002,38 @@ private fun RightStreamSection(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun StreamResumePill(text: String, modifier: Modifier = Modifier) {
+    if (LocalV2Appearance.current != null) {
+        val shape = remember { RoundedCornerShape(12.dp) }
+        Box(
+            modifier = modifier
+                .nuvioGlass(GlassRole.CONTROL, shape = shape)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = text, style = MaterialTheme.typography.labelLarge, color = NuvioTheme.colors.TextPrimary)
+        }
+        return
+    }
+    val shape = RoundedCornerShape(20.dp)
+    Box(
+        modifier = modifier
+            .height(36.dp)
+            .clip(shape)
+            .background(NuvioTheme.colors.BackgroundCard)
+            .border(NuvioTheme.spacing.hairline, NuvioTheme.colors.Border, shape)
+            .padding(horizontal = NuvioTheme.spacing.lg),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = NuvioTheme.colors.TextPrimary
+        )
     }
 }
 
@@ -1390,6 +1441,17 @@ private fun StreamCard(
                     ),
                     color = NuvioTheme.colors.TextPrimary
                 )
+
+                stream.pluginSourceName?.takeIf { it.isNotBlank() && it != stream.addonName }?.let { sourceName ->
+                    Text(
+                        text = sourceName,
+                        modifier = Modifier.align(sourceName.contentTextDirection().toAbsoluteAlignment()),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            textDirection = sourceName.contentTextDirection()
+                        ),
+                        color = NuvioTheme.extendedColors.textSecondary
+                    )
+                }
 
                 streamDescription?.let { description ->
                     if (description.isNotBlank() && description != streamName) {

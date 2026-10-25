@@ -20,6 +20,8 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -165,6 +167,36 @@ class WatchProgressRepositoryProfileIsolationTest {
         harness.repository.saveProgressBatch(items,syncRemote=true)
         coVerify(exactly=1) { harness.progressPreferences.saveProgressBatch(items,profileId=1) }
         coVerify(exactly=0) { harness.progressPreferences.saveProgressBatch(any(),profileId=2) }
+    }
+
+    @Test
+    fun `optimistic watched toggle only applies to the profile that made it`() = runTest {
+        val harness = harness(activeProfileId = 1)
+        every { harness.progressPreferences.allProgress } returns flowOf(emptyList())
+        every { harness.watchedPreferences.allItems } returns flowOf(emptyList())
+
+        harness.repository.applyOptimisticWatchedMovie(setOf("tt0000001"), add = true)
+        assertEquals(setOf("tt0000001"), harness.repository.observeWatchedMovieIds().first())
+
+        harness.activeProfile.value = 2
+        assertEquals(emptySet<String>(), harness.repository.observeWatchedMovieIds().first())
+
+        harness.activeProfile.value = 1
+        assertEquals(setOf("tt0000001"), harness.repository.observeWatchedMovieIds().first())
+    }
+
+    @Test
+    fun `reverting an optimistic toggle after a profile switch clears it`() = runTest {
+        val harness = harness(activeProfileId = 1)
+        every { harness.progressPreferences.allProgress } returns flowOf(emptyList())
+        every { harness.watchedPreferences.allItems } returns flowOf(emptyList())
+
+        harness.repository.applyOptimisticWatchedMovie(setOf("tt0000001"), add = true)
+        harness.activeProfile.value = 2
+        harness.repository.revertOptimisticWatchedMovie(setOf("tt0000001"), add = true)
+
+        harness.activeProfile.value = 1
+        assertEquals(emptySet<String>(), harness.repository.observeWatchedMovieIds().first())
     }
 
     private fun harness(activeProfileId: Int, watched: WatchedItemsPreferences? = null): Harness {

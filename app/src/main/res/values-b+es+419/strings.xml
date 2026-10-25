@@ -371,6 +371,19 @@
     <string name="appearance_settings_style_subtitle">Elige cómo se muestran las pantallas de configuración</string>
     <string name="appearance_launcher_artwork">Ilustración del launcher</string>
     <string name="appearance_launcher_artwork_subtitle">Elige cómo aparece Nuvio Arc en la pantalla de inicio de tu TV</string>
+    <string name="ambient_mode_title">Modo ambiente</string>
+    <string name="ambient_mode_enabled_subtitle">Llena la pantalla con imágenes de fondo después de un período sin usar el control remoto</string>
+    <string name="ambient_mode_timeout">Iniciar después de</string>
+    <string name="ambient_mode_timeout_subtitle">Cuánto tiempo esperar antes de iniciar el modo ambiente</string>
+    <plurals name="ambient_mode_timeout_minutes">
+        <item quantity="one">%1$d minuto</item>
+        <item quantity="other">%1$d minutos</item>
+    </plurals>
+    <string name="ambient_mode_catalogs">Catálogos</string>
+    <string name="ambient_mode_catalogs_subtitle">Elige hasta 3 catálogos de los que se obtendrán las imágenes</string>
+    <string name="ambient_mode_catalogs_dialog_subtitle">Elige hasta 3 catálogos</string>
+    <string name="ambient_mode_catalogs_default">Los mismos que en la sección destacada</string>
+    <string name="ambient_mode_catalogs_count">%1$d de %2$d</string>
     <string name="appearance_app_icon_and_banner">Icono y banner de la aplicación</string>
     <string name="appearance_app_icon_and_banner_subtitle">Cambia el icono y el banner de la aplicación</string>
     <string name="appearance_app_icon_picker_title">Elegir icono y banner de la aplicación</string>
@@ -894,17 +907,7 @@
     <string name="sub_outline_color">Color del Contorno</string>
     <string name="sub_advanced_section">Renderizado Avanzado de Subtítulos</string>
     <string name="sub_libass">Usar libass para subtítulos ASS/SSA</string>
-    <string name="sub_libass_sub">Deshabilitado temporalmente por mantenimiento</string>
-    <string name="sub_libass_mode">Modo de Renderizado Libass</string>
-    <string name="sub_mode_overlay_gl">Superposición OpenGL (Recomendado)</string>
-    <string name="sub_mode_overlay_gl_sub">Mejor calidad con soporte HDR. Renderiza los subtítulos en un hilo separado.</string>
-    <string name="sub_mode_overlay_canvas">Superposición Canvas</string>
-    <string name="sub_mode_effects_gl">Efectos OpenGL</string>
-    <string name="sub_mode_effects_gl_sub">Soporte de animación usando efectos Media3. Más rápido que Canvas.</string>
-    <string name="sub_mode_effects_canvas">Efectos Canvas</string>
-    <string name="sub_mode_effects_canvas_sub">Soporte de animación usando efectos Media3 con renderizado Canvas.</string>
-    <string name="sub_mode_standard">Estándar (Standard Cues)</string>
-    <string name="sub_mode_standard_sub">Renderizado básico de subtítulos sin soporte de animación. El más compatible.</string>
+    <string name="sub_libass_sub">Renderizado avanzado ASS/SSA (estilos, posicionamiento, animaciones)</string>
     <string name="sub_org_none">Ninguno (orden predeterminado)</string>
     <string name="sub_org_by_lang">Por idioma</string>
     <string name="sub_org_by_addon">Por addon</string>
@@ -1073,6 +1076,13 @@
     <string name="upcoming_section_title">Próximos</string>
     <string name="layout_trailer_button">Mostrar botón de tráiler</string>
     <string name="layout_trailer_button_sub">Mostrar el botón de tráiler en la página de detalles (solo si está disponible).</string>
+    <string name="layout_trailer_play_in_background">Reproducir como fondo</string>
+    <string name="layout_trailer_play_in_background_sub">Reproduce el tráiler en lugar de la imagen de fondo mientras la página permanece visible.</string>
+    <string name="layout_trailer_pause_on_scroll">Pausar al desplazarse</string>
+    <string name="layout_trailer_pause_on_scroll_sub">Pausa el tráiler cuando te desplazas hacia abajo y reanúdalo cuando vuelves a la parte superior.</string>
+    <string name="layout_detail_group_episodes">Episodios</string>
+    <string name="layout_detail_group_trailers">Tráileres</string>
+    <string name="layout_detail_group_metadata">Metadatos</string>
     <string name="layout_prefer_external_meta">Preferir metadatos de addon externo</string>
     <string name="layout_prefer_external_meta_sub">Usar metadatos del addon externo en lugar del addon del catálogo.</string>
     <string name="layout_show_full_release_date">Mostrar fecha de estreno completa</string>
@@ -1160,6 +1170,7 @@
     <string name="layout_custom_poster_screen_details">Pantalla de detalles</string>
 
 <!-- Custom Poster Web Page -->
+    <string name="layout_custom_poster_screen_tv_recommendations">Recomendaciones de TV</string>
     <string name="layout_always_show_landscape_clearlogo">Mostrar siempre fondo con logotipo para pósters horizontales</string>
     <string name="layout_always_show_landscape_clearlogo_sub">Ignorar el póster horizontal del addon y usar el fondo con el logotipo superpuesto en su lugar.</string>
     <string name="web_custom_poster_title">Fuente de póster personalizada</string>
@@ -1235,6 +1246,12 @@
     <string name="mdblist_not_set">No configurado</string>
     <string name="mdblist_invalid_api_key">Clave API de MDBList inválida</string>
 
+    <string name="mdblist_library_lists">Listas de la biblioteca</string>
+    <string name="mdblist_library_lists_description">Elige qué listas de MDBList aparecen en la biblioteca y en Administrar listas. La lista de seguimiento siempre se muestra.</string>
+    <string name="mdblist_library_lists_empty">Aún no se encontraron listas en tu cuenta de MDBList. Sincroniza para cargarlas.</string>
+    <string name="mdblist_library_lists_summary">%1$d de %2$d visibles</string>
+    <string name="tracking_mdblist_features_title">Funciones de MDBList</string>
+    <string name="tracking_mdblist_features_subtitle">Configuración específica de MDBList</string>
     <string name="debrid_title">Servicios conectados</string>
     <string name="debrid_subtitle">Conecta cuentas para enlaces y acceso a la biblioteca</string>
     <string name="debrid_experimental_notice">Estas integraciones son experimentales y pueden mantenerse, modificarse o eliminarse más adelante.</string>
@@ -2062,6 +2079,8 @@
     <string name="library_sort_provider_order">Orden de proveedores</string>
     <string name="library_sort_added_desc">Agregado ↓</string>
     <string name="library_sort_added_asc">Agregado ↑</string>
+    <string name="library_sort_released_desc">Fecha de estreno ↓</string>
+    <string name="library_sort_released_asc">Fecha de estreno ↑</string>
     <string name="library_sort_title_asc">Título A-Z</string>
     <string name="library_sort_title_desc">Título Z-A</string>
     <string name="library_error_sort_failed">No se pudo cargar el orden de clasificación. Se muestra el orden del proveedor.</string>
@@ -2476,7 +2495,6 @@
     <string name="player_error_failed_start_torrent">No se pudo iniciar el torrent: %1$s</string>
 
     <!-- Playback subtitle settings -->
-    <string name="sub_mode_overlay_canvas_sub">Soporte HDR con renderizado en canvas. Puede bloquear el hilo de la interfaz.</string>
 
     <string name="ratings_season_label">T%1$d</string>
     <string name="ratings_episode_label">E%1$d</string>
@@ -3360,20 +3378,6 @@
     <string name="detail_trailer_error_sign_in">YouTube pide iniciar sesión para reproducir este tráiler.</string>
     <string name="appearance_screensaver_group_title">Protector de pantalla</string>
     <string name="appearance_screensaver_group_subtitle">Qué muestra la pantalla tras un rato sin usar el control remoto</string>
-    <string name="ambient_mode_title">Modo ambiente</string>
-    <string name="ambient_mode_enabled_subtitle">Llena la pantalla de fondos tras un tiempo sin usar el control remoto</string>
-    <string name="ambient_mode_timeout">Iniciar después de</string>
-    <string name="ambient_mode_timeout_subtitle">Cuánto esperar antes de que empiece el modo ambiente</string>
-    <plurals name="ambient_mode_timeout_minutes">
-        <item quantity="one">%1$d minuto</item>
-        <item quantity="many">%1$d minutos</item>
-        <item quantity="other">%1$d minutos</item>
-    </plurals>
-    <string name="ambient_mode_catalogs">Catálogos</string>
-    <string name="ambient_mode_catalogs_subtitle">Elige hasta 3 catálogos de los que tomar las imágenes</string>
-    <string name="ambient_mode_catalogs_dialog_subtitle">Elige hasta 3 catálogos</string>
-    <string name="ambient_mode_catalogs_default">Igual que los destacados</string>
-    <string name="ambient_mode_catalogs_count">%1$d de %2$d</string>
     <string name="appearance_screensaver_enabled">Atenuar en inactividad</string>
     <string name="appearance_screensaver_enabled_subtitle">Funde a una capa oscura tras un tiempo de inactividad. Presionar cualquier botón reactiva la pantalla.</string>
     <string name="appearance_screensaver_timeout">Tiempo de inactividad</string>
@@ -3392,6 +3396,10 @@
     <string name="appearance_app_icon_transparent_background">Fondo transparente</string>
     <string name="appearance_app_icon_transparent_hint">Para launchers que dibujan su propia tarjeta, como Projectivy</string>
     <string name="appearance_app_icon_mint">Menta</string>
+    <string name="about_update_auto_install_title">Instalar actualizaciones automáticamente</string>
+    <string name="about_update_auto_install_subtitle">Descarga nuevas versiones en segundo plano y las instala mientras el dispositivo está inactivo</string>
+    <string name="about_update_auto_install_notice_title">Notificar tras actualizaciones automáticas</string>
+    <string name="about_update_auto_install_notice_subtitle">Muestra un banner en el siguiente inicio después de que la aplicación se actualice sola</string>
     <string name="licenses_attributions_avatars_title">Avatares de la fiesta para ver juntos</string>
     <string name="licenses_attributions_avatars_body">Creados con DiceBear, a partir de estos diseños: \"Fun Emoji\" de Davis Uche y \"Adventurer\" de Lisa Wischofsky, bajo licencia CC BY 4.0 (creativecommons.org/licenses/by/4.0). \"Lorelei\" de Lisa Wischofsky, \"Notionists\" de Zoish, \"Pixel Art\" y \"Thumbs\" de DiceBear, CC0 1.0. \"Bottts\" de Pablo Stanley, gratis para uso personal y comercial. Caras de animales de Twemoji, de Twitter, Inc. y otros colaboradores, bajo licencia CC BY 4.0.</string>
     <string name="licenses_attributions_media_servers_title">Jellyfin, Emby y Silo</string>
@@ -3501,6 +3509,12 @@
     <string name="sub_tertiary_lang">Tercer Idioma Preferido</string>
     <string name="sub_addon_subtitles">Subtítulos de addons</string>
     <string name="sub_addon_subtitles_desc">Obtiene subtítulos de los addons instalados durante la reproducción. Desactivado, solo están disponibles los subtítulos incluidos en el archivo.</string>
+    <string name="sub_hdr_style">Estilo separado para HDR / Dolby Vision</string>
+    <string name="sub_hdr_style_sub">Usa otro color de texto y un brillo más bajo para los subtítulos en video HDR y Dolby Vision</string>
+    <string name="sub_hdr_text_color">Color del texto HDR</string>
+    <string name="sub_hdr_brightness">Brillo de subtítulos HDR</string>
+    <string name="sub_libass_render_scale">Resolución de renderizado de subtítulos</string>
+    <string name="sub_libass_render_scale_sub">Una resolución más baja mejora el rendimiento con rótulos complejos a costa de nitidez</string>
     <string name="autoplay_quality_rules_title">Reglas de calidad</string>
     <string name="autoplay_quality_rules_subtitle">Filtros, orden y niveles de grupos de lanzamiento en Servicios conectados.</string>
     <string name="stream_sort_sources">Ordenar fuentes</string>
@@ -3531,7 +3545,6 @@
     <string name="layout_trailer_logo">Logo sobre el tráiler de la tarjeta</string>
     <string name="layout_trailer_logo_sub">Mostrar el logo del título sobre el tráiler que se reproduce en una tarjeta.</string>
     <string name="layout_preset_extra_large">Muy grande</string>
-    <string name="layout_custom_poster_screen_tv_recommendations">Recomendaciones de TV</string>
     <string name="layout_addon_landscape_backdrop_logo">Fondo con logotipo en filas horizontales de addons</string>
     <string name="layout_addon_landscape_backdrop_logo_sub">Las filas que un addon ya muestra en horizontal usan sus propias imágenes. Al activarlo, también se usa ahí el fondo con el logotipo del título.</string>
     <string name="mdblist_account_title">Cuenta</string>
@@ -3544,18 +3557,46 @@
     <string name="mdblist_requests_subtitle">Las calificaciones y la sincronización de lo visto cuentan para el límite diario</string>
     <string name="mdblist_ratings_heading">Insignias de calificación</string>
     <string name="debrid_stream_release_groups_preferred">Grupos de lanzamiento preferidos</string>
+    <string name="settings_stream_badges_in_player_title">Mostrar en el reproductor</string>
+    <string name="settings_stream_badges_in_player_description">Muestra insignias del video y el audio en reproducción debajo del título del reproductor. Usa las insignias propias de Arc, o tu paquete de insignias si coincide con texto simple, como 2160p o Atmos.</string>
+    <string name="settings_stream_player_badges_title">Insignias del reproductor</string>
+    <string name="settings_stream_player_badges_description">Elige el paquete de insignias que usa el reproductor.</string>
+    <string name="settings_stream_player_badges_same">Igual que las insignias de streams</string>
     <string name="trakt_watch_progress_source_mdblist">MDBList</string>
     <string name="trakt_watch_progress_mdblist_selected">Fuente de progreso de reproducción establecida en MDBList</string>
     <string name="profile_avatar_category_local">Divertidos · este dispositivo</string>
     <string name="profile_local_avatar_note">Solo se muestra en este dispositivo. Los demás conservan el avatar de Nuvio.</string>
+    <string name="player_engine_switch_title">¿Cambiar a %1$s?</string>
+    <string name="player_engine_switch_message">El video se volverá a cargar desde donde estás.</string>
     <string name="player_more_short">Más</string>
     <string name="player_layout_more_fixed">Fijo en el extremo derecho</string>
     <string name="player_layout_more_hidden_help">Más y las acciones de su menú están ocultos. Muestra Más para recuperar su menú emergente, o saca una acción de Más para mostrarla directamente.</string>
     <string name="player_layout_more_fixed_help">Presiona OK para ocultar o mostrar Más. Se queda en el extremo derecho. Mueve otras acciones a través del límite de su menú para cambiar cuáles están en el menú emergente.</string>
     <string name="player_error_placeholder_stream">Este stream parece una tarjeta de error del proveedor, no el video. Prueba con otra fuente.</string>
+    <string name="audio_listening_section">Escucha</string>
+    <string name="audio_night_mode_label">Modo noche</string>
+    <string name="audio_night_mode_off">Desactivado</string>
+    <string name="audio_night_mode_light">Suave</string>
+    <string name="audio_night_mode_medium">Medio</string>
+    <string name="audio_night_mode_strong">Fuerte</string>
+    <string name="audio_night_mode_help">Baja los momentos ruidosos y sube los silenciosos.</string>
+    <string name="audio_night_mode_unavailable">Desactivado con passthrough: el sonido llega sin cambios a tu amplificador.</string>
+    <string name="audio_night_mode_settings_sub">Baja los momentos ruidosos y sube los silenciosos. Funciona con el sonido que decodifica la app, no con passthrough.</string>
+    <string name="audio_night_mode_dialog_subtitle">Equilibra los momentos ruidosos y silenciosos. Funciona en parlantes del TV, barras de sonido y amplificadores con PCM. El sonido en passthrough nunca se modifica.</string>
+    <string name="audio_night_mode_off_desc">El sonido tal como se mezcló.</string>
+    <string name="audio_night_mode_light_desc">Suaviza los momentos más fuertes.</string>
+    <string name="audio_night_mode_medium_desc">Para la noche. Escenas fuertes más calmadas, voces bajas más fáciles de oír.</string>
+    <string name="audio_dialogue_boost_label">Realce de diálogos</string>
+    <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
+    <string name="audio_dialogue_boost_help">Sube el canal central, donde está la mayor parte de las voces. De Desactivado a +12 dB.</string>
+    <string name="audio_dialogue_boost_stereo">Esta pista es estéreo, así que no hay un canal de voz aparte que subir.</string>
+    <string name="audio_dialogue_boost_mixed">El sonido llega a la app ya mezclado a estéreo. Para usarlo, activa el downmix en la configuración de audio.</string>
+    <string name="audio_dialogue_boost_mpv_multichannel">Con MPV funciona cuando el sonido se mezcla a estéreo, por ejemplo en los parlantes del televisor.</string>
+    <string name="audio_night_mode_strong_desc">Para la madrugada y cuartos pequeños. El sonido más parejo, con menos impacto en escenas de acción.</string>
     <string name="subtitle_panel_languages">Idiomas</string>
-    <string name="library_sort_released_desc">Estreno ↓</string>
-    <string name="library_sort_released_asc">Estreno ↑</string>
+    <string name="subtitle_style_text_color_hdr">Color del texto (HDR)</string>
+    <string name="subtitle_style_text_opacity_hdr">Opacidad del texto (HDR)</string>
+    <string name="subtitle_style_brightness_hdr">Brillo (HDR)</string>
     <string name="library_empty_mdblist_title">No hay %1$s en tu lista de seguimiento</string>
     <string name="library_empty_mdblist_subtitle">Usa + en detalles para agregar elementos a tu lista de seguimiento de MDBList</string>
     <string name="library_empty_mdblist_not_auth_title">MDBList no conectado</string>
@@ -3576,7 +3617,7 @@
     <string name="library_transfer_copy">Copiar</string>
     <string name="library_transfer_move">Mover (copiar y luego eliminar del origen)</string>
     <string name="library_transfer_none">Nada que copiar</string>
-    <string name="sub_mode_effects_warning">Exigente: puede perder cuadros en 4K y desactiva la reproducción en túnel.</string>
+    <string name="update_installed_automatically">Actualizado automáticamente mientras el dispositivo estaba inactivo</string>
     <string name="cd_playback_stats">Estadísticas de reproducción</string>
     <string name="player_stats_unavailable_mpv">Las estadísticas no están disponibles con el motor libmpv</string>
     <string name="player_dead_source_failover">Fuente no disponible - probando la siguiente fuente (%1$d/%2$d)</string>
@@ -3787,7 +3828,7 @@
     <string name="player_pill_next_episode">Siguiente episodio</string>
     <string name="ui_scale_title">Escala de la interfaz</string>
     <string name="ui_scale_group_subtitle">Escala toda la interfaz entre el 85% y el 115%</string>
-    <string name="panel_audio_adjustments">Retraso y ganancia</string>
+    <string name="panel_audio_adjustments">Ajustes de sonido</string>
     <string name="panel_audio_back_to_tracks">Volver a las pistas</string>
     <string name="theme_color_glass">Cristal</string>
     <string name="v2_control_speed">Velocidad</string>
@@ -3814,8 +3855,8 @@
     <string name="v2_settings_background_midnight">Azul medianoche</string>
     <string name="v2_settings_background_charcoal">Carbón</string>
     <string name="layout_trailer_feathered">Ventana de tráiler difuminada</string>
-    <string name="playback_dim_hdr_overlays">Atenuar controles y subtítulos en HDR</string>
-    <string name="playback_dim_hdr_overlays_sub">Controles más suaves y menos brillo en los subtítulos durante la reproducción en HDR, HLG y Dolby Vision. El brillo del video no cambia. Se conserva el estilo ASS nativo.</string>
+    <string name="playback_dim_hdr_overlays">Atenuar controles en HDR</string>
+    <string name="playback_dim_hdr_overlays_sub">Controles del reproductor más suaves durante la reproducción HDR, HLG y Dolby Vision. El brillo del video no cambia. Los subtítulos en HDR siguen el estilo HDR de los ajustes de subtítulos.</string>
     <string name="subtitle_bitmap_style_note">El tamaño de los subtítulos de imagen se guarda aparte del de los subtítulos de texto. La fuente, el contorno y el color forman parte de la imagen.</string>
     <string name="subtitle_bitmap_mpv_note">MPV no permite cambiar el tamaño de los subtítulos de imagen. Usa ExoPlayer para ajustarlo aparte del texto.</string>
     <string name="subtitle_style_image_size">Tamaño de subtítulos de imagen</string>
@@ -3900,6 +3941,14 @@
     <string name="subtitle_edge_drop_shadow">Sombra paralela</string>
     <string name="subtitle_shadow_note">Una sombra oscura sutil. En MPV, sustituye al recuadro de fondo.</string>
     <string name="subtitle_font_and_weight">Fuente y grosor</string>
+    <string name="playback_seeking">Avance y retroceso</string>
+    <string name="playback_seeking_sub">Qué tan rápido acelera mantener presionado izquierda o derecha, y cuánto espera la película en la miniatura antes de saltar. Sin miniaturas siempre salta en cuanto sueltas el botón.</string>
+    <string name="playback_seeking_gentle">Suave</string>
+    <string name="playback_seeking_gentle_desc">Lento y constante. Pasan todas las miniaturas; espera 2 s antes de saltar.</string>
+    <string name="playback_seeking_balanced">Equilibrado</string>
+    <string name="playback_seeking_balanced_desc">Empieza lento y luego acelera. Espera un momento antes de saltar.</string>
+    <string name="playback_seeking_fast">Rápido</string>
+    <string name="playback_seeking_fast_desc">Como la app oficial. Pasos grandes, salta en cuanto sueltas el botón.</string>
     <string name="seek_thumbnails_title">Miniaturas al avanzar</string>
     <string name="seek_thumbnails_subtitle">Miniaturas del título sobre la barra de progreso mientras avanzas o retrocedes.</string>
     <string name="seek_thumbnails_mode_off">Desactivado</string>
@@ -3914,6 +3963,7 @@
     <string name="seek_thumbnails_prepare_off_desc">Empieza a reproducir de inmediato; las miniaturas se crean en pausa y cuando dejas de ver.</string>
     <string name="seek_thumbnails_prepare_on">Activado</string>
     <string name="seek_thumbnails_prepare_on_desc">Crea las miniaturas de un título antes de que empiece. \"Empezar a ver ahora\" o Atrás inician la reproducción en cualquier momento.</string>
+    <string name="seek_thumbnails_prepare_on_small_desc">En este dispositivo, las películas 4K se cargan después de crear sus miniaturas.</string>
     <string name="seek_thumbnails_before_play_title">Miniaturas antes de reproducir</string>
     <string name="seek_thumbnails_before_play_subtitle">Cuántas miniaturas se crean antes de que un título empiece a reproducirse. El resto se crea mientras lo ves, hasta el detalle habitual.</string>
     <string name="seek_thumbnails_before_play_full">Completo</string>
@@ -3936,6 +3986,7 @@
     <string name="seek_thumbnails_ready_detail">%1$d miniaturas · iniciando reproducción</string>
     <string name="seek_thumbnails_time_left_seconds">Faltan unos %1$d s</string>
     <string name="seek_thumbnails_time_left_minutes">Faltan unos %1$d min %2$d s</string>
+    <string name="seek_thumbnails_film_loads_after">4K en este dispositivo: la película se carga cuando esto termine</string>
     <string name="seek_thumbnails_count">%1$d de %2$d</string>
     <string name="seek_thumbnails_start_now">Empezar a ver ahora</string>
     <string name="seek_thumbnails_settings_hint">Actívalo o desactívalo en Configuración › Reproducción › Interfaz del reproductor</string>
@@ -4080,4 +4131,7 @@
     <string name="detail_episode_synopsis_none">Todavía no hay descripción para este episodio.</string>
     <string name="player_track_role_commentary">Comentarios</string>
     <string name="player_track_role_audio_description">Audiodescripción</string>
+    <string name="stream_resume_from_time">Reanudar desde %1$s</string>
+    <string name="stream_resume_from_percent">Reanudar desde %1$d%%</string>
+    <string name="tvdb_metadata_credit">Metadatos proporcionados por %1$s</string>
 </resources>

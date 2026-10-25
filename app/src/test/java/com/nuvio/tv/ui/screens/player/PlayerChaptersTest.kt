@@ -152,4 +152,17 @@ class PlayerChaptersTest {
             PlayerChapters.fromServer(listOf(ServerChapter(0L, "Opening"), ServerChapter(80_000L, "Main")), Locale.ENGLISH)
         )
     }
+
+    @Test
+    fun `mpv chapters drop recap segments and renumber`() {
+        val mpv = listOf(
+            PlayerChapter(1, 0L, "Recap"),
+            PlayerChapter(2, 90_000L, "Arrival"),
+            PlayerChapter(3, 600_000L, "Chapter 3"),
+        )
+        assertEquals(
+            listOf(PlayerChapter(1, 90_000L, "Arrival"), PlayerChapter(2, 600_000L, null)),
+            PlayerChapters.fromMpv(mpv)
+        )
+    }
 }

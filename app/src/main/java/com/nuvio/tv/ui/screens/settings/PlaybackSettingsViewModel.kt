@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.media3.common.util.UnstableApi
 import com.nuvio.tv.core.plugin.PluginManager
 import com.nuvio.tv.data.local.DeviceLocalPlayerPreferences
+import com.nuvio.tv.data.local.LibassRenderScale
 import com.nuvio.tv.data.local.LibassRenderType
 import com.nuvio.tv.data.local.InternalPlayerEngine
 import com.nuvio.tv.data.local.Dv7HandlingMode
@@ -14,6 +15,7 @@ import com.nuvio.tv.data.local.SurroundChannelTarget
 import com.nuvio.tv.data.local.DeniedCodecHandling
 import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.PlayerSettingsDataStore
+import com.nuvio.tv.data.local.SeekingMode
 import com.nuvio.tv.data.local.RemoteButtonMap
 import com.nuvio.tv.data.local.PlayerPreference
 import com.nuvio.tv.core.player.LastPlaybackDiagnostics
@@ -229,6 +231,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setSkipSilence(enabled)
     }
 
+    suspend fun setNightMode(level: com.nuvio.tv.data.local.NightModeLevel) {
+        playerSettingsDataStore.setNightMode(level)
+    }
+
     suspend fun setRememberAudioDelayPerDevice(enabled: Boolean) {
         playerSettingsDataStore.setRememberAudioDelayPerDevice(enabled)
     }
@@ -281,6 +287,10 @@ class PlaybackSettingsViewModel @Inject constructor(
 
     suspend fun setChaptersEnabled(enabled: Boolean) {
         playerSettingsDataStore.setChaptersEnabled(enabled)
+    }
+
+    suspend fun setSeekingMode(mode: SeekingMode) {
+        playerSettingsDataStore.setSeekingMode(mode)
     }
 
     suspend fun setParentalGuideEnabled(enabled: Boolean) {
@@ -347,6 +357,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setLibassRenderType(renderType)
     }
 
+    suspend fun setLibassRenderScale(scale: LibassRenderScale) {
+        playerSettingsDataStore.setLibassRenderScale(scale)
+    }
+
     suspend fun setSubtitlePreferredLanguage(language: String) {
         playerSettingsDataStore.setSubtitlePreferredLanguage(language)
     }
@@ -408,6 +422,18 @@ class PlaybackSettingsViewModel @Inject constructor(
 
     suspend fun setSubtitleOutlineWidth(width: Int) {
         playerSettingsDataStore.setSubtitleOutlineWidth(width)
+    }
+
+    suspend fun setSubtitleHdrStyleEnabled(enabled: Boolean) {
+        playerSettingsDataStore.setSubtitleHdrStyleEnabled(enabled)
+    }
+
+    suspend fun setSubtitleHdrTextColor(color: Int) {
+        playerSettingsDataStore.setSubtitleHdrTextColor(color)
+    }
+
+    suspend fun setSubtitleHdrBrightness(brightness: Int) {
+        playerSettingsDataStore.setSubtitleHdrBrightness(brightness)
     }
 
     suspend fun setSubtitleOrganizationMode(mode: SubtitleOrganizationMode) {

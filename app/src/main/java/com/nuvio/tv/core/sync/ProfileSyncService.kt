@@ -14,6 +14,7 @@ import io.github.jan.supabase.postgrest.Postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -143,9 +144,11 @@ class ProfileSyncService @Inject constructor(
                 if (profiles.isNotEmpty()) {
                     // Recheck inside the actual queued DataStore edit, rather
                     // than only before its asynchronous mutation admission.
+                    val previousIds = profileDataStore.profilesList.first().map { it.id }.toSet()
                     if (!profileDataStore.replaceAllProfilesIfCurrent(profiles, ::isCurrentOwner)) {
                         return@withLock Result.failure(ProfilePullOwnerRetiredException())
                     }
+                    profileManager.onProfilesReplaced(previousIds, profiles)
                     Log.d(TAG, "Merged ${profiles.size} remote profiles into local store")
                 }
 

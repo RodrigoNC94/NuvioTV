@@ -16,6 +16,7 @@ import coil3.gif.AnimatedImageDecoder
 import coil3.svg.SvgDecoder
 import coil3.request.crossfade
 import coil3.request.allowHardware
+import coil3.request.maxBitmapSize
 import coil3.bitmapFactoryMaxParallelism
 
 import okio.Path.Companion.toOkioPath
@@ -280,19 +281,24 @@ class NuvioApplication : Application(), SingletonImageLoader.Factory {
                     .maxSizePercent(context, cachePercent)
                     .build().maxSize
                 com.nuvio.tv.core.image.ArtworkMemoryCache(
-                    com.nuvio.tv.core.image.homeArtworkMemoryCacheBytes(heapBudget, memoryInfo.totalMem)
+                    com.nuvio.tv.core.image.pictureMemoryCacheBytes(heapBudget, memoryInfo.totalMem)
                 )
             }
             .diskCache {
+                val freeStorage = runCatching { cacheDir.usableSpace }.getOrDefault(0L)
                 DiskCache.Builder()
                     .directory(cacheDir.resolve("image_cache").toOkioPath())
-                    // Fixed size like the official app; boxes under ~3.3 GB of RAM get 200 MB.
-                    .maxSizeBytes(if (memoryInfo.totalMem >= 3_300L * 1024 * 1024) 300L * 1024 * 1024 else 200L * 1024 * 1024)
+                    .maxSizeBytes(com.nuvio.tv.core.image.imageDiskCacheBytes(memoryInfo.totalMem, freeStorage))
                     .build()
             }
             .crossfade(false)
             .precision(coil3.size.Precision.INEXACT)
             .allowHardware(true)
+            .maxBitmapSize(
+                com.nuvio.tv.core.image.pictureMaxBitmapSide(
+                    resources.displayMetrics.widthPixels, resources.displayMetrics.heightPixels
+                ).let { coil3.size.Size(it, it) }
+            )
             // No allowRgb565: inert on the hardware decode path (API 26+), and
             // actively harmful on the software paths (blur inputs decode at 16-bit
             // before processing, baking in quantisation).

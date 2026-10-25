@@ -30,6 +30,7 @@ import androidx.media3.extractor.ExtractorsFactory
 import androidx.media3.extractor.text.SubtitleParser
 import com.nuvio.tv.NuvioApplication
 import com.nuvio.tv.R
+import com.nuvio.tv.core.util.findCause
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -553,9 +554,9 @@ internal class PlayerMediaSourceFactory(
             setDefaultRequestProperties(headers)
             if (headers.none { it.key.equals("User-Agent", ignoreCase = true) }) setUserAgent(DEFAULT_USER_AGENT)
         }
-        // The piece size is fixed when the chunk session first opens, after the first requests were timed.
-        val multi by lazy {
-            val piece = AutoSpeedup.fixPiece()
+        // One chunk session factory per piece size; the size is open until the first requests were timed.
+        val bySize = java.util.concurrent.ConcurrentHashMap<Long, ParallelRangeDataSource.Factory>()
+        fun multiFor(piece: Long): ParallelRangeDataSource.Factory = bySize.getOrPut(piece) {
             ParallelRangeDataSource.Factory(
                 okHttpFactory,
                 limits.maxDownloads,
@@ -566,19 +567,31 @@ internal class PlayerMediaSourceFactory(
                 onResolvedUri = { resolved -> currentVodCacheResolvedUrl = resolved?.toString() },
                 defaultRequestHeaders = headers,
                 depthLimit = { AutoSpeedup.depth() },
-                receivedBytes = AutoSpeedup.received
+                receivedBytes = AutoSpeedup.received,
+                onPiece = AutoSpeedup::onPiece,
+                requestMeter = AutoSpeedup.requests,
+                dropStaleConnections = { client.connectionPool.evictAll() },
+                onRateLimited = { uri, inFlight -> AutoSpeedup.onRateLimited(uri?.toString(), inFlight) }
             )
+        }
+        val pieces = object : AutoSpeedupDataSource.PieceSwitch {
+            override fun source(pieceBytes: Long): DataSource = multiFor(pieceBytes).createDataSource()
+            override fun prestart(pieceBytes: Long, uri: Uri, position: Long): Boolean =
+                multiFor(pieceBytes).prestartAt(uri, position)
+            override fun dropPrestart(uri: Uri) = ParallelRangeDataSource.dropPendingSession(uri)
+            override fun inUse(pieceBytes: Long) = AutoSpeedup.onPieceInUse(pieceBytes)
         }
         return AutoSpeedupDataSource.Factory(
             single = single,
-            multi = { multi.createDataSource() },
+            multi = { multiFor(AutoSpeedup.fixPiece()).createDataSource() },
             pieceBytes = AutoSpeedup::fixPiece,
             downloads = { AutoSpeedup.downloads },
             received = AutoSpeedup.received,
             onMultiClosed = ParallelRangeDataSource::releaseRetainedSessionIfIdle,
             multiOpen = AutoSpeedup.multiOpen,
             onFirstByte = AutoSpeedup::onFirstByte,
-            onOpened = AutoSpeedup::onResolved
+            onOpened = AutoSpeedup::onResolved,
+            pieces = pieces
         )
     }
 
@@ -1426,15 +1439,6 @@ internal class PlayerMediaSourceFactory(
                 URLDecoder.decode(value.replace("+", "%2B"), Charsets.UTF_8.name())
             }.getOrNull()
     }
-}
-
-private inline fun <reified T : Throwable> Throwable.findCause(): T? {
-    var current: Throwable? = this
-    while (current != null) {
-        if (current is T) return current
-        current = current.cause
-    }
-    return null
 }
 
 /** Tells a new playback from a rebuild of the one already playing (same URL). */

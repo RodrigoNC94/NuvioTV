@@ -83,6 +83,7 @@ import com.nuvio.tv.core.player.DoviBridge
 import com.nuvio.tv.core.player.LastPlaybackDiagnostics
 import com.nuvio.tv.core.player.AudioPassthroughPolicy
 import com.nuvio.tv.core.tracking.TrackingScrobbleAction
+import com.nuvio.tv.core.util.findCause
 import com.nuvio.tv.ui.screens.settings.MemoryBudget
 import com.nuvio.tv.data.local.AudioLanguageOption
 import com.nuvio.tv.data.local.Dv7HandlingMode
@@ -92,8 +93,6 @@ import com.nuvio.tv.data.local.InternalPlayerEngine
 import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.repository.PlaybackIssueErrorInput
 import com.nuvio.tv.domain.model.Subtitle
-import io.github.peerless2012.ass.media.kt.buildWithAssSupport
-import io.github.peerless2012.ass.media.type.AssRenderType
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -277,6 +276,7 @@ private fun PlayerRuntimeController.disposeExoPlayerBeforeRebuild(): Boolean {
         runCatching { player.playWhenReady = false }
         runCatching { player.stop() }
         runCatching { player.clearVideoSurface() }
+        runCatching { player.releaseAssHandlerCompat() }
         val releaseStartMs = android.os.SystemClock.elapsedRealtime()
         runCatching { player.release() }
         val releaseMs = android.os.SystemClock.elapsedRealtime() - releaseStartMs
@@ -477,6 +477,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                     }
                 }
             }
+            applyEffectiveAudioDelay()
             cachedDecoderPriority = playerSettings.decoderPriority
             val preferredAudioLanguages = resolvePreferredAudioLanguages(
                 preferredAudioLanguage = playerSettings.preferredAudioLanguage,
@@ -1022,8 +1023,6 @@ internal fun PlayerRuntimeController.initializePlayer(
                 libassPipelineOverrideForCurrentStream != null -> libassPipelineOverrideForCurrentStream == true
                 else -> true
             }
-            val requestedLibassRenderType = playerSettings.libassRenderType.toAssRenderType()
-            val libassRenderType = requestedLibassRenderType
             _uiState.update {
                 it.copy(
                     useLibass = useLibass,
@@ -1140,7 +1139,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                             .build()
                     } else {
                         params
-                    }
+                    }.preferServerHlsVideo(isHls && serverPlayback.isServerSource(url))
                     return super.selectAllTracks(
                         mappedTrackInfo,
                         rendererFormatSupports,
@@ -1389,7 +1388,7 @@ internal fun PlayerRuntimeController.initializePlayer(
             val renderersFactory = SubtitleOffsetRenderersFactory(
                 audioPassthroughPolicy = surroundResolution.policy,
                 context = context,
-                subtitleDelayUsProvider = subtitleDelayUs::get,
+                subtitleDelayUsProvider = { subtitleDelayUs.get() + streamSubtitleDelayUs.get() },
                 audioDelayUsProvider = audioDelayUs::get,
                 shouldNormalizeCuePositionProvider = { true },
                 presentCue = { presentSubtitleCue(it) },
@@ -1440,7 +1439,8 @@ internal fun PlayerRuntimeController.initializePlayer(
                     )
                     applyCenterMixLevel(_uiState.value.centerMixLevelDb)
                     updateAudioControlAvailability()
-                }
+                },
+                onCuesShown = subtitleCueTracker::update
             ).setExtensionRendererMode(effectiveDecoderPriority)
                 .setEnableDecoderFallback(true)
                 .setMediaCodecSelector(codecSelector)
@@ -1610,6 +1610,7 @@ internal fun PlayerRuntimeController.initializePlayer(
             if (initializationGeneration != playbackRecoveryGate.generation) return@launch
             nativeVideoSelection.activate(nativeSelectionOwner)
             _exoPlayer = if (useLibass) {
+                com.nuvio.tv.libass.media.AssHandler.setRenderScale(playerSettings.libassRenderScale.scale)
                 val playerDataSourceFactory = LoggingDataSourceFactory(PlayerPlaybackNetworking.createDataSourceFactory(context, headers), "BUILDER_LIBASS")
                 ExoPlayer.Builder(context)
                     .setBandwidthMeter(bandwidthMeter)
@@ -1620,7 +1621,6 @@ internal fun PlayerRuntimeController.initializePlayer(
                     .setVideoChangeFrameRateStrategy(nuvioFrameRateStrategy(playerSettings.frameRateMatchingMode))
                     .buildWithAssSupportCompat(
                         context = context,
-                        renderType = libassRenderType,
                         playerMediaSourceFactory = mediaSourceFactory,
                         dataSourceFactory = playerDataSourceFactory,
                         extractorsFactory = dolbyVisionExtractorsFactory,
@@ -1628,13 +1628,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                         autoSyncSourceKey = url.takeIf {
                             com.nuvio.tv.ui.screens.player.autosync.AutoSyncPreferences.isEnabled(context)
                         },
-                        assRendererWrapper = { assRenderer ->
-                            SubtitleOffsetRenderer(
-                                baseRenderer = assRenderer,
-                                subtitleDelayUsProvider = subtitleDelayUs::get,
-                                audioDelayUsProvider = audioDelayUs::get
-                            )
-                        }
+                        subtitleTimeShiftUs = { audioDelayUs.get() - subtitleDelayUs.get() - streamSubtitleDelayUs.get() }
                     )
             } else {
                 buildDefaultPlayer()
@@ -2431,6 +2425,8 @@ internal fun PlayerRuntimeController.initializePlayer(
                         // advance to the next source immediately instead of burning
                         // both same-URL retries on a doomed link. Checked before the
                         // engine failover: a dead URL is dead on either engine.
+                        if (tryFreshLinkForReusedLink(error, detailedError)) return
+
                         if (isDeadSourceHttpError(error) && attemptDeadSourceFailover(error, detailedError)) {
                             return
                         }
@@ -2673,7 +2669,13 @@ internal fun PlayerRuntimeController.initializePlayer(
                                         when {
                                             sinkFormat.sampleMimeType == MimeTypes.AUDIO_RAW -> append("PCM decode")
                                             playbackSpeedAwareAudioSink?.isIecHbrActive() == true ->
-                                                append("Passthrough, IEC (").append(src).append(')')
+                                                append("Passthrough, ")
+                                                    .append(
+                                                        com.nuvio.tv.ui.screens.player.iec.iecPathName(
+                                                            playbackSpeedAwareAudioSink?.iecHbrPayload()
+                                                        )
+                                                    )
+                                                    .append(" (").append(src).append(')')
                                             sinkFormat.sampleMimeType == source.sampleMimeType ->
                                                 append("Passthrough (").append(src).append(')')
                                             else -> append(describeAudioMime(sinkFormat.sampleMimeType)).append(" transcode")
@@ -2917,6 +2919,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                         }
                         if (reason == Player.DISCONTINUITY_REASON_SEEK) {
                             lastSeekWallMs = SystemClock.elapsedRealtime()
+                            ParallelRangeDataSource.noteUserSeek()
                             bufferMemoryKeeper?.onSeek()
                             onSeekForLateVideoWatch()
                             cancelPausedOutputCheck()
@@ -3244,7 +3247,8 @@ private class SubtitleOffsetRenderersFactory(
     private val initialForcePcm: Boolean = false,
     private val onPlaybackSpeedAwareAudioSinkCreated: (PlaybackSpeedAwareAudioSink) -> Unit,
     private val onFfmpegAudioRendererChanged: (FfmpegAudioRenderer?) -> Unit,
-    private val onAudioDiagnosticEvent: ((String) -> Unit)? = null
+    private val onAudioDiagnosticEvent: ((String) -> Unit)? = null,
+    private val onCuesShown: (List<Cue>) -> Unit = {}
 ) : DefaultRenderersFactory(context) {
 
     override fun buildVideoRenderers(
@@ -3475,7 +3479,7 @@ private class SubtitleOffsetRenderersFactory(
         out: ArrayList<Renderer>
     ) {
         val normalizingOutput = CueNormalizingTextOutput(
-            delegate = SdhFilteringTextOutput(output, shouldStripSdhProvider),
+            delegate = SdhFilteringTextOutput(CueTrackingTextOutput(output, onCuesShown), shouldStripSdhProvider),
             shouldNormalizeCuePositionProvider = shouldNormalizeCuePositionProvider,
             presentCue = presentCue,
             isBuiltInSubtitleProvider = isBuiltInSubtitleProvider,
@@ -3649,15 +3653,6 @@ private class SubtitleOffsetRenderer(
         
         super.render(adjustedPositionUs, elapsedRealtimeUs)
     }
-}
-
-private inline fun <reified T : Throwable> Throwable.findCause(): T? {
-    var current: Throwable? = this
-    while (current != null) {
-        if (current is T) return current
-        current = current.cause
-    }
-    return null
 }
 
 private fun PlaybackException.isDolbyVisionDecoderFailure(): Boolean {
@@ -4349,7 +4344,12 @@ private fun PlayerRuntimeController.recordFirstFrameDiagnostics(
             dvConversionOccurred
         ),
         audioPath = currentAudioPathDescription
-            ?: if (playbackSpeedAwareAudioSink?.isIecHbrActive() == true) "passthrough (IEC)" else null,
+            ?: if (playbackSpeedAwareAudioSink?.isIecHbrActive() == true) {
+                "passthrough (" +
+                    com.nuvio.tv.ui.screens.player.iec.iecPathName(playbackSpeedAwareAudioSink?.iecHbrPayload()) + ")"
+            } else {
+                null
+            },
         audioCapabilities = AudioCapabilityReport.latest,
         videoBitrate = run {
             val durationMsVal = player.duration.takeIf { it != C.TIME_UNSET } ?: 0L

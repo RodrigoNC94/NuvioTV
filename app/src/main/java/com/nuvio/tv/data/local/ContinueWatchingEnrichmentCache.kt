@@ -39,7 +39,8 @@ data class CachedNextUpItem(
     val isNewSeasonRelease: Boolean = false,
     val seedSeason: Int? = null,
     val seedEpisode: Int? = null,
-    val contentLanguage: String? = null
+    val contentLanguage: String? = null,
+    val ratingVisible: Boolean = true
 )
 
 data class CachedInProgressItem(
@@ -62,7 +63,8 @@ data class CachedInProgressItem(
     val episodeImdbRating: Float? = null,
     val genres: List<String> = emptyList(),
     val releaseInfo: String? = null,
-    val contentLanguage: String? = null
+    val contentLanguage: String? = null,
+    val ratingVisible: Boolean = true
 )
 
 @Singleton

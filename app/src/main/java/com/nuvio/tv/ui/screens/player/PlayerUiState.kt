@@ -5,6 +5,7 @@ import com.nuvio.tv.data.local.SubtitleEdgeStyle
 import androidx.media3.common.C
 import androidx.media3.common.TrackGroup
 import androidx.media3.ui.AspectRatioFrameLayout
+import com.nuvio.tv.core.streams.CompiledStreamBadgeFilter
 import com.nuvio.tv.core.streams.StreamBadgePlacement
 import com.nuvio.tv.data.local.FrameRateMatchingMode
 import com.nuvio.tv.data.local.InternalPlayerEngine
@@ -108,6 +109,9 @@ data class PlayerUiState(
     val subtitleTracks: List<TrackInfo> = emptyList(),
     val selectedAudioTrackIndex: Int = -1,
     val selectedSubtitleTrackIndex: Int = -1,
+    /** The file's chapters, sorted; empty when it has fewer than two. */
+    val chapters: List<PlayerChapter> = emptyList(),
+    val showChaptersPanel: Boolean = false,
     val audioDelayMs: Int = 0,
     val audioAmplificationDb: Int = 0,
     val isAudioAmplificationAvailable: Boolean = false,
@@ -132,6 +136,8 @@ data class PlayerUiState(
     val isHdrVideo: Boolean = false,
     // Subtitle style settings
     val subtitleStyle: SubtitleStyleSettings = SubtitleStyleSettings(),
+    // Current video is HDR10/HDR10+/HLG/Dolby Vision; selects the HDR subtitle style when enabled
+    val isHdrVideo: Boolean = false,
     // Addon subtitles
     val addonSubtitles: List<Subtitle> = emptyList(),
     val isLoadingAddonSubtitles: Boolean = false,
@@ -182,6 +188,7 @@ data class PlayerUiState(
     val showFileSizeBadges: Boolean = true,
     val showAddonLogo: Boolean = true,
     val streamBadgePlacement: StreamBadgePlacement = StreamBadgePlacement.BOTTOM,
+    val playerBadgeFilters: List<CompiledStreamBadgeFilter> = emptyList(),
     val error: String? = null,
     val showSwitchToMpvErrorAction: Boolean = false,
     val playbackIssueReportStatus: PlaybackIssueReportStatus = PlaybackIssueReportStatus.Idle,
@@ -250,7 +257,18 @@ data class PlayerUiState(
     val hideTorrentStats: Boolean = true,
     val controlLayout: com.nuvio.tv.data.local.PlayerControlLayout? = null,
     val isLive: Boolean = false
-)
+) {
+    /** Subtitle style to render with, after applying the HDR override for the current video. */
+    val effectiveSubtitleStyle: SubtitleStyleSettings
+        get() = subtitleStyle.forVideo(isHdrVideo)
+
+    /** In-player style edits to the text color go to the HDR override while this is true. */
+    val isEditingHdrSubtitleStyle: Boolean
+        get() = isHdrVideo && subtitleStyle.hdrStyleEnabled
+
+    val editableSubtitleStyle: SubtitleStyleSettings
+        get() = subtitleStyle.editableForVideo(isHdrVideo)
+}
 
 internal fun PlayerUiState.clearFrameRateDetection(): PlayerUiState = copy(
     detectedFrameRateRaw = 0f,
@@ -325,6 +343,10 @@ sealed class PlayerEvent {
     data class OnScrubHold(val forward: Boolean, val downTime: Long, val eventTime: Long) : PlayerEvent()
     data object OnCommitPreviewSeek : PlayerEvent()
     data class OnSeekTo(val position: Long) : PlayerEvent()
+    data class OnSkipChapter(val forward: Boolean) : PlayerEvent()
+    data object OnShowChaptersPanel : PlayerEvent()
+    data object OnDismissChaptersPanel : PlayerEvent()
+    data class OnSelectChapter(val index: Int) : PlayerEvent()
     data class OnSelectAudioTrack(val index: Int) : PlayerEvent()
     data class OnSetAudioDelayMs(val delayMs: Int) : PlayerEvent()
     data class OnSetAudioAmplificationDb(val db: Int) : PlayerEvent()
@@ -389,6 +411,7 @@ sealed class PlayerEvent {
     // Subtitle style events (for in-player style tab)
     data class OnSetSubtitleBitmapSize(val size: Int) : PlayerEvent()
     data class OnSetSubtitleSize(val size: Int) : PlayerEvent()
+    data class OnSetSubtitleHdrBrightness(val brightness: Int) : PlayerEvent()
     data class OnSetSubtitleTextColor(val color: Int) : PlayerEvent()
     data class OnSetSubtitleBold(val bold: Boolean) : PlayerEvent()
     data class OnSetSubtitleFont(val font: AppFont?) : PlayerEvent()

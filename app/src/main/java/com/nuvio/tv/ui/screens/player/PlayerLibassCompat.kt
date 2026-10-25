@@ -8,15 +8,9 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
-import android.os.Handler
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.Renderer
 import androidx.media3.exoplayer.RenderersFactory
-import androidx.media3.exoplayer.audio.AudioRendererEventListener
-import androidx.media3.exoplayer.metadata.MetadataOutput
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.text.TextOutput
-import androidx.media3.exoplayer.video.VideoRendererEventListener
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.extractor.Extractor
 import androidx.media3.extractor.ExtractorsFactory
@@ -24,28 +18,34 @@ import androidx.media3.extractor.mkv.MatroskaExtractor as StockMatroskaExtractor
 import androidx.media3.extractor.text.SubtitleParser
 import com.nuvio.tv.core.player.HdrColorSignalingExtractor
 import com.nuvio.tv.core.player.dvmkv.MatroskaExtractor as DvMatroskaExtractor
-import io.github.peerless2012.ass.media.AssHandler
-import io.github.peerless2012.ass.media.kt.withAssSupport
-import io.github.peerless2012.ass.media.parser.AssSubtitleParserFactory
-import io.github.peerless2012.ass.media.render.AssRenderer
-import io.github.peerless2012.ass.media.type.AssRenderType
+import com.nuvio.tv.libass.media.AssHandler
+import com.nuvio.tv.libass.media.parser.AssSubtitleParserFactory
+import com.nuvio.tv.libass.media.render.AssRenderersFactory
 import java.util.Collections
 import java.util.WeakHashMap
 
-private val assHandlersByPlayer = Collections.synchronizedMap(WeakHashMap<ExoPlayer, AssHandler>())
+private class AssPlayerBinding(
+    val handler: AssHandler,
+    val subtitleTimeShiftUs: () -> Long
+)
 
+private val assBindingsByPlayer = Collections.synchronizedMap(WeakHashMap<ExoPlayer, AssPlayerBinding>())
+
+/**
+ * [subtitleTimeShiftUs] moves libass subtitles against the picture (audio delay minus subtitle
+ * delay, read on every frame), the same shift the text renderers get.
+ */
 @OptIn(UnstableApi::class)
 internal fun ExoPlayer.Builder.buildWithAssSupportCompat(
     context: Context,
-    renderType: AssRenderType = AssRenderType.CUES,
     playerMediaSourceFactory: PlayerMediaSourceFactory? = null,
     dataSourceFactory: DataSource.Factory = PlayerPlaybackNetworking.createDataSourceFactory(context),
     extractorsFactory: ExtractorsFactory = DefaultExtractorsFactory(),
     renderersFactory: RenderersFactory = DefaultRenderersFactory(context),
     autoSyncSourceKey: String? = null,
-    assRendererWrapper: (Renderer) -> Renderer = { it }
+    subtitleTimeShiftUs: () -> Long = { 0L }
 ): ExoPlayer {
-    val assHandler = AssHandler(renderType)
+    val assHandler = AssHandler()
     val assSubtitleParserFactory = CompatAssSubtitleParserFactory(assHandler)
     // AutoSync and the tap wrap after the Matroska swap, which matches extractors by class.
     val swappedExtractorsFactory = extractorsFactory.withAssMkvSupportCompat(
@@ -68,59 +68,40 @@ internal fun ExoPlayer.Builder.buildWithAssSupportCompat(
     )
     mediaSourceFactory.setSubtitleParserFactory(assSubtitleParserFactory)
 
+    // AssRenderersFactory adds the position renderer that drives libass in tunnelled playback.
     val player = this
         .setMediaSourceFactory(mediaSourceFactory)
-        .setRenderersFactory(renderersFactory.withAssSupport(assHandler).wrapAssRenderer(assRendererWrapper))
+        .setRenderersFactory(AssRenderersFactory(assHandler, renderersFactory))
         .build()
 
-    assHandlersByPlayer[player] = assHandler
+    assBindingsByPlayer[player] = AssPlayerBinding(assHandler, subtitleTimeShiftUs)
     assHandler.init(player)
     return player
 }
 
-internal fun ExoPlayer.getAssHandlerCompat(): AssHandler? = assHandlersByPlayer[this]
+internal fun ExoPlayer.getAssHandlerCompat(): AssHandler? = assBindingsByPlayer[this]?.handler
 
-/** The libass renderer is added by ass-media itself, so it never passes through buildTextRenderers. */
-@OptIn(UnstableApi::class)
-internal fun RenderersFactory.wrapAssRenderer(wrapper: (Renderer) -> Renderer): RenderersFactory {
-    val delegate = this
-    return object : RenderersFactory {
-        override fun createRenderers(
-            eventHandler: Handler,
-            videoRendererEventListener: VideoRendererEventListener,
-            audioRendererEventListener: AudioRendererEventListener,
-            textRendererOutput: TextOutput,
-            metadataRendererOutput: MetadataOutput
-        ): Array<Renderer> {
-            return delegate.createRenderers(
-                eventHandler,
-                videoRendererEventListener,
-                audioRendererEventListener,
-                textRendererOutput,
-                metadataRendererOutput
-            ).map { renderer ->
-                if (renderer is AssRenderer) wrapper(renderer) else renderer
-            }.toTypedArray()
-        }
+/**
+ * The frame callback for [AssHandler.videoFrameCallback]: [render] gets the subtitle time with the
+ * player's audio and subtitle delays applied.
+ */
+internal fun ExoPlayer.assVideoFrameCallbackCompat(
+    render: (presentationTimeUs: Long, releaseTimeNs: Long) -> Unit
+): (Long, Long) -> Unit {
+    val shift = assBindingsByPlayer[this]?.subtitleTimeShiftUs ?: return render
+    return shiftedAssVideoFrameCallback(shift, render)
+}
 
-        override fun createSecondaryRenderer(
-            renderer: Renderer,
-            eventHandler: Handler,
-            videoRendererEventListener: VideoRendererEventListener,
-            audioRendererEventListener: AudioRendererEventListener,
-            textRendererOutput: TextOutput,
-            metadataRendererOutput: MetadataOutput
-        ): Renderer? {
-            return delegate.createSecondaryRenderer(
-                renderer,
-                eventHandler,
-                videoRendererEventListener,
-                audioRendererEventListener,
-                textRendererOutput,
-                metadataRendererOutput
-            )
-        }
-    }
+internal fun shiftedAssVideoFrameCallback(
+    subtitleTimeShiftUs: () -> Long,
+    render: (presentationTimeUs: Long, releaseTimeNs: Long) -> Unit
+): (Long, Long) -> Unit = { presentationTimeUs, releaseTimeNs ->
+    render((presentationTimeUs + subtitleTimeShiftUs()).coerceAtLeast(0L), releaseTimeNs)
+}
+
+/** Frees the native libass state (renderer, tracks, embedded MKV fonts) when the player goes. */
+internal fun ExoPlayer.releaseAssHandlerCompat() {
+    assBindingsByPlayer.remove(this)?.handler?.release()
 }
 
 @OptIn(UnstableApi::class)
@@ -161,6 +142,7 @@ internal fun ExtractorsFactory.withAssMkvSupportCompat(
     val delegate = this
     fun replace(extractor: Extractor): Extractor = when (extractor) {
         is HdrColorSignalingExtractor -> HdrColorSignalingExtractor(replace(extractor.delegate))
+        is RewrappableExtractor -> extractor.rewrap(replace(extractor.wrappedExtractor))
         is DvMatroskaExtractor -> NuvioAssMatroskaExtractor(
             subtitleParserFactory = subtitleParserFactory,
             assHandler = assHandler,
@@ -169,7 +151,8 @@ internal fun ExtractorsFactory.withAssMkvSupportCompat(
         is StockMatroskaExtractor -> NuvioAssMatroskaExtractor(subtitleParserFactory, assHandler)
         else -> extractor
     }
-    // Retain the HDR wrapper and the vendored extractor's DV transformer/DTS detection.
+    // Keeps the HDR wrapper, the vendored extractor's DV transformer and DTS detection, and any
+    // rewrappable wrapper around the Matroska extractor.
     return object : ExtractorsFactory {
         override fun createExtractors(): Array<Extractor> =
             delegate.createExtractors().map(::replace).toTypedArray()

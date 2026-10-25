@@ -705,16 +705,6 @@
     <string name="sub_advanced_section">Разширено рендиране на субтитри</string>
     <string name="sub_libass">Използвай libass за ASS/SSA субтитри</string>
     <string name="sub_libass_sub">Експериментално: разширено ASS/SSA рендиране (стилове, позициониране, анимации)</string>
-    <string name="sub_libass_mode">Режим на Libass рендиране</string>
-    <string name="sub_mode_overlay_gl">Overlay OpenGL (Препоръчително)</string>
-    <string name="sub_mode_overlay_gl_sub">Най-добро качество с HDR поддръжка. Рендира субтитрите на отделна нишка.</string>
-    <string name="sub_mode_overlay_canvas">Overlay Canvas</string>
-    <string name="sub_mode_effects_gl">Effects OpenGL</string>
-    <string name="sub_mode_effects_gl_sub">Поддръжка на анимации чрез Media3 effects. По-бързо от Canvas.</string>
-    <string name="sub_mode_effects_canvas">Effects Canvas</string>
-    <string name="sub_mode_effects_canvas_sub">Поддръжка на анимации чрез Media3 effects с Canvas рендиране.</string>
-    <string name="sub_mode_standard">Standard Cues</string>
-    <string name="sub_mode_standard_sub">Основно рендиране на субтитри без поддръжка на анимации. Най-съвместимо.</string>
     <string name="sub_org_none">Няма (по подразбиране ред)</string>
     <string name="sub_org_by_lang">По език</string>
     <string name="sub_org_by_addon">По добавка</string>
@@ -1968,7 +1958,6 @@
     <string name="player_error_failed_start_torrent">Неуспешно стартиране на torrent: %1$s</string>
 
     <!-- Playback subtitle settings -->
-    <string name="sub_mode_overlay_canvas_sub">HDR поддръжка с canvas рендиране. Може да блокира UI нишката.</string>
 
     <string name="ratings_season_label">S%1$d</string>
     <string name="ratings_episode_label">E%1$d</string>
@@ -2753,6 +2742,10 @@
     <string name="appearance_app_icon_transparent_background">Прозрачен фон</string>
     <string name="appearance_app_icon_transparent_hint">За лаунчъри, които рисуват собствена карта, като Projectivy</string>
     <string name="appearance_app_icon_mint">Мента</string>
+    <string name="about_update_auto_install_title">Автоматично инсталиране на актуализации</string>
+    <string name="about_update_auto_install_subtitle">Изтегля нови версии във фонов режим и ги инсталира, докато устройството не се използва</string>
+    <string name="about_update_auto_install_notice_title">Известие след автоматични актуализации</string>
+    <string name="about_update_auto_install_notice_subtitle">Показва банер при следващото стартиране, след като приложението се актуализира само</string>
     <string name="licenses_attributions_avatars_title">Аватари за съвместно гледане</string>
     <string name="licenses_attributions_avatars_body">Създадени с DiceBear по тези дизайни: \"Fun Emoji\" от Davis Uche и \"Adventurer\" от Lisa Wischofsky, с лиценз CC BY 4.0 (creativecommons.org/licenses/by/4.0). \"Lorelei\" от Lisa Wischofsky, \"Notionists\" от Zoish, \"Pixel Art\" и \"Thumbs\" от DiceBear, CC0 1.0. \"Bottts\" от Pablo Stanley, безплатно за лична и търговска употреба. Животински муцунки от Twemoji на Twitter, Inc. и други сътрудници, с лиценз CC BY 4.0.</string>
     <string name="licenses_attributions_media_servers_title">Jellyfin, Emby и Silo</string>
@@ -2846,6 +2839,12 @@
     <string name="sub_tertiary_lang">Трети предпочитан език</string>
     <string name="sub_addon_subtitles">Субтитри от добавки</string>
     <string name="sub_addon_subtitles_desc">Извличай субтитри от инсталираните добавки по време на възпроизвеждане. Когато е изключено, са налични само вградените във файла субтитри.</string>
+    <string name="sub_hdr_style">Отделен стил за HDR / Dolby Vision</string>
+    <string name="sub_hdr_style_sub">Използва различен цвят на текста и по-ниска яркост за субтитрите при HDR и Dolby Vision видео</string>
+    <string name="sub_hdr_text_color">Цвят на текста за HDR</string>
+    <string name="sub_hdr_brightness">Яркост на субтитрите за HDR</string>
+    <string name="sub_libass_render_scale">Резолюция на рендиране на субтитрите</string>
+    <string name="sub_libass_render_scale_sub">По-ниската резолюция подобрява производителността при сложно оформление за сметка на рязкостта</string>
     <string name="autoplay_quality_rules_title">Правила за качество</string>
     <string name="autoplay_quality_rules_subtitle">Филтри, сортиране и нива на release групи в Свързани услуги.</string>
     <string name="stream_sort_sources">Сортиране на източниците</string>
@@ -2889,16 +2888,46 @@
     <string name="mdblist_requests_subtitle">Рейтингите и синхронизацията на гледането се броят заедно към дневния лимит</string>
     <string name="mdblist_ratings_heading">Значки за рейтинг</string>
     <string name="debrid_stream_release_groups_preferred">Предпочитани release групи</string>
+    <string name="settings_stream_badges_in_player_title">Показване в плейъра</string>
+    <string name="settings_stream_badges_in_player_description">Показва значки за видеото и звука, които се възпроизвеждат, под заглавието в плейъра. Използва собствените значки на Arc или твоя пакет значки, ако съвпада с обикновен текст, като 2160p или Atmos.</string>
+    <string name="settings_stream_player_badges_title">Значки в плейъра</string>
+    <string name="settings_stream_player_badges_description">Избери пакета значки, който плейърът използва.</string>
+    <string name="settings_stream_player_badges_same">Като значките на потоците</string>
     <string name="trakt_watch_progress_source_mdblist">MDBList</string>
     <string name="trakt_watch_progress_mdblist_selected">Източникът на прогрес на гледане е зададен на MDBList</string>
     <string name="profile_avatar_category_local">Забавен набор · това устройство</string>
     <string name="profile_local_avatar_note">Показва се само на това устройство. На другите устройства остава аватарът от Nuvio.</string>
+    <string name="player_engine_switch_title">Превключване към %1$s?</string>
+    <string name="player_engine_switch_message">Видеото ще се зареди отново от мястото, където си.</string>
     <string name="player_more_short">Още</string>
     <string name="player_layout_more_fixed">Фиксирано най-вдясно</string>
     <string name="player_layout_more_hidden_help">„Още“ и действията от менюто му са скрити. Покажи „Още“, за да върнеш менюто, или премести действие извън „Още“, за да се показва директно.</string>
     <string name="player_layout_more_fixed_help">Натисни OK, за да скриеш или покажеш „Още“. Остава най-вдясно. Премествай други действия през границата на менюто му, за да промениш кои са в менюто.</string>
     <string name="player_error_placeholder_stream">Този поток прилича на картина с грешка от доставчика, а не на видеото. Опитай друг източник.</string>
+    <string name="audio_listening_section">Слушане</string>
+    <string name="audio_night_mode_label">Нощен режим</string>
+    <string name="audio_night_mode_off">Изключено</string>
+    <string name="audio_night_mode_light">Лек</string>
+    <string name="audio_night_mode_medium">Среден</string>
+    <string name="audio_night_mode_strong">Силен</string>
+    <string name="audio_night_mode_help">Намалява силните моменти и усилва тихите.</string>
+    <string name="audio_night_mode_unavailable">Изключен при passthrough: звукът стига до усилвателя непроменен.</string>
+    <string name="audio_night_mode_settings_sub">Намалява силните моменти и усилва тихите. Работи със звук, който приложението декодира, не при passthrough.</string>
+    <string name="audio_night_mode_dialog_subtitle">Изравнява силните и тихите моменти. Работи на високоговорители на телевизора, саундбари и усилватели с PCM. Passthrough звукът никога не се променя.</string>
+    <string name="audio_night_mode_off_desc">Звукът, както е миксиран.</string>
+    <string name="audio_night_mode_light_desc">Смекчава най-силните моменти.</string>
+    <string name="audio_night_mode_medium_desc">За вечерите. Силните сцени са по-спокойни, тихата реч се чува по-лесно.</string>
+    <string name="audio_dialogue_boost_label">Усилване на диалога</string>
+    <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
+    <string name="audio_dialogue_boost_help">Усилва централния канал, където е по-голямата част от речта. От Изключено до +12 dB.</string>
+    <string name="audio_dialogue_boost_stereo">Тази писта е стерео, затова няма отделен канал за реч, който да се усили.</string>
+    <string name="audio_dialogue_boost_mixed">Звукът стига до приложението вече смесен в стерео. За да го ползваш, включи downmix в настройките за аудио.</string>
+    <string name="audio_dialogue_boost_mpv_multichannel">С MPV работи, когато звукът е смесен в стерео, например на тонколоните на телевизора.</string>
+    <string name="audio_night_mode_strong_desc">За късни часове и малки стаи. Най-равномерният звук, с по-малко мощ в екшън сцените.</string>
     <string name="subtitle_panel_languages">Езици</string>
+    <string name="subtitle_style_text_color_hdr">Цвят на текста (HDR)</string>
+    <string name="subtitle_style_text_opacity_hdr">Непрозрачност на текста (HDR)</string>
+    <string name="subtitle_style_brightness_hdr">Яркост (HDR)</string>
     <string name="library_sort_released_desc">Дата на излизане ↓</string>
     <string name="library_sort_released_asc">Дата на излизане ↑</string>
     <string name="library_empty_mdblist_title">Няма %1$s в списъка ти за гледане</string>
@@ -2921,7 +2950,7 @@
     <string name="library_transfer_copy">Копирай</string>
     <string name="library_transfer_move">Премести (копирай, после премахни от източника)</string>
     <string name="library_transfer_none">Няма нищо за копиране</string>
-    <string name="sub_mode_effects_warning">Натоварващо: при 4K може да пропуска кадри и изключва tunneled възпроизвеждането.</string>
+    <string name="update_installed_automatically">Актуализирано автоматично, докато устройството не се използваше</string>
     <string name="cd_playback_stats">Статистика на възпроизвеждането</string>
     <string name="player_stats_unavailable_mpv">Статистиката не е налична за двигателя libmpv</string>
     <string name="player_dead_source_failover">Източникът е недостъпен - опит със следващия (%1$d/%2$d)</string>
@@ -3132,7 +3161,7 @@
     <string name="player_pill_next_episode">Следващ епизод</string>
     <string name="ui_scale_title">Мащаб на интерфейса</string>
     <string name="ui_scale_group_subtitle">Мащабирай целия интерфейс между 85% и 115%</string>
-    <string name="panel_audio_adjustments">Забавяне и усилване</string>
+    <string name="panel_audio_adjustments">Настройки на звука</string>
     <string name="panel_audio_back_to_tracks">Назад към пистите</string>
     <string name="v2_glass_preset">Стъклен пресет</string>
     <string name="v2_glass_clear">Прозрачно</string>
@@ -3156,8 +3185,8 @@
     <string name="v2_settings_background_midnight">Среднощно синьо</string>
     <string name="v2_settings_background_charcoal">Въглен</string>
     <string name="layout_trailer_feathered">Прозорец на трейлъра с меки ръбове</string>
-    <string name="playback_dim_hdr_overlays">Затъмнявай контролите и субтитрите при HDR</string>
-    <string name="playback_dim_hdr_overlays_sub">По-меки контроли и ярки участъци на субтитрите при възпроизвеждане на HDR, HLG и Dolby Vision. Яркостта на видеото не се променя. Нативното ASS стилизиране се запазва.</string>
+    <string name="playback_dim_hdr_overlays">Затъмняване на контролите при HDR</string>
+    <string name="playback_dim_hdr_overlays_sub">По-меки контроли на плейъра при възпроизвеждане на HDR, HLG и Dolby Vision. Яркостта на видеото не се променя. Субтитрите при HDR следват HDR стила от настройките на субтитрите.</string>
     <string name="subtitle_bitmap_style_note">Размерът на графичните субтитри се запазва отделно от размера на текстовите. Шрифтът, контурът и цветът са част от изображението.</string>
     <string name="subtitle_bitmap_mpv_note">MPV не поддържа преоразмеряване на графични субтитри. Използвай ExoPlayer, за да настройваш размера им отделно от текста.</string>
     <string name="subtitle_style_image_size">Размер на графичните субтитри</string>
@@ -3242,6 +3271,14 @@
     <string name="subtitle_edge_drop_shadow">Сянка</string>
     <string name="subtitle_shadow_note">Лека тъмна сянка. В MPV тя замества фоновата кутия.</string>
     <string name="subtitle_font_and_weight">Шрифт и тегло</string>
+    <string name="playback_seeking">Превъртане</string>
+    <string name="playback_seeking_sub">Колко бързо се ускорява задържането на ляво или дясно и колко филмът изчаква на миниатюрата, преди да скочи. Без миниатюри винаги скача веднага щом пуснете бутона.</string>
+    <string name="playback_seeking_gentle">Плавно</string>
+    <string name="playback_seeking_gentle_desc">Бавно и равномерно. Минава всяка миниатюра; изчаква 2 s, преди да скочи.</string>
+    <string name="playback_seeking_balanced">Балансирано</string>
+    <string name="playback_seeking_balanced_desc">Започва бавно, после ускорява. Изчаква за момент, преди да скочи.</string>
+    <string name="playback_seeking_fast">Бързо</string>
+    <string name="playback_seeking_fast_desc">Като официалното приложение. Големи стъпки, скача веднага щом пуснете бутона.</string>
     <string name="seek_thumbnails_title">Миниатюри при превъртане</string>
     <string name="seek_thumbnails_subtitle">Миниатюри от заглавието над лентата за прогрес, докато превърташ.</string>
     <string name="seek_thumbnails_mode_off">Изкл</string>
@@ -3256,6 +3293,7 @@
     <string name="seek_thumbnails_prepare_off_desc">Пуска веднага; миниатюрите се създават на пауза и след като спреш да гледаш.</string>
     <string name="seek_thumbnails_prepare_on">Вкл</string>
     <string name="seek_thumbnails_prepare_on_desc">Създавай миниатюрите при превъртане за заглавие, преди то да започне. \"Гледай сега\" или Назад пуска възпроизвеждането по всяко време.</string>
+    <string name="seek_thumbnails_prepare_on_small_desc">На това устройство 4K филмите се зареждат, след като миниатюрите им са създадени.</string>
     <string name="seek_thumbnails_before_play_title">Миниатюри преди пускане</string>
     <string name="seek_thumbnails_before_play_subtitle">Колко миниатюри се създават, преди заглавието да започне. Останалите се създават, докато гледаш, до обичайната детайлност.</string>
     <string name="seek_thumbnails_before_play_full">Пълно</string>
@@ -3278,6 +3316,7 @@
     <string name="seek_thumbnails_ready_detail">%1$d миниатюри · стартиране на възпроизвеждането</string>
     <string name="seek_thumbnails_time_left_seconds">Остават около %1$d сек</string>
     <string name="seek_thumbnails_time_left_minutes">Остават около %1$d мин %2$d сек</string>
+    <string name="seek_thumbnails_film_loads_after">4K на това устройство: филмът се зарежда, когато това приключи</string>
     <string name="seek_thumbnails_count">%1$d от %2$d</string>
     <string name="seek_thumbnails_start_now">Гледай сега</string>
     <string name="seek_thumbnails_settings_hint">Включва се и се изключва в Настройки › Възпроизвеждане › Player Interface</string>
@@ -3422,4 +3461,7 @@
     <string name="detail_episode_synopsis_none">Все още няма описание за този епизод.</string>
     <string name="player_track_role_commentary">Коментар</string>
     <string name="player_track_role_audio_description">Аудиоописание</string>
+    <string name="stream_resume_from_time">Продължи от %1$s</string>
+    <string name="stream_resume_from_percent">Продължи от %1$d%%</string>
+    <string name="tvdb_metadata_credit">Метаданните са предоставени от %1$s</string>
 </resources>

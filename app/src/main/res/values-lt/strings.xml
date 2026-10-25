@@ -310,16 +310,6 @@
     <string name="sub_advanced_section">Išplėstinis subtitrų atvaizdavimas</string>
     <string name="sub_libass">Naudoti „libass“ ASS/SSA subtitrams</string>
     <string name="sub_libass_sub">Eksperimentinis: išplėstinis ASS/SSA atvaizdavimas (stiliai, pozicionavimas, animacijos)</string>
-    <string name="sub_libass_mode">„Libass“ atvaizdavimo režimas</string>
-    <string name="sub_mode_overlay_gl">OpenGL perdanga (Rekomenduojama)</string>
-    <string name="sub_mode_overlay_gl_sub">Geriausia kokybė su HDR palaikymu. Atvaizduoja subtitrus atskiroje gijoje.</string>
-    <string name="sub_mode_overlay_canvas">Canvas perdanga</string>
-    <string name="sub_mode_effects_gl">OpenGL efektai</string>
-    <string name="sub_mode_effects_gl_sub">Animacijų palaikymas naudojant „Media3“ efektus. Greičiau nei „Canvas“.</string>
-    <string name="sub_mode_effects_canvas">Canvas efektai</string>
-    <string name="sub_mode_effects_canvas_sub">Animacijų palaikymas naudojant „Media3“ efektus su „Canvas“ atvaizdavimu.</string>
-    <string name="sub_mode_standard">Standartiniai (Standard Cues)</string>
-    <string name="sub_mode_standard_sub">Pagrindinis subtitrų atvaizdavimas be animacijų palaikymo. Labiausiai suderinama.</string>
     <string name="sub_org_none">Nėra (numatytoji tvarka)</string>
     <string name="sub_org_by_lang">Pagal kalbą</string>
     <string name="sub_org_by_addon">Pagal priedą</string>
@@ -908,7 +898,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="plugin_confirm_confirm">Patvirtinti</string>
     <string name="plugin_updated_format">Atnaujinta: %1$s</string>
     <string name="plugin_test_btn">Testuoti</string>
-    <string name="plugin_test_results">Testo rezultatai (srautų: %1$d)</string>
+    <string name="plugin_test_results">Testo rezultatai (%1$d)</string>
 
     <!-- ProfileSelectionScreen -->
     <string name="profile_selection_title">Kas žiūri?</string>
@@ -956,7 +946,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="ratings_loading">Įkeliami įvertinimai…</string>
     <string name="ratings_unavailable">Įvertinimai neprieinami</string>
     <string name="ratings_load_error">Nepavyko įkelti įvertinimų</string>
-    <string name="ratings_season_summary">Sezonas %1$d - serijų: %2$d</string>
+    <string name="ratings_season_summary">Sezonas %1$d - epizodų: %2$d</string>
 
     <!-- SearchDiscoverSection -->
     <string name="discover_title">Atrasti</string>
@@ -1051,6 +1041,10 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="appearance_app_icon_transparent_background">Skaidrus fonas</string>
     <string name="appearance_app_icon_transparent_hint">Paleidikliams, kurie piešia savo kortelę, pvz., Projectivy</string>
     <string name="appearance_app_icon_mint">Mėtinė</string>
+    <string name="about_update_auto_install_title">Automatiškai įdiegti atnaujinimus</string>
+    <string name="about_update_auto_install_subtitle">Naujas versijas atsisiųsti fone ir įdiegti, kol įrenginys nenaudojamas</string>
+    <string name="about_update_auto_install_notice_title">Pranešti po automatinių atnaujinimų</string>
+    <string name="about_update_auto_install_notice_subtitle">Kitą kartą paleidus rodyti juostą, kai programa atsinaujino pati</string>
     <string name="licenses_attributions_avatars_title">Bendro žiūrėjimo avatarai</string>
     <string name="licenses_attributions_avatars_body">Sukurta su DiceBear, perdirbant šiuos dizainus: \"Fun Emoji\" (Davis Uche) ir \"Adventurer\" (Lisa Wischofsky), licencija CC BY 4.0 (creativecommons.org/licenses/by/4.0). \"Lorelei\" (Lisa Wischofsky), \"Notionists\" (Zoish), \"Pixel Art\" ir \"Thumbs\" (DiceBear), CC0 1.0. \"Bottts\" (Pablo Stanley), galima laisvai naudoti asmeniniais ir komerciniais tikslais. Gyvūnų veidai iš Twemoji (Twitter, Inc. ir kiti autoriai), licencija CC BY 4.0.</string>
     <string name="licenses_attributions_media_servers_title">Jellyfin, Emby ir Silo</string>
@@ -1160,6 +1154,12 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="sub_tertiary_lang">Trečia pageidaujama kalba</string>
     <string name="sub_addon_subtitles">Priedų subtitrai</string>
     <string name="sub_addon_subtitles_desc">Atkūrimo metu gauti subtitrus iš įdiegtų priedų. Išjungus pasiekiami tik į failą įterpti subtitrai.</string>
+    <string name="sub_hdr_style">Atskiras HDR / Dolby Vision stilius</string>
+    <string name="sub_hdr_style_sub">HDR ir Dolby Vision vaizdo įrašų subtitrams naudoti kitą teksto spalvą ir mažesnį ryškumą</string>
+    <string name="sub_hdr_text_color">HDR teksto spalva</string>
+    <string name="sub_hdr_brightness">HDR subtitrų ryškumas</string>
+    <string name="sub_libass_render_scale">Subtitrų atvaizdavimo raiška</string>
+    <string name="sub_libass_render_scale_sub">Mažesnė raiška pagreitina sudėtingų stilizuotų subtitrų atvaizdavimą, bet sumažina aiškumą</string>
     <string name="autoplay_quality_rules_title">Kokybės taisyklės</string>
     <string name="autoplay_quality_rules_subtitle">Filtrai, rūšiavimas ir leidimo grupių lygiai skiltyje „Susietos paslaugos“.</string>
     <string name="stream_sort_sources">Rikiuoti šaltinius</string>
@@ -1203,16 +1203,46 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="mdblist_requests_subtitle">Įvertinimai ir žiūrėjimo sinchronizavimas įskaičiuojami į dienos limitą</string>
     <string name="mdblist_ratings_heading">Įvertinimų ženkleliai</string>
     <string name="debrid_stream_release_groups_preferred">Pageidaujamos leidimo grupės</string>
+    <string name="settings_stream_badges_in_player_title">Rodyti grotuve</string>
+    <string name="settings_stream_badges_in_player_description">Po grotuvo pavadinimu rodyti grojamo vaizdo ir garso ženklelius. Naudojami Arc ženkleliai arba jūsų ženklelių paketas, jei jis atitinka paprastą tekstą, pvz., 2160p ar Atmos.</string>
+    <string name="settings_stream_player_badges_title">Grotuvo ženkleliai</string>
+    <string name="settings_stream_player_badges_description">Pasirinkite ženklelių paketą, kurį naudoja grotuvas.</string>
+    <string name="settings_stream_player_badges_same">Kaip srautų ženkleliai</string>
     <string name="trakt_watch_progress_source_mdblist">MDBList</string>
     <string name="trakt_watch_progress_mdblist_selected">Žiūrėjimo pažangos šaltinis nustatytas į „MDBList“</string>
     <string name="profile_avatar_category_local">Linksmasis rinkinys · šis įrenginys</string>
     <string name="profile_local_avatar_note">Rodoma tik šiame įrenginyje. Kituose įrenginiuose lieka „Nuvio“ avataras.</string>
+    <string name="player_engine_switch_title">Perjungti į %1$s?</string>
+    <string name="player_engine_switch_message">Vaizdo įrašas bus įkeltas iš naujo nuo dabartinės vietos.</string>
     <string name="player_more_short">Daugiau</string>
     <string name="player_layout_more_fixed">Fiksuota dešiniajame krašte</string>
     <string name="player_layout_more_hidden_help">„Daugiau“ ir jo meniu veiksmai paslėpti. Rodykite „Daugiau“, kad grąžintumėte jo iškylantįjį meniu, arba iškelkite veiksmą iš „Daugiau“, kad jis būtų rodomas tiesiogiai.</string>
     <string name="player_layout_more_fixed_help">Paspauskite OK, kad paslėptumėte arba rodytumėte „Daugiau“. Jis lieka dešiniajame krašte. Perkelkite kitus veiksmus per jo meniu ribą, kad pakeistumėte, kas yra iškylančiajame meniu.</string>
     <string name="player_error_placeholder_stream">Šis srautas panašus į teikėjo klaidos kortelę, o ne į vaizdo įrašą. Išbandykite kitą šaltinį.</string>
+    <string name="audio_listening_section">Klausymas</string>
+    <string name="audio_night_mode_label">Naktinis režimas</string>
+    <string name="audio_night_mode_off">Išjungta</string>
+    <string name="audio_night_mode_light">Švelnus</string>
+    <string name="audio_night_mode_medium">Vidutinis</string>
+    <string name="audio_night_mode_strong">Stiprus</string>
+    <string name="audio_night_mode_help">Prislopina garsias vietas ir pakelia tyliąsias.</string>
+    <string name="audio_night_mode_unavailable">Išjungta per passthrough: garsas pasiekia stiprintuvą nepakeistas.</string>
+    <string name="audio_night_mode_settings_sub">Prislopina garsias vietas ir pakelia tyliąsias. Veikia programos dekoduojamam garsui, ne per passthrough.</string>
+    <string name="audio_night_mode_dialog_subtitle">Išlygina garsias ir tylias vietas. Veikia TV garsiakalbiais, garso juostomis ir stiprintuvais, gaunančiais PCM. Passthrough garsas niekada nekeičiamas.</string>
+    <string name="audio_night_mode_off_desc">Garsas toks, koks buvo sumiksuotas.</string>
+    <string name="audio_night_mode_light_desc">Sušvelnina garsiausias vietas.</string>
+    <string name="audio_night_mode_medium_desc">Vakarams. Garsios scenos ramesnės, tylią kalbą girdėti lengviau.</string>
+    <string name="audio_dialogue_boost_label">Dialogų stiprinimas</string>
+    <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
+    <string name="audio_dialogue_boost_help">Pakelia centrinį kanalą, kuriame yra daugiausia kalbos. Nuo Išjungta iki +12 dB.</string>
+    <string name="audio_dialogue_boost_stereo">Šis takelis yra stereo, todėl atskiro kalbos kanalo, kurį galima pakelti, nėra.</string>
+    <string name="audio_dialogue_boost_mixed">Garsas į programą atkeliauja jau sumaišytas į stereo. Norėdami tai naudoti, garso nustatymuose įjunkite downmix.</string>
+    <string name="audio_dialogue_boost_mpv_multichannel">Su MPV tai veikia, kai garsas sumaišomas į stereo, pavyzdžiui, per TV garsiakalbius.</string>
+    <string name="audio_night_mode_strong_desc">Vėlyvoms naktims ir mažiems kambariams. Tolygiausias garsas, veiksmo scenos ne tokios galingos.</string>
     <string name="subtitle_panel_languages">Kalbos</string>
+    <string name="subtitle_style_text_color_hdr">Teksto spalva (HDR)</string>
+    <string name="subtitle_style_text_opacity_hdr">Teksto nepermatomumas (HDR)</string>
+    <string name="subtitle_style_brightness_hdr">Ryškumas (HDR)</string>
     <string name="library_sort_released_desc">Išleista (nuo naujausių)</string>
     <string name="library_sort_released_asc">Išleista (nuo seniausių)</string>
     <string name="library_empty_mdblist_title">Žiūrėjimo sąraše nėra: %1$s</string>
@@ -1235,7 +1265,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="library_transfer_copy">Kopijuoti</string>
     <string name="library_transfer_move">Perkelti (kopijuoti, tada pašalinti iš šaltinio)</string>
     <string name="library_transfer_none">Nėra ko kopijuoti</string>
-    <string name="sub_mode_effects_warning">Didelė apkrova: 4K vaizde gali praleisti kadrus ir išjungia tunelinį atkūrimą.</string>
+    <string name="update_installed_automatically">Atnaujinta automatiškai, kol įrenginys buvo nenaudojamas</string>
     <string name="cd_playback_stats">Atkūrimo statistika</string>
     <string name="player_stats_unavailable_mpv">Statistika nepasiekiama naudojant libmpv variklį</string>
     <string name="player_dead_source_failover">Šaltinis nepasiekiamas - bandomas kitas šaltinis (%1$d/%2$d)</string>
@@ -1446,7 +1476,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="player_pill_next_episode">Kita serija</string>
     <string name="ui_scale_title">Sąsajos mastelis</string>
     <string name="ui_scale_group_subtitle">Keiskite visos sąsajos mastelį nuo 85% iki 115%</string>
-    <string name="panel_audio_adjustments">Delsa ir stiprinimas</string>
+    <string name="panel_audio_adjustments">Garso nustatymai</string>
     <string name="panel_audio_back_to_tracks">Atgal į takelius</string>
     <string name="v2_glass_preset">Stiklo šablonas</string>
     <string name="v2_glass_clear">Skaidrus</string>
@@ -1470,8 +1500,8 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="v2_settings_background_midnight">Vidurnakčio mėlyna</string>
     <string name="v2_settings_background_charcoal">Anglies pilka</string>
     <string name="layout_trailer_feathered">Anonso langas švelniais kraštais</string>
-    <string name="playback_dim_hdr_overlays">Pritemdyti valdiklius ir subtitrus HDR režimu</string>
-    <string name="playback_dim_hdr_overlays_sub">Švelnesni valdikliai ir ryškios subtitrų vietos HDR, HLG ir Dolby Vision atkūrimo metu. Vaizdo ryškumas nekeičiamas. Savasis ASS stilius išsaugomas.</string>
+    <string name="playback_dim_hdr_overlays">Pritemdyti valdiklius HDR režimu</string>
+    <string name="playback_dim_hdr_overlays_sub">Švelnesni grotuvo valdikliai atkuriant HDR, HLG ir Dolby Vision. Vaizdo ryškumas nesikeičia. HDR subtitrai naudoja HDR stilių iš subtitrų nustatymų.</string>
     <string name="subtitle_bitmap_style_note">Vaizdinių subtitrų dydis saugomas atskirai nuo tekstinių subtitrų dydžio. Šriftas, kontūras ir spalva yra vaizdo dalis.</string>
     <string name="subtitle_bitmap_mpv_note">MPV nepalaiko vaizdinių subtitrų dydžio keitimo. Naudokite ExoPlayer, kad jų dydį keistumėte nepriklausomai nuo teksto.</string>
     <string name="subtitle_style_image_size">Vaizdinių subtitrų dydis</string>
@@ -1556,6 +1586,14 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="subtitle_edge_drop_shadow">Šešėlis</string>
     <string name="subtitle_shadow_note">Subtilus tamsus šešėlis. MPV grotuve jis pakeičia fono langelį.</string>
     <string name="subtitle_font_and_weight">Šriftas ir storis</string>
+    <string name="playback_seeking">Persukimas</string>
+    <string name="playback_seeking_sub">Kaip greitai įsibėgėja laikant kairėn ar dešinėn ir kiek filmas laukia ties miniatiūra prieš peršokdamas. Be miniatiūrų visada peršoka vos atleidus mygtuką.</string>
+    <string name="playback_seeking_gentle">Švelnus</string>
+    <string name="playback_seeking_gentle_desc">Lėtai ir tolygiai. Praeina kiekviena miniatiūra; prieš peršokdamas laukia 2 s.</string>
+    <string name="playback_seeking_balanced">Subalansuotas</string>
+    <string name="playback_seeking_balanced_desc">Pradeda lėtai, tada greitėja. Prieš peršokdamas trumpai palaukia.</string>
+    <string name="playback_seeking_fast">Greitas</string>
+    <string name="playback_seeking_fast_desc">Kaip oficiali programėlė. Dideli žingsniai, peršoka vos atleidus mygtuką.</string>
     <string name="seek_thumbnails_title">Persukimo miniatiūros</string>
     <string name="seek_thumbnails_subtitle">Pavadinimo miniatiūros virš eigos juostos, kol persukate.</string>
     <string name="seek_thumbnails_mode_off">Išjungta</string>
@@ -1570,6 +1608,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="seek_thumbnails_prepare_off_desc">Atkūrimas pradedamas iš karto; miniatiūros kuriamos pristabdžius ir baigus žiūrėti.</string>
     <string name="seek_thumbnails_prepare_on">Įjungta</string>
     <string name="seek_thumbnails_prepare_on_desc">Sukurti pavadinimo persukimo miniatiūras prieš jam prasidedant. \"Pradėti žiūrėti dabar\" arba „Atgal“ bet kada paleidžia atkūrimą.</string>
+    <string name="seek_thumbnails_prepare_on_small_desc">Šiame įrenginyje 4K filmai įkeliami, kai sukuriamos jų miniatiūros.</string>
     <string name="seek_thumbnails_before_play_title">Miniatiūros prieš paleidžiant</string>
     <string name="seek_thumbnails_before_play_subtitle">Kiek miniatiūrų sukuriama prieš prasidedant pavadinimui. Likusios kuriamos žiūrint, iki įprasto tankio.</string>
     <string name="seek_thumbnails_before_play_full">Pilna</string>
@@ -1592,6 +1631,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="seek_thumbnails_ready_detail">Miniatiūrų: %1$d · pradedamas atkūrimas</string>
     <string name="seek_thumbnails_time_left_seconds">Liko apie %1$d s</string>
     <string name="seek_thumbnails_time_left_minutes">Liko apie %1$d min %2$d s</string>
+    <string name="seek_thumbnails_film_loads_after">4K šiame įrenginyje: filmas įkeliamas, kai tai baigiama</string>
     <string name="seek_thumbnails_count">%1$d iš %2$d</string>
     <string name="seek_thumbnails_start_now">Pradėti žiūrėti dabar</string>
     <string name="seek_thumbnails_settings_hint">Įjunkite arba išjunkite: Nustatymai › Atkūrimas › Player Interface</string>
@@ -1736,4 +1776,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="detail_episode_synopsis_none">Ši serija dar neturi aprašymo.</string>
     <string name="player_track_role_commentary">Komentarai</string>
     <string name="player_track_role_audio_description">Garso aprašymas</string>
+    <string name="stream_resume_from_time">Tęsti nuo %1$s</string>
+    <string name="stream_resume_from_percent">Tęsti nuo %1$d%%</string>
+    <string name="tvdb_metadata_credit">Metaduomenis teikia %1$s</string>
 </resources>

@@ -72,6 +72,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -211,6 +213,15 @@ class StreamScreenViewModel @Inject constructor(
         )
     )
     val uiState: StateFlow<StreamScreenUiState> = _uiState.asStateFlow()
+    val watchProgress = run {
+        val id = contentId ?: videoId.substringBefore(":")
+        if (season != null && episode != null) {
+            watchProgressRepository.getEpisodeProgress(id, season, episode, playbackProfileId)
+        } else {
+            watchProgressRepository.getProgress(id, playbackProfileId)
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     val streamBadgeSettings = streamBadgeSettingsDataStore.settings
 
     private val partyState = partyRuntime.state
@@ -275,6 +286,12 @@ class StreamScreenViewModel @Inject constructor(
         if (streamBadgePresentationJob?.isActive == true) return
 
         streamBadgePresentationJob = viewModelScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+            // Nothing can match without active filters, so skip rebuilding the
+            // stream lists for every chunk.
+            if (!streamBadgePresentation.hasActiveFilters()) {
+                badgedAddonNames = badgedAddonNames + newGroups.map { it.addonName }.toSet()
+                return@launch
+            }
             var pending = newGroups
             while (pending.isNotEmpty()) {
                 val pendingNames = pending.mapTo(HashSet()) { it.addonName }
@@ -506,6 +523,7 @@ class StreamScreenViewModel @Inject constructor(
                     autoPlayHandledForSession = true
                     resolvedAutoPlayTarget = true
                     val isCachedTorrent = cached.infoHash != null && cached.url.isNullOrBlank()
+                    if (!isCachedTorrent) streamLinkCacheDataStore.markReplayed(streamCacheKey, cached)
                     val showOverlay = PartyPlayerRule.preferenceFor(
                         playerSettings.playerPreference,
                         partyState.value.isActive
@@ -539,7 +557,9 @@ class StreamScreenViewModel @Inject constructor(
                                 videoSize = cached.videoSize,
                                 fileIdx = cached.fileIdx,
                                 sources = cached.sources,
-                                contentLanguage = cached.contentLanguage ?: contentLanguage
+                                contentLanguage = cached.contentLanguage ?: contentLanguage,
+                                audioDelayMs = cached.audioDelayMs,
+                                audioDelayLanguage = cached.audioDelayLanguage
                             ),
                             showDirectAutoPlayOverlay = showOverlay || it.showDirectAutoPlayOverlay,
                             isDirectAutoPlayFlow = showOverlay || it.isDirectAutoPlayFlow
@@ -1811,7 +1831,9 @@ class StreamScreenViewModel @Inject constructor(
             fileIdx = stream.getEffectiveFileIdx(),
             sources = stream.sources,
             contentLanguage = contentLanguage,
-            launchStartedAtMs = TtffTrace.t0ElapsedMsOrNull()
+            launchStartedAtMs = TtffTrace.t0ElapsedMsOrNull(),
+            audioDelayMs = stream.behaviorHints?.audioDelayMs,
+            audioDelayLanguage = stream.behaviorHints?.audioDelayLanguage
         )
         StreamSidecarSubtitles.set(playbackUrlFor(playbackInfo), stream.subtitles)
 
@@ -1828,7 +1850,9 @@ class StreamScreenViewModel @Inject constructor(
                     videoSize = playbackInfo.videoSize,
                     bingeGroup = playbackInfo.bingeGroup,
                     contentLanguage = contentLanguage,
-                    year = year
+                    year = year,
+                    audioDelayMs = playbackInfo.audioDelayMs,
+                    audioDelayLanguage = playbackInfo.audioDelayLanguage
                 )
             }
         }
@@ -2388,6 +2412,8 @@ data class StreamPlaybackInfo(
     // Time to first frame: SystemClock.elapsedRealtime() at the press that started this
     // launch (title press for auto-select, stream selection for manual).
     val launchStartedAtMs: Long? = null,
+    val audioDelayMs: Int? = null,
+    val audioDelayLanguage: String? = null,
     val isServerStream: Boolean = false
 )
 

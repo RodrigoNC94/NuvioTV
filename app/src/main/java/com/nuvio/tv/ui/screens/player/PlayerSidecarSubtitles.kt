@@ -45,7 +45,7 @@ private val mainHandler = Handler(Looper.getMainLooper())
  * Whether [subtitle] can be hot-attached without [androidx.media3.exoplayer.ExoPlayer.setMediaSource].
  *
  * ASS/SSA are excluded when libass is requested/active: those must stay on the media-source path so
- * [io.github.peerless2012.ass.media.parser.AssSubtitleParserFactory] / AssSubtitleView keep full
+ * [com.nuvio.tv.libass.media.parser.AssSubtitleParserFactory] / AssSubtitleSurfaceView keep full
  * styling. SRT/VTT/TTML still use the buffer-preserving sidecar.
  */
 internal fun PlayerRuntimeController.canAttachAddonSubtitleViaSidecar(subtitle: Subtitle): Boolean {
@@ -104,7 +104,7 @@ internal fun PlayerRuntimeController.stopSidecarAddonSubtitle(clearView: Boolean
     if (clearView) {
         postToSubtitleView { view ->
             view.setTag(R.id.player_view_sidecar_generation_tag, null)
-            view.setCues(emptyList())
+            showSidecarCues(view, emptyList())
         }
     }
 }
@@ -131,7 +131,7 @@ internal fun PlayerRuntimeController.startSidecarAddonSubtitle(
     sidecarTimedCues = emptyList()
     postToSubtitleView { view ->
         view.setTag(R.id.player_view_sidecar_generation_tag, subtitleKey)
-        view.setCues(emptyList())
+        showSidecarCues(view, emptyList())
     }
     fun isCurrent() =
         activeSidecarSubtitleKey == subtitleKey && activeSidecarGeneration == generation
@@ -161,7 +161,7 @@ internal fun PlayerRuntimeController.startSidecarAddonSubtitle(
                 sidecarTimedCues = emptyList()
                 postToSubtitleView { view ->
                     view.setTag(R.id.player_view_sidecar_generation_tag, null)
-                    view.setCues(emptyList())
+                    showSidecarCues(view, emptyList())
                 }
                 return@launch
             }
@@ -192,7 +192,7 @@ internal fun PlayerRuntimeController.startSidecarAddonSubtitle(
             sidecarTimedCues = emptyList()
             postToSubtitleView { view ->
                 view.setTag(R.id.player_view_sidecar_generation_tag, null)
-                view.setCues(emptyList())
+                showSidecarCues(view, emptyList())
             }
             // Intentionally no attachAddonSubtitleViaMediaReload — keeps A/V buffer intact.
         }
@@ -261,8 +261,7 @@ internal fun PlayerRuntimeController.renderSidecarCuesAtCurrentPosition() {
     val stripSdh = currentPlayerSettingsForReport.subtitleStyle.stripSdh
     // Sign before sanitising, filtering and merging to skip that work while cues are
     // unchanged. stripSdh is included because it changes what filtering removes.
-    val signature = activeCueSignature(active, stripSdh) * 31 + _uiState.value.subtitleStyle.hashCode() +
-        (if (_uiState.value.dimHdrOverlays && _uiState.value.isHdrVideo) 1L else 0L)
+    val signature = activeCueSignature(active, stripSdh) * 31 + _uiState.value.sidecarStyleSignature()
     if (signature == lastSidecarCueSignature) return
     lastSidecarCueSignature = signature
     val sanitized = active.map { SubtitleMojibakeSanitizer.sanitizeCue(it) }
@@ -276,9 +275,14 @@ internal fun PlayerRuntimeController.renderSidecarCuesAtCurrentPosition() {
             activeSidecarGeneration == currentGeneration &&
             view.getTag(R.id.player_view_sidecar_generation_tag) == currentKey
         ) {
-            view.setCues(merged.map { presentSubtitleCue(it) })
+            showSidecarCues(view, merged.map { presentSubtitleCue(it) })
         }
     }
+}
+
+private fun PlayerRuntimeController.showSidecarCues(view: SubtitleView, cues: List<Cue>) {
+    view.setCues(cues)
+    subtitleCueTracker.update(cues)
 }
 
 private fun PlayerRuntimeController.postToSubtitleView(block: (SubtitleView) -> Unit) {
@@ -438,3 +442,7 @@ internal fun activeCueSignature(cues: List<Cue>, stripSdh: Boolean): Long {
 private const val SIDECAR_RENDER_INTERVAL_MS = 100L
 private const val EMPTY_CUE_SIGNATURE = 0x4E5556494FL // "NUVIO"
 private const val EMPTY_CUE_SIGNATURE_SDH = 0x4E5556494F01L
+
+/** Changes whenever the drawn look of a cue can change, including when the HDR style starts or stops applying. */
+internal fun PlayerUiState.sidecarStyleSignature(): Long =
+    subtitleStyle.hashCode().toLong() * 2L + (if (isEditingHdrSubtitleStyle) 1L else 0L)

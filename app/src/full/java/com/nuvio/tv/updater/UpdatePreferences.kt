@@ -31,6 +31,13 @@ class UpdatePreferences @Inject constructor(
     private val ignoredTagKey = stringPreferencesKey("ignored_release_tag")
     private val lastCheckAtKey = longPreferencesKey("last_check_at_ms")
     private val updateBannerEnabledKey = booleanPreferencesKey("update_banner_enabled")
+    private val autoInstallEnabledKey = booleanPreferencesKey("auto_install_enabled")
+    private val downloadedTagKey = stringPreferencesKey("downloaded_release_tag")
+    private val downloadedApkPathKey = stringPreferencesKey("downloaded_apk_path")
+    private val downloadedCodeKey = longPreferencesKey("downloaded_release_code")
+    private val autoInstalledTagKey = stringPreferencesKey("auto_installed_release_tag")
+    private val autoInstalledCodeKey = longPreferencesKey("auto_installed_release_code")
+    private val autoInstallNoticeEnabledKey = booleanPreferencesKey("auto_install_notice_enabled")
 
     val ignoredTag: Flow<String?> = preferences.map { prefs ->
         prefs[ignoredTagKey]
@@ -49,6 +56,30 @@ class UpdatePreferences @Inject constructor(
         internal fun migrateForkStream(prefs: MutablePreferences) {
             prefs.remove(stringPreferencesKey("update_channel"))
         }
+    }
+
+    val autoInstallEnabled: Flow<Boolean> = preferences.map { prefs ->
+        prefs[autoInstallEnabledKey] ?: false
+    }
+
+    /** The update already downloaded, if any, so it survives the app being closed. */
+    val downloadedUpdate: Flow<DownloadedUpdate?> = preferences.map { prefs ->
+        val tag = prefs[downloadedTagKey]
+        val path = prefs[downloadedApkPathKey]
+        if (tag != null && path != null) DownloadedUpdate(tag, path, prefs[downloadedCodeKey]) else null
+    }
+
+    /** Release the idle job last installed without asking, so the next launch can say the app was updated. */
+    val autoInstalledTag: Flow<String?> = preferences.map { prefs ->
+        prefs[autoInstalledTagKey]
+    }
+
+    val autoInstalledCode: Flow<Long?> = preferences.map { prefs ->
+        prefs[autoInstalledCodeKey]
+    }
+
+    val autoInstallNoticeEnabled: Flow<Boolean> = preferences.map { prefs ->
+        prefs[autoInstallNoticeEnabledKey] ?: true
     }
 
     suspend fun initializeForkStream() {
@@ -70,6 +101,40 @@ class UpdatePreferences @Inject constructor(
     suspend fun setUpdateBannerEnabled(enabled: Boolean) {
         dataStore.edit { prefs ->
             prefs[updateBannerEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setAutoInstallEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[autoInstallEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setDownloadedUpdate(tag: String?, apkPath: String?, versionCode: Long? = null) {
+        dataStore.edit { prefs ->
+            prefs.remove(downloadedCodeKey)
+            if (tag == null || apkPath == null) {
+                prefs.remove(downloadedTagKey)
+                prefs.remove(downloadedApkPathKey)
+            } else {
+                prefs[downloadedTagKey] = tag
+                prefs[downloadedApkPathKey] = apkPath
+                if (versionCode != null) prefs[downloadedCodeKey] = versionCode
+            }
+        }
+    }
+
+    suspend fun setAutoInstallNoticeEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[autoInstallNoticeEnabledKey] = enabled
+        }
+    }
+
+    suspend fun setAutoInstalledTag(tag: String?, versionCode: Long? = null) {
+        dataStore.edit { prefs ->
+            prefs.remove(autoInstalledCodeKey)
+            if (tag == null) prefs.remove(autoInstalledTagKey) else prefs[autoInstalledTagKey] = tag
+            if (tag != null && versionCode != null) prefs[autoInstalledCodeKey] = versionCode
         }
     }
 

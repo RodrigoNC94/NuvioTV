@@ -8,9 +8,38 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+import com.android.build.gradle.internal.tasks.CompileArtProfileTask
 import com.android.build.gradle.internal.tasks.L8DexDesugarLibTask
 import java.io.File
 import java.util.Properties
+
+// Copies the per-API dex metadata (.dm) files AGP builds next to the binary ART profile into the APK's assets, so the
+// in-app updater can install the next version together with its profile and have it compiled at install time.
+abstract class EmbedUpdateDexMetadataTask : DefaultTask() {
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val dexMetadataDirectory: ConfigurableFileCollection
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun embed() {
+        val target = outputDirectory.get().asFile.resolve("updater_dm")
+        target.deleteRecursively()
+        target.mkdirs()
+        val source = dexMetadataDirectory.files.firstOrNull { it.resolve("dex-metadata-map.properties").exists() } ?: return
+        val apiToFile = Properties().apply { source.resolve("dex-metadata-map.properties").inputStream().use(::load) }
+        // Written by hand instead of Properties.store, which adds a timestamp and would make the APK non-reproducible.
+        val indexLines = apiToFile.stringPropertyNames().sortedBy { it.toInt() }.map { api ->
+            val relativePath = apiToFile.getProperty(api)
+            val fileName = relativePath.substringBefore('/') + ".dm"
+            source.resolve(relativePath).copyTo(target.resolve(fileName), overwrite = true)
+            "$api=$fileName"
+        }
+        target.resolve("index.properties").writeText(indexLines.joinToString("\n", postfix = "\n"))
+    }
+}
 
 fun parseBooleanProperty(value: String?): Boolean {
     val normalized = value?.trim()?.lowercase() ?: return false
@@ -102,8 +131,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1516
-        versionName = "1.1.0-nt.7.4.1"
+        versionCode = 1533
+        versionName = "1.1.0-nt.8"
         // Optional -PnuvioAppIdSuffix=.name installs a local test build next to the main app.
         providers.gradleProperty("nuvioAppIdSuffix").orNull?.takeIf { it.isNotBlank() }?.let {
             applicationIdSuffix = it
@@ -122,6 +151,7 @@ android {
         buildConfigField("String", "SIMKL_APP_NAME", buildConfigString(resolveProperty(devProperties, localProperties, "SIMKL_APP_NAME", "nuvio")))
         buildConfigField("String", "MDBLIST_CLIENT_ID", buildConfigString(resolveProperty(devProperties, localProperties, "MDBLIST_CLIENT_ID")))
         buildConfigField("String", "TMDB_API_KEY", "\"${localProperties.getProperty("TMDB_API_KEY", "")}\"")
+        buildConfigField("String", "TVDB_API_KEY", "\"${localProperties.getProperty("TVDB_API_KEY", "")}\"")
         buildConfigField("String", "TV_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("TV_LOGIN_WEB_BASE_URL", "https://nuvio.tv/tv-login")}\"")
         buildConfigField("String", "DEVICE_LOGIN_WEB_BASE_URL", "\"${localProperties.getProperty("DEVICE_LOGIN_WEB_BASE_URL", "https://nuvio.tv/link")}\"")
         buildConfigField("boolean", "DOVI_NATIVE_ENABLED", enableDoviNative.toString())
@@ -310,7 +340,7 @@ android {
 
     packaging {
         jniLibs {
-            useLegacyPackaging = true
+            useLegacyPackaging = false
             // Keep one consistent native set across dependencies.
             pickFirsts += listOf(
                 "lib/*/libc++_shared.so",
@@ -330,6 +360,20 @@ android {
     }
 }
 
+androidComponents {
+    // Only the full flavor ships the in-app updater.
+    onVariants(selector().withFlavor("distribution" to "full")) { variant ->
+        val variantName = variant.name.replaceFirstChar { it.uppercase() }
+        val embedTask = tasks.register<EmbedUpdateDexMetadataTask>("embed${variantName}UpdateDexMetadata") {
+            dexMetadataDirectory.from(provider {
+                tasks.withType<CompileArtProfileTask>()
+                    .matching { it.name == "compile${variantName}ArtProfile" }
+                    .map { it.dexMetadataDirectory }
+            })
+        }
+        variant.sources.assets?.addGeneratedSourceDirectory(embedTask, EmbedUpdateDexMetadataTask::outputDirectory)
+    }
+}
 
 afterEvaluate {
     tasks.withType<L8DexDesugarLibTask>().configureEach {
@@ -465,15 +509,16 @@ dependencies {
     implementation(files(
         "libs/lib-decoder-av1-release.aar"
     ))
-    implementation(files("libs/lib-nuvio-engine-android-0.1.5.aar"))
+    implementation(files("libs/lib-nuvio-engine-android-0.1.6.aar"))
     if (useLocalFfmpegDecoder) {
         implementation(project(":ffmpeg-decoder-downmix"))
     } else {
         implementation(files("libs/lib-decoder-ffmpeg-release.aar"))
     }
 
-    // libass-android for ASS/SSA subtitle support (from Maven Central)
-    implementation("io.github.peerless2012:ass-media:0.4.0")
+    // libass - atlas-based subtitle rendering (from NuvioMedia/nuvio-libass)
+    implementation(files("libs/nuvio-libass-release.aar"))
+    implementation("androidx.annotation:annotation-experimental:1.5.1")
     // Local nextlib-mediainfo fork (static FFmpeg; no libav*.so in final AAR)
     implementation(files("libs/nextlib-mediainfo-local.aar"))
     implementation("io.github.abdallahmehiz:mpv-android-lib:0.1.12")

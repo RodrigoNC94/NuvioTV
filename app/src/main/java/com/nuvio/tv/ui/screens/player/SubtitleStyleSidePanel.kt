@@ -61,8 +61,6 @@ import com.nuvio.tv.data.local.SubtitleStyleSettings
 import androidx.compose.ui.res.stringResource
 import com.nuvio.tv.R
 
-
-
 private val StyleCardWidth = 220.dp
 private val StyleCardHeight = 102.dp
 private val StyleCardGap = NuvioTheme.spacing.md
@@ -75,7 +73,8 @@ internal fun SubtitleStyleSidePanel(
     modifier: Modifier = Modifier,
     isStyleDisabledByLibass: Boolean = false,
     bitmapTrack: Boolean = false,
-    bitmapScaleAvailable: Boolean = true
+    bitmapScaleAvailable: Boolean = true,
+    isEditingHdrStyle: Boolean = false
 ) {
     var showFontPicker by remember { mutableStateOf(false) }
     var showEdgePicker by remember { mutableStateOf(false) }
@@ -102,7 +101,7 @@ internal fun SubtitleStyleSidePanel(
     Column(
         modifier = modifier
             .width(760.dp)
-            .height(330.dp)
+            .height(if (isEditingHdrStyle && !bitmapTrack) 440.dp else 330.dp)
             .clip(RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp))
             .background(Color(0xFF101010))
             .then(if (isStyleDisabledByLibass) Modifier.focusProperties { canFocus = false } else Modifier)
@@ -179,7 +178,11 @@ internal fun SubtitleStyleSidePanel(
             if (!bitmapTrack) {
                 Column(verticalArrangement = Arrangement.spacedBy(NuvioTheme.spacing.sm)) {
                     SubtitleStyleSection(
-                        title = stringResource(R.string.subtitle_style_text_color),
+                        title = if (isEditingHdrStyle) {
+                            stringResource(R.string.subtitle_style_text_color_hdr)
+                        } else {
+                            stringResource(R.string.subtitle_style_text_color)
+                        },
                         centerContent = false,
                         modifier = Modifier
                             .width(StyleCardWidth)
@@ -275,6 +278,30 @@ internal fun SubtitleStyleSidePanel(
                             icon = Icons.Default.Add,
                             onClick = { onEvent(PlayerEvent.OnSetSubtitleVerticalOffset(subtitleStyle.verticalOffset + 1)) }
                         )
+                    }
+                }
+                if (isEditingHdrStyle && !bitmapTrack) {
+                    SubtitleStyleSection(
+                        title = stringResource(R.string.subtitle_style_brightness_hdr),
+                        modifier = Modifier
+                            .width(StyleCardWidth)
+                            .height(StyleCardHeight)
+                    ) {
+                        SubtitleStyleSettingRow {
+                            SubtitleStyleStepperButton(
+                                icon = Icons.Default.Remove,
+                                onClick = {
+                                    onEvent(PlayerEvent.OnSetSubtitleHdrBrightness(subtitleStyle.hdrBrightness - 10))
+                                }
+                            )
+                            SubtitleStyleValueDisplay(text = "${subtitleStyle.hdrBrightness}%")
+                            SubtitleStyleStepperButton(
+                                icon = Icons.Default.Add,
+                                onClick = {
+                                    onEvent(PlayerEvent.OnSetSubtitleHdrBrightness(subtitleStyle.hdrBrightness + 10))
+                                }
+                            )
+                        }
                     }
                 }
                 SubtitleStyleSection(

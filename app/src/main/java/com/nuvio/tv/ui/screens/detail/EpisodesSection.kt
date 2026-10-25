@@ -7,6 +7,7 @@ import com.nuvio.tv.ui.v2.components.nuvioV2Focus
 import android.view.KeyEvent as AndroidKeyEvent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.BorderStroke
+import com.nuvio.tv.ui.theme.NuvioPrimitives
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import androidx.compose.foundation.background
@@ -91,6 +92,7 @@ import com.nuvio.tv.domain.model.Video
 import com.nuvio.tv.domain.model.EpisodeOptionsOverlayStyle
 import com.nuvio.tv.ui.components.FocusMarqueeText
 import com.nuvio.tv.ui.components.ImdbRatingSourceLabel
+import com.nuvio.tv.ui.components.LightweightCard
 import com.nuvio.tv.ui.components.NuvioDialog
 import com.nuvio.tv.ui.components.PanelActionRow
 import com.nuvio.tv.ui.components.WatchedMarker
@@ -450,7 +452,7 @@ fun EpisodesRow(
     val originalMetrics = rememberEpisodeCardMetrics(posterCardCornerRadiusDp)
     val compactEpisodes = com.nuvio.tv.ui.v2.appearance.LocalV2Appearance.current != null
     val cardMetrics = remember(originalMetrics, compactEpisodes) {
-        if (compactEpisodes) originalMetrics.copy(cardWidth = 220.dp, cardHeight = 124.dp,
+        if (compactEpisodes) originalMetrics.copy(cardHeight = v2EpisodeCardHeight(originalMetrics.cardWidth),
             cornerRadius = 8.dp, itemSpacing = 16.dp, rowVerticalPadding = 12.dp) else originalMetrics
     }
     val synopsisUnderRow = showEpisodeSynopsisUnderRow(
@@ -800,7 +802,7 @@ private fun EpisodeCard(
     }
     val ratingStyle = remember(typography) {
         typography.labelSmall.copy(
-            color = Color(0xFFF5C518),
+            color = NuvioPrimitives.imdb,
             fontWeight = FontWeight.SemiBold
         )
     }
@@ -836,12 +838,7 @@ private fun EpisodeCard(
         focusedContainerColor = Color.Transparent
     )
     val isV2 = com.nuvio.tv.ui.v2.appearance.LocalV2Appearance.current != null
-    val cardBorder = if (isV2) CardDefaults.border() else CardDefaults.border(
-        focusedBorder = Border(
-            border = focusRingBorder,
-            shape = shape
-        )
-    )
+    val cardBorder = CardDefaults.border()
     val cardScale = CardDefaults.scale(focusedScale = 1.0f)
     val cardGlow = CardDefaults.glow()
 
@@ -906,10 +903,11 @@ private fun EpisodeCard(
                 Box(Modifier.fillMaxWidth().height(cardMetrics.cardHeight).clip(shape).background(cardBgColor)) {
                     AsyncImage(thumbnailRequest, episode.title.localizeEpisodeTitle(context),
                         Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-                    if (showCompletedBadge) WatchedMarker(Modifier.align(Alignment.TopStart).padding(8.dp),
+                    if (showCompletedBadge) WatchedMarker(Modifier.align(Alignment.TopEnd).padding(8.dp),
                         size = 24.dp, iconSize = 16.dp)
                     if (isUnavailable) Text(strUnavailable, style = typography.labelSmall, color = Color.White,
-                        modifier = Modifier.align(Alignment.TopEnd).background(Color(0xCC5D4037)).padding(6.dp))
+                        modifier = Modifier.align(if (showCompletedBadge) Alignment.TopStart else Alignment.TopEnd)
+                            .background(Color(0xCC5D4037)).padding(6.dp))
                     if (showProgress) Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().height(3.dp)
                         .background(Color.Black.copy(alpha = .6f))) {
                         Box(Modifier.fillMaxWidth(progressPercent.coerceIn(0f, 1f)).height(3.dp).background(progressFillColor))
@@ -925,8 +923,8 @@ private fun EpisodeCard(
         }
         return
     }
-    Card(onClick = cardClick, modifier = interactiveModifier,
-        shape = cardShape, colors = cardColors, border = cardBorder, scale = cardScale, glow = cardGlow) {
+    LightweightCard(onClick = cardClick, modifier = interactiveModifier, shape = shape,
+        containerColor = Color.Transparent, focusedBorder = Border(border = focusRingBorder, shape = shape)) {
         Box(
             modifier = Modifier
                 .width(cardMetrics.cardWidth)
@@ -1120,9 +1118,9 @@ private fun EpisodeCard(
             if (showCompletedBadge) {
                 WatchedMarker(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.TopEnd)
                         .padding(
-                            start = cardMetrics.statusBadgeInset,
+                            end = cardMetrics.statusBadgeInset,
                             top = cardMetrics.statusBadgeInset
                         ),
                     size = cardMetrics.statusBadgeSize,
@@ -1133,9 +1131,10 @@ private fun EpisodeCard(
             if (isUnavailable) {
                 Box(
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
+                        .align(if (showCompletedBadge) Alignment.TopStart else Alignment.TopEnd)
                         .padding(
-                            end = cardMetrics.statusBadgeInset,
+                            start = if (showCompletedBadge) cardMetrics.statusBadgeInset else 0.dp,
+                            end = if (showCompletedBadge) 0.dp else cardMetrics.statusBadgeInset,
                             top = cardMetrics.statusBadgeInset
                         )
                         .background(
@@ -1157,9 +1156,9 @@ private fun EpisodeCard(
                 val dashEffect = remember { PathEffect.dashPathEffect(floatArrayOf(7f, 5f), 0f) }
                 Canvas(
                     modifier = Modifier
-                        .align(Alignment.TopStart)
+                        .align(Alignment.TopEnd)
                         .padding(
-                            start = cardMetrics.statusBadgeInset,
+                            end = cardMetrics.statusBadgeInset,
                             top = cardMetrics.statusBadgeInset
                         )
                         .size(cardMetrics.statusBadgeSize)
@@ -1349,6 +1348,9 @@ private fun rememberEpisodeCardMetrics(posterCardCornerRadiusDp: Int = 12): Epis
         }
     }
 }
+
+/** The V2 look takes the Original look's width steps and keeps its own 16:9 picture. */
+internal fun v2EpisodeCardHeight(cardWidth: Dp): Dp = cardWidth * 9f / 16f
 
 private fun formatEpisodeRuntime(runtimeMinutes: Int): String {
     if (runtimeMinutes <= 0) return ""

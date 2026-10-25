@@ -136,18 +136,13 @@ class MdbListLibraryServiceTest {
         val h = MdbListSyncTestHarness(backgroundScope)
         h.http.reply(body = """[{"id":12,"user_id":42,"type":"dynamic","dynamic":true,"name":"Top Horror","last_updated_at":"d1"}]""")
         h.http.reply(body = MDBLIST_EMPTY_LIBRARY_PAGE)
+        h.http.reply(body = MDBLIST_LIBRARY_MOVIE_PAGE)
         h.http.reply(body = "[]")
         h.http.reply(body = MDBLIST_EMPTY_LIKED_LISTS)
         val service = h.libraryService(backgroundScope)
         service.refresh(TrackingRefreshIntent.USER_INITIATED)
-        assertEquals(listOf("/lists/user", "/watchlist/items", "/external/lists/user", "/lists/liked"),
+        assertEquals(listOf("/lists/user", "/watchlist/items", "/lists/12/items", "/external/lists/user", "/lists/liked"),
             h.http.engine.requests.map { it.path })
-        assertEquals(MdbListLibraryListOption("mdblist:dynamic:12", "Top Horror", false), service.listOptions.first().last())
-        assertEquals(listOf(MDBLIST_WATCHLIST_KEY), service.tabs.first().map { it.key })
-
-        h.http.reply(body = MDBLIST_LIBRARY_MOVIE_PAGE)
-        service.setListVisible("mdblist:dynamic:12", true)
-        assertEquals("/lists/12/items", h.http.engine.requests.last().path)
         val dynamic = service.tabs.first().single { it.key == "mdblist:dynamic:12" }
         assertEquals(LibraryListTab.Type.EXTERNAL, dynamic.type)
         assertEquals("Top Horror", dynamic.title)
@@ -203,14 +198,12 @@ class MdbListLibraryServiceTest {
         h.http.reply(body = """{"lists":[{"id":79776,"user_id":41631,"name":"Best New Shows","last_updated_at":"l1"}],
             "pagination":{"offset":0,"limit":1,"total":2,"has_more":true}}""")
         h.http.reply(body = """{"lists":[],"pagination":{"has_more":false}}""")
+        h.http.reply(body = MDBLIST_LIBRARY_MOVIE_PAGE)
         val service = h.libraryService(backgroundScope)
         service.refresh(TrackingRefreshIntent.USER_INITIATED)
-        assertEquals("1", h.http.engine.requests[4].query["offset"])
-        assertEquals(setOf("mdblist:liked:79776"), h.repository.currentSnapshot()!!.library!!.hiddenListKeys)
-        h.http.reply(body = MDBLIST_LIBRARY_MOVIE_PAGE)
-        service.setListVisible("mdblist:liked:79776", true)
         assertEquals(listOf("/lists/user", "/watchlist/items", "/external/lists/user", "/lists/liked", "/lists/liked",
             "/lists/79776/items"), h.http.engine.requests.map { it.path })
+        assertEquals("1", h.http.engine.requests[4].query["offset"])
         val liked = service.tabs.first().single { it.key == "mdblist:liked:79776" }
         assertEquals(LibraryListTab.Type.EXTERNAL, liked.type)
         assertEquals("Best New Shows", liked.title)
@@ -411,14 +404,14 @@ class MdbListLibraryServiceTest {
     }
 
     @Test
-    fun `new dynamic and liked lists start hidden until shown and then stay shown`() = runTest {
+    fun `a big batch of new dynamic and liked lists starts hidden until shown and then stays shown`() = runTest {
         val h = MdbListSyncTestHarness(backgroundScope)
         h.seedLibrary()
         val service = h.libraryService(backgroundScope)
-        val userLists = """[
-            {"id":7,"user_id":42,"name":"Favourites","type":"static","private":true,"last_updated_at":"v1"},
-            {"id":12,"user_id":42,"name":"Top Horror","type":"dynamic","dynamic":true,"last_updated_at":"d1"}
-        ]"""
+        val dynamic = (11..21).joinToString(",") {
+            """{"id":$it,"user_id":42,"name":"Dynamic $it","type":"dynamic","dynamic":true,"last_updated_at":"d1"}"""
+        }
+        val userLists = """[{"id":7,"user_id":42,"name":"Favourites","type":"static","private":true,"last_updated_at":"v1"},$dynamic]"""
         val likedLists = """{"lists":[{"id":79776,"user_id":41631,"name":"Best New Shows","last_updated_at":"l1"}],
             "pagination":{"has_more":false}}"""
         h.http.now += MdbListSyncRepository.AUTOMATIC_INTERVAL_MS
@@ -428,11 +421,9 @@ class MdbListLibraryServiceTest {
         h.http.reply(body = likedLists)
         service.refresh(TrackingRefreshIntent.AUTOMATIC)
         assertEquals(listOf("/lists/user", "/watchlist/items", "/external/lists/user", "/lists/liked"), h.http.engine.requests.map { it.path })
-        assertEquals(listOf(
-            MdbListLibraryListOption(MDBLIST_TEST_LIST_KEY, "Favourites", true),
-            MdbListLibraryListOption("mdblist:dynamic:12", "Top Horror", false),
-            MdbListLibraryListOption("mdblist:liked:79776", "Best New Shows", false)
-        ), service.listOptions.first())
+        assertEquals(listOf(MdbListLibraryListOption(MDBLIST_TEST_LIST_KEY, "Favourites", true)) +
+            (11..21).map { MdbListLibraryListOption("mdblist:dynamic:$it", "Dynamic $it", false) } +
+            MdbListLibraryListOption("mdblist:liked:79776", "Best New Shows", false), service.listOptions.first())
         assertEquals(listOf(MDBLIST_WATCHLIST_KEY, MDBLIST_TEST_LIST_KEY), service.tabs.first().map { it.key })
 
         h.http.reply(body = MDBLIST_LIBRARY_MOVIE_PAGE)
@@ -444,9 +435,33 @@ class MdbListLibraryServiceTest {
         h.http.reply(body = "[]")
         h.http.reply(body = likedLists)
         service.refresh(TrackingRefreshIntent.AUTOMATIC)
-        assertEquals(setOf("mdblist:liked:79776"), h.repository.currentSnapshot()!!.library!!.hiddenListKeys)
+        assertEquals((11..21).filter { it != 12 }.map { "mdblist:dynamic:$it" }.toSet() + "mdblist:liked:79776",
+            h.repository.currentSnapshot()!!.library!!.hiddenListKeys)
         assertEquals(listOf(MDBLIST_WATCHLIST_KEY, MDBLIST_TEST_LIST_KEY, "mdblist:dynamic:12"), service.tabs.first().map { it.key })
         assertEquals(listOf("Shawshank"), service.items.first().map { it.name })
+    }
+
+    @Test
+    fun `a few new dynamic and liked lists are shown at once`() = runTest {
+        val h = MdbListSyncTestHarness(backgroundScope)
+        h.seedLibrary()
+        val service = h.libraryService(backgroundScope)
+        val dynamic = (11..19).joinToString(",") {
+            """{"id":$it,"user_id":42,"name":"Dynamic $it","type":"dynamic","dynamic":true,"last_updated_at":"d1"}"""
+        }
+        h.http.now += MdbListSyncRepository.AUTOMATIC_INTERVAL_MS
+        h.http.reply(body = """[{"id":7,"user_id":42,"name":"Favourites","type":"static","private":true,"last_updated_at":"v1"},$dynamic]""")
+        h.http.reply(body = MDBLIST_EMPTY_LIBRARY_PAGE)
+        repeat(9) { h.http.reply(body = MDBLIST_EMPTY_LIBRARY_PAGE) }
+        h.http.reply(body = "[]")
+        h.http.reply(body = """{"lists":[{"id":79776,"user_id":41631,"name":"Best New Shows","last_updated_at":"l1"}],
+            "pagination":{"has_more":false}}""")
+        h.http.reply(body = MDBLIST_LIBRARY_MOVIE_PAGE)
+        service.refresh(TrackingRefreshIntent.AUTOMATIC)
+        assertEquals(listOf("/lists/user", "/watchlist/items") + (11..19).map { "/lists/$it/items" } +
+            listOf("/external/lists/user", "/lists/liked", "/lists/79776/items"), h.http.engine.requests.map { it.path })
+        assertTrue(h.repository.currentSnapshot()!!.library!!.hiddenListKeys.isEmpty())
+        assertTrue(service.listOptions.first().all { it.visible })
     }
 
     @Test
@@ -480,7 +495,7 @@ class MdbListLibraryServiceTest {
     }
 
     @Test
-    fun `read-only lists are read in full and stop when a page adds nothing new`() = runTest {
+    fun `read-only lists are read in full and stop when a page only repeats titles`() = runTest {
         val h = MdbListSyncTestHarness(backgroundScope)
         val remote = MdbListLibraryRemote(h.http.api, h.repository.currentScope())
         repeat(8) { page ->
@@ -499,6 +514,13 @@ class MdbListLibraryServiceTest {
         val repeated = MdbListLibraryRemote(h2.http.api, h2.repository.currentScope()).items("mdblist:dynamic:12")
         assertEquals(listOf(1L), repeated.map { it.media.ids.tmdb })
         assertEquals(2, h2.http.engine.requests.size)
+
+        val h3 = MdbListSyncTestHarness(backgroundScope)
+        h3.http.reply(body = """{"movies":[{"id":1}],"pagination":{"next_cursor":"a","has_more":true}}""")
+        h3.http.reply(body = """{"items":[{"id":5,"mediatype":"episode"}],"pagination":{"next_cursor":"b","has_more":true}}""")
+        h3.http.reply(body = """{"movies":[{"id":2}],"pagination":{"has_more":false}}""")
+        val afterEpisodes = MdbListLibraryRemote(h3.http.api, h3.repository.currentScope()).items("mdblist:dynamic:12")
+        assertEquals(listOf(1L, 2L), afterEpisodes.map { it.media.ids.tmdb })
     }
 
     @Test

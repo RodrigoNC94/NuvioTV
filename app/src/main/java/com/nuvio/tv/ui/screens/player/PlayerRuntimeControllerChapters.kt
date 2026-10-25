@@ -15,8 +15,12 @@ internal fun PlayerRuntimeController.applyChaptersEnabled(enabled: Boolean) {
 
 /** The file's own chapters, else the media server's named chapters for the title. */
 internal fun PlayerRuntimeController.chaptersFor(tracks: Tracks?): List<PlayerChapter> {
-    if (!chaptersEnabled || isUsingMpvEngine()) return emptyList()
-    val (source, chapters) = tracks?.let { PlayerChapters.fileChapters(it) } ?: ("server" to serverChapters)
+    if (!chaptersEnabled) return emptyList()
+    val (source, chapters) = when {
+        isUsingMpvEngine() -> "mpv" to (if (mpvChaptersStreamUrl == currentStreamUrl) mpvChapters else emptyList())
+        tracks != null -> PlayerChapters.fileChapters(tracks) ?: ("server" to serverChapters)
+        else -> "server" to serverChapters
+    }
     if (chapters.isNotEmpty()) {
         val key = "$currentStreamUrl|$source|${chapters.size}"
         if (key != chaptersLogKey) {
@@ -25,6 +29,20 @@ internal fun PlayerRuntimeController.chaptersFor(tracks: Tracks?): List<PlayerCh
         }
     }
     return chapters
+}
+
+/** mpv lists the chapters itself; they come with the file, so once read for a stream they are kept. */
+internal fun PlayerRuntimeController.refreshMpvChapters(view: NuvioMpvSurfaceView) {
+    if (!chaptersEnabled) return
+    if (mpvChaptersStreamUrl == currentStreamUrl && mpvChapters.isNotEmpty()) {
+        if (_uiState.value.chapters.isEmpty()) refreshChapters()
+        return
+    }
+    val chapters = PlayerChapters.fromMpv(view.readChapters())
+    if (chapters.isEmpty()) return
+    mpvChapters = chapters
+    mpvChaptersStreamUrl = currentStreamUrl
+    refreshChapters()
 }
 
 internal fun PlayerRuntimeController.refreshChapters() {
@@ -79,7 +97,7 @@ internal fun PlayerRuntimeController.dismissChaptersPanel() {
 
 internal fun PlayerRuntimeController.selectChapter(startMs: Long) {
     _uiState.update { it.copy(showChaptersPanel = false) }
-    onEvent(PlayerEvent.OnSeekTo(startMs))
+    onEvent(PlayerEvent.OnSeekTo(startMs, exact = true))
 }
 
 /** Next or previous chapter from where playback is; a short pill names the chapter. */
@@ -89,7 +107,7 @@ internal fun PlayerRuntimeController.jumpChapter(forward: Boolean) {
     val position = _playbackTimeline.value.playbackPosition
     val target = if (forward) PlayerChapters.next(chapters, position) else PlayerChapters.previous(chapters, position)
     if (target == null) return
-    onEvent(PlayerEvent.OnSeekTo(target.startMs))
+    onEvent(PlayerEvent.OnSeekTo(target.startMs, exact = true))
     _uiState.update { it.copy(showAspectRatioIndicator = true, aspectRatioIndicatorText = chapterLabel(context, target)) }
     hideAspectRatioIndicatorJob?.cancel()
     hideAspectRatioIndicatorJob = scope.launch {

@@ -2,6 +2,7 @@
 
 package com.nuvio.tv.ui.screens.player
 
+import com.nuvio.tv.ui.theme.NuvioPrimitives
 import com.nuvio.tv.ui.theme.NuvioTheme
 
 import androidx.compose.animation.AnimatedVisibility
@@ -189,7 +190,7 @@ fun SkipIntroButton(
                     if (it.isFocused) onFocused?.invoke()
                 },
             colors = CardDefaults.colors(
-                containerColor = Color(0xFF1E1E1E).copy(alpha = 0.85f),
+                containerColor = NuvioPrimitives.neutral875.copy(alpha = 0.85f),
                 focusedContainerColor = Color.White
             ),
             shape = CardDefaults.shape(shape = RoundedCornerShape(NuvioTheme.radii.md))
@@ -225,7 +226,7 @@ fun SkipIntroButton(
                         modifier = Modifier
                             .fillMaxWidth(progress)
                             .height(NuvioTheme.spacing.xs)
-                            .background(Color(0xFF1E1E1E).copy(alpha = if (controlsVisible || autoHidden || dismissed) 0f else 0.85f))
+                            .background(NuvioPrimitives.neutral875.copy(alpha = if (controlsVisible || autoHidden || dismissed) 0f else 0.85f))
                     )
                 }
             }

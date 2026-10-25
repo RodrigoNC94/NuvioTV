@@ -24,8 +24,10 @@ internal class MdbListLibraryRemote(private val api: MdbListApiClient, private v
         val addedOrders = previous?.addedOrders.orEmpty().toMutableMap().apply { remove(MDBLIST_WATCHLIST_KEY) }
         val known = previous?.tabs().orEmpty().mapTo(mutableSetOf()) { it.key }
         val hidden = previous?.hiddenListKeys.orEmpty().toMutableSet()
-        // Dynamic and liked lists can hold thousands of titles each, so new ones start hidden until turned on in settings.
-        dynamicLists.filterNot { it.key in known }.mapTo(hidden) { it.key }
+        // Dynamic and liked lists can hold thousands of titles each, so a big batch of new ones starts hidden until
+        // turned on in settings.
+        val newDynamic = dynamicLists.map { it.key }.filterNot { it in known }
+        if (newDynamic.size > MDBLIST_NEW_LISTS_SHOWN_LIMIT) hidden += newDynamic
         for ((key, updatedAt) in lists.map { it.key to it.updatedAt } + dynamicLists.map { it.key to it.updatedAt }) {
             // Hidden lists are not shown anywhere, so skip downloading their items.
             if (key in hidden) {
@@ -37,7 +39,7 @@ internal class MdbListLibraryRemote(private val api: MdbListApiClient, private v
         val externalLists = synchronizeOptional("External", previous, previous?.externalLists.orEmpty(), hidden, null,
             reuseItems, items, addedOrders) { decodeMdbListExternalLists(api.get("/external/lists/user", scope = scope).body) }
         val likedLists = synchronizeOptional("Liked", previous, previous?.likedLists.orEmpty(), hidden, known,
-            reuseItems, items, addedOrders) { likedLists(accountId) }
+            reuseItems, items, addedOrders, newDynamic.size) { likedLists(accountId) }
         val snapshot = MdbListLibrarySnapshot(lists, items, now, addedOrders = addedOrders.filterKeys { it in items },
             itemsOrder = MDBLIST_ITEMS_ORDER, externalLists = externalLists, dynamicLists = dynamicLists,
             likedLists = likedLists)
@@ -52,19 +54,23 @@ internal class MdbListLibraryRemote(private val api: MdbListApiClient, private v
         previous: MdbListLibrarySnapshot?,
         previousLists: List<T>,
         hidden: MutableSet<String>,
-        // Lists missing from these keys start hidden; null keeps new lists shown.
+        // Lists missing from these keys count as new; null keeps new lists shown.
         knownKeys: Set<String>?,
         reuseItems: Boolean,
         items: MutableMap<String, List<MdbListLibraryItem>>,
         addedOrders: MutableMap<String, Map<String, List<MdbListLibraryOrderItem>>>,
+        otherNewLists: Int = 0,
         fetchLists: suspend () -> List<T>
     ): List<T> {
         val fetched = linkedMapOf<String, List<MdbListLibraryItem>>()
         val synchronized = try {
             val lists = fetchLists()
             val previousUpdatedAt = previousLists.associate { it.key to it.updatedAt }
+            if (knownKeys != null) {
+                val newKeys = lists.map { it.key }.filterNot { it in knownKeys }
+                if (otherNewLists + newKeys.size > MDBLIST_NEW_LISTS_SHOWN_LIMIT) hidden += newKeys
+            }
             for (list in lists) {
-                if (knownKeys != null && list.key !in knownKeys) hidden += list.key
                 if (list.key in hidden) {
                     addedOrders.remove(list.key)
                     continue
@@ -134,7 +140,7 @@ internal class MdbListLibraryRemote(private val api: MdbListApiClient, private v
             val before = items.size
             page.items.forEach { item -> if (item.key !in items) items[item.key] = item }
             // A read-only list page that repeats earlier titles means the server is looping, so stop there.
-            if (readOnly && items.size == before) return items.values.toList()
+            if (readOnly && page.items.isNotEmpty() && items.size == before) return items.values.toList()
             val nextCursor = page.nextCursor ?: response.header("X-Next-Cursor")?.takeIf { it.isNotBlank() }
             query = when {
                 nextCursor != null -> initial + ("cursor" to nextCursor)
@@ -156,6 +162,8 @@ internal fun mdbListLibraryItemsPath(key: String): String = when {
 }
 
 internal fun mdbListExternalListId(key: String): Long = mdbListPrefixedListId(key, MDBLIST_EXTERNAL_LIST_KEY_PREFIX)
+
+private const val MDBLIST_NEW_LISTS_SHOWN_LIMIT = 10
 
 /** External, dynamic and liked lists are read-only: items are never added to or removed from them. */
 internal fun isMdbListReadOnlyListKey(key: String): Boolean =

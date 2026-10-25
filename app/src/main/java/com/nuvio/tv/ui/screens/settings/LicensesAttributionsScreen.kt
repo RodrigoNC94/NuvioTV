@@ -64,6 +64,7 @@ import com.nuvio.tv.R
 import com.nuvio.tv.core.cloud.PremiumizeCloudLibraryPosterUrl
 import com.nuvio.tv.core.cloud.TorboxCloudLibraryPosterUrl
 import com.nuvio.tv.core.cloud.cloudLibraryDisplayArtworkUrl
+import com.nuvio.tv.ui.util.rememberRawSvgPainter
 
 private const val NuvioRepositoryUrl = "https://github.com/ysosrs123/NuvioTV-Fork"
 private const val TmdbUrl = "https://www.themoviedb.org"
@@ -337,7 +338,7 @@ private fun AttributionLogo(
         Image(
             painter = when (logo) {
                 is LicenseLogo.Drawable -> painterResource(id = logo.resId)
-                is LicenseLogo.Raw -> rememberRawSvgPainter(rawIconRes = logo.resId)
+                is LicenseLogo.Raw -> rememberRawSvgPainter(rawIconRes = logo.resId, targetSize = NuvioTheme.spacing.xxxl)
                 is LicenseLogo.Url -> rememberUrlSvgPainter(url = logo.url)
             },
             contentDescription = null,
@@ -345,21 +346,6 @@ private fun AttributionLogo(
             contentScale = ContentScale.Fit
         )
     }
-}
-
-@Composable
-private fun rememberRawSvgPainter(@RawRes rawIconRes: Int): Painter {
-    val context = LocalContext.current
-    val density = LocalDensity.current
-    val sizePx = with(density) { NuvioTheme.spacing.xxxl.roundToPx() }
-    val request = remember(rawIconRes, context, sizePx) {
-        ImageRequest.Builder(context)
-            .data(rawIconRes)
-            .size(sizePx)
-            .crossfade(false)
-            .build()
-    }
-    return rememberAsyncImagePainter(model = request)
 }
 
 @Composable

@@ -95,6 +95,7 @@ internal fun PlayerRuntimeController.releasePlayer(
         runCatching { player.playWhenReady = false }
         runCatching { player.stop() }
         runCatching { player.clearVideoSurface() }
+        runCatching { player.releaseAssHandlerCompat() }
         val releaseStartMs = android.os.SystemClock.elapsedRealtime()
         runCatching { player.release() }
         val releaseMs = android.os.SystemClock.elapsedRealtime() - releaseStartMs

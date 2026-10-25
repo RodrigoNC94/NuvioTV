@@ -673,16 +673,6 @@
     <string name="sub_advanced_section">Pokročilé renderovanie titulkov</string>
     <string name="sub_libass">Použiť libass pre ASS/SSA titulky</string>
     <string name="sub_libass_sub">Experimentálne: pokročilé ASS/SSA renderovanie (štýly, pozícia, animácie)</string>
-    <string name="sub_libass_mode">Režim renderovania Libass</string>
-    <string name="sub_mode_overlay_gl">Overlay OpenGL (odporúčané)</string>
-    <string name="sub_mode_overlay_gl_sub">Najlepšia kvalita s podporou HDR. Renderuje titulky v samostatnom vlákne.</string>
-    <string name="sub_mode_overlay_canvas">Overlay Canvas</string>
-    <string name="sub_mode_effects_gl">Efekty OpenGL</string>
-    <string name="sub_mode_effects_gl_sub">Podpora animácií pomocou Media3 efektov. Rýchlejšie ako Canvas.</string>
-    <string name="sub_mode_effects_canvas">Efekty Canvas</string>
-    <string name="sub_mode_effects_canvas_sub">Podpora animácií pomocou Media3 efektov s Canvas renderovaním.</string>
-    <string name="sub_mode_standard">Štandardné titulky</string>
-    <string name="sub_mode_standard_sub">Základné renderovanie titulkov bez podpory animácií. Najkompatibilnejšie.</string>
     <string name="sub_org_none">Žiadne (predvolené poradie)</string>
     <string name="sub_org_by_lang">Podľa jazyka</string>
     <string name="sub_org_by_addon">Podľa doplnku</string>
@@ -795,13 +785,13 @@
     <string name="layout_section_continue_watching">Pokračovať v sledovaní</string>
     <string name="layout_section_continue_watching_desc">Nastavenia pre sekciu Pokračovať v sledovaní.</string>
     <string name="layout_use_episode_thumbnails_cw">Použiť miniatúry epizód v Pokračovať v sledovaní</string>
-    <string name="layout_use_episode_thumbnails_cw_sub">Použiť miniatúry epizód ako predvolený obrázok; keď je zakázané, použije sa pozadie.</string>
+    <string name="layout_use_episode_thumbnails_cw_sub">Použiť miniatúry epizód ako predvolený obrázok. Keď je zakázané, použije sa pozadie.</string>
     <string name="layout_blur_unwatched">Rozmazať nevidené epizódy</string>
     <string name="layout_blur_unwatched_sub">Rozmazať náhľady epizód, kým nie sú videné, aby sa predišlo spoilerom.</string>
     <string name="layout_blur_cw_next_up">Rozmazať nevidené v Pokračovať v sledovaní</string>
     <string name="layout_blur_cw_next_up_sub">Rozmazať náhľady ďalších epizód v pokračovať v sledovaní, aby sa predišlo spoilerom.</string>
     <string name="layout_next_up_furthest_episode">Ďalšia epizóda v poradí</string>
-    <string name="layout_next_up_furthest_episode_sub">Zobraziť ďalšiu epizódu na základe najďalej sledovanej epizódy; zakážte pre opätovné sledovanie, aby sa použila naposledy sledovaná epizóda.</string>
+    <string name="layout_next_up_furthest_episode_sub">Zobraziť ďalšiu epizódu na základe najďalej sledovanej epizódy. Zakážte pre opätovné sledovanie, aby sa použila naposledy sledovaná epizóda.</string>
     <string name="layout_show_unaired_next_up">Zobraziť nevysielané epizódy</string>
     <string name="layout_show_unaired_next_up_sub">Zahrnúť nadchádzajúce epizódy do Pokračovať v sledovaní pred ich odvysielaním.</string>
     <string name="layout_cw_sort_mode">Poradie zoradenia</string>
@@ -1911,7 +1901,6 @@
     <string name="player_error_failed_start_torrent">Nepodarilo sa spustiť torrent: %1$s</string>
 
     
-    <string name="sub_mode_overlay_canvas_sub">Podpora HDR s Canvas renderovaním. Môže blokovať UI vlákno.</string>
     <string name="subtitle_style_weight">Hrúbka</string>
 
     
@@ -2535,7 +2524,7 @@
 <string name="audio_strip_hdr10plus_sub">Odstráni dynamické metadáta HDR10+ zo streamov. Ak je zároveň zapnutá konverzia na DV8.1, odstránenie prebehne až po konverzii.</string>
 <string name="audio_dv7_preserve_mapping_title">Zachovať mapovanie DV (DV7 na DV8.1)</string>
 <string name="audio_dv7_preserve_mapping_sub">Vyžiada zachovanie mapovania, ale pribalené C API libdovi ho nevie dodať: prehrávanie sa vráti k štandardnej konverzii 8.1 (mapovanie sa nezachová). Do logu sa raz zapíše varovanie DV7_NATIVE.</string>
-<string name="dv7_libdovi_mode_caption">Režim konverzie (automaticky vybraný, nemeňte, kým na to nebudete výslovne vyzvaní). Vyberte možnosť na jej vynútenie; nastavenie Žiadny použije automatický režim. Aktívne iba vtedy, keď je spracovanie DV7 nastavené na Konvertovať na DV8.1.</string>
+<string name="dv7_libdovi_mode_caption">Režim konverzie (vybraný automaticky). Vyberte pre vynútenie; Žiadny použije automatiku. Aktívne len pri spracovaní DV7 nastavenom na Konvertovať na DV8.1.</string>
 <string name="dv7_libdovi_mode_row_title">Režim konverzie</string>
 <string name="dv7_libdovi_mode_none_title">Žiadny</string>
 <string name="dv7_libdovi_mode_none_sub">Bez prepísania. Použije sa automaticky vybraný režim konverzie.</string>
@@ -2577,7 +2566,7 @@
 <string name="settings_card_depth_coverage_full">Celý obvod</string>
 <string name="settings_card_depth_coverage_value">Pokrytie okrajov</string>
 <string name="settings_card_depth_surface_posters">Plagáty</string>
-<string name="settings_card_depth_surface_continue_watching">Kde ste skončili</string>
+<string name="settings_card_depth_surface_continue_watching">Pokračovať v sledovaní</string>
 <string name="settings_card_depth_surface_episodes">Karty epizód</string>
 <string name="settings_card_depth_surface_cast">Obsadenie</string>
 <string name="settings_card_depth_surface_trailers">Upútavky</string>
@@ -2747,25 +2736,25 @@
 <string name="playback_net_nuvio_performance_mode_sub">Povoľuje natívny alokátor mimo haldy a optimalizácie čistenia pamäte.</string>
 <string name="playback_net_nuvio_performance_mode_not_supported">Môže spôsobovať zlyhanie na zariadeniach bez podpory.</string>
 <string name="playback_buffer_custom">Vlastné vyrovnávacie pamäte prehrávania</string>
-<string name="playback_buffer_custom_sub">Nahradiť predvolené vyrovnávanie pamäte Media3 nižšie uvedenými hodnotami. Pri vypnutí bude prehrávač používať štandardnú veľkosť a trvanie vyrovnávacej pamäte Media3.</string>
+<string name="playback_buffer_custom_sub">Prepíše predvolenú vyrovnávaciu pamäť Media3 hodnotami nižšie. Vypnutím použiť predvolené nastavenia Media3.</string>
 <string name="playback_buffer_header">Vyrovnávacia pamäť</string>
 <string name="playback_buffer_warning">Tieto nastavenia ovplyvňujú správanie vyrovnávacej pamäte. Nesprávne hodnoty môžu spôsobiť problémy s prehrávaním.</string>
 <string name="playback_buffer_min">Minimálna doba vyrovnávacej pamäte</string>
-<string name="playback_buffer_min_sub">Minimálne množstvo médií vo vyrovnávacej pamäti. Prehrávač sa pokúsi zabezpečiť načítanie aspoň tohto množstva obsahu pred aktuálnou pozíciou prehrávania.</string>
+<string name="playback_buffer_min_sub">Minimálny objem dát na načítanie dopredu. Prehrávač sa snaží vždy udržiavať aspoň toto množstvo obsahu načítané v pamäti.</string>
 <string name="playback_buffer_max">Maximálna doba vyrovnávacej pamäte</string>
-<string name="playback_buffer_max_sub">Maximálne množstvo médií vo vyrovnávacej pamäti. Musí byť rovné alebo vyššie ako minimálna doba vyrovnávacej pamäte. Vyššie hodnoty spotrebujú viac pamäte, ale zaručujú plynulejšie prehrávanie na nestabilných pripojeniach.</string>
+<string name="playback_buffer_max_sub">Maximálny objem dát na načítanie dopredu. Vyššie hodnoty využívajú viac pamäte, no zaisťujú plynulejšie prehrávanie pri nestabilnom pripojení.</string>
 <string name="playback_buffer_value_same_as_min">%1$d s (rovnako ako min)</string>
 <string name="playback_buffer_initial">Počiatočná vyrovnávacia pamäť</string>
-<string name="playback_buffer_initial_sub">Množstvo obsahu, ktoré sa musí načítať pred spustením prehrávania. Nižšie hodnoty zabezpečia rýchlejší štart, ale môžu spôsobiť sekanejšie prehrávanie na pomalších pripojeniach.</string>
+<string name="playback_buffer_initial_sub">Množstvo obsahu, ktoré sa musí načítat pred spustením prehrávania. Nižšie hodnoty zrýchlia štart, no pri pomalom pripojení môžu spôsobiť sekanie.</string>
 <string name="playback_buffer_after_rebuffer">Vyrovnávacia pamäť po opätovnom načítaní</string>
 <string name="playback_buffer_after_rebuffer_sub">Množstvo obsahu na načítanie po pozastavení prehrávania z dôvodu vyprázdnenia pamäte. Vyššie hodnoty znižujú riziko opakovaných prerušení.</string>
 <string name="playback_buffer_back">Trvanie spätnej vyrovnávacej pamäte</string>
 <string name="playback_buffer_back_sub">Množstvo už prehraného obsahu ponechané v pamäti. Umožňuje rýchle pretáčanie dozadu bez opätovného sťahovania. Nastavením na 0 funkciu vypnete pre úsporu pamäte.</string>
 <string name="playback_buffer_back_reserve">Rezervuje ~%1$d MB nad rámec cieľovej vyrovnávacej pamäte. Zvýšenie maximálnej doby vyrovnávacej pamäte zmenšuje túto rezervu bez straty času spätnej vyrovnávacej pamäte.</string>
 <string name="playback_buffer_managed">Spravovaný rozpočet pamäte</string>
-<string name="playback_buffer_managed_sub">Obmedzuje vyrovnávaciu pamäť na bezpečný podiel pamäte zariadenia. Vypnutím funkcie nastavíte cieľovú veľkosť vyrovnávacej pamäte manuálne (pokročilé — vysoké hodnoty môžu spôsobiť pád aplikácie na zariadeniach s malou pamäťou).</string>
+<string name="playback_buffer_managed_sub">Obmedzí vyrovnávaciu pamäť na bezpečnú úroveň. Vypnutím môžete veľkosť nastaviť ručne (vysoké hodnoty môžu spôsobiť pád aplikácie).</string>
 <string name="playback_buffer_target">Cieľová veľkosť vyrovnávacej pamäte</string>
-<string name="playback_buffer_target_sub">Maximálna pamäť RAM použitá na načítavanie dopredu. Maximum sa vypočíta z dostupnej pamäte zariadenia (limit haldy aplikácie Android), takže zariadenia s väčšou RAM automaticky odomknú vyššie limity.</string>
+<string name="playback_buffer_target_sub">Maximálna RAM pre načítavanie dopredu. Limit sa odvíja od pamäte zariadenia, takže zariadenia s väčšou RAM automaticky umožnia vyššie hodnoty.</string>
 <string name="playback_buffer_target_managed_hint">Spravované rozpočtom pamäte zariadenia. Pre manuálne nastavenie vypnite Spravovaný rozpočet pamäte.</string>
 <string name="playback_buffer_target_warning">Upozornenie: Hodnota je nad bezpečným limitom zariadenia (%1$d MB). Aplikácia sa môže počas prehrávania zrútiť.</string>
 <string name="playback_buffer_target_danger_warning">Nebezpečenstvo: Hodnota je nad varovným limitom (%1$d MB). Vysoké riziko pádu aplikácie.</string>
@@ -3097,7 +3086,7 @@
 
     <string name="advanced_player_stats_hud">Prekrytie štatistík prehrávania</string>
     <string name="advanced_confirm_exit">Úplné ukončenie pri zavretí</string>
-    <string name="advanced_confirm_exit_subtitle">Pri ukončení úplne zatvoriť aplikáciu a uvoľniť pamäť; vyžaduje dvojité stlačenie tlačidla Späť na potvrdenie.</string>
+    <string name="advanced_confirm_exit_subtitle">Pri ukončení úplne zatvoriť aplikáciu a uvoľniť pamäť. Vyžaduje dvojité stlačenie tlačidla Späť na potvrdenie.</string>
     <string name="confirm_exit_toast">Stlačte Späť ešte raz pre ukončenie</string>
     <string name="autoplay_post_play_recommendations">Odporúčania po prehratí</string>
     <string name="autoplay_post_play_recommendations_sub">Zobraziť odporúčania pred koncom filmov a seriálov.</string>
@@ -3341,8 +3330,8 @@
     <string name="settings_p2p_clear_cache_playback_active">Pred vymazaním vyrovnávacej pamäte zastavte prehrávanie P2P</string>
     <string name="settings_p2p_clear_cache_done">Vymazaných %1$s neaktívnych dát torrentov</string>
     <string name="settings_p2p_clear_cache_failed">Nepodarilo sa vymazať vyrovnávaciu pamäť torrentov</string>
-    <string name="library_sort_released_desc">Dátum vydania ↓</string>
-    <string name="library_sort_released_asc">Dátum vydania ↑</string>
+    <string name="library_sort_released_asc">Najstaršie vydané</string>
+    <string name="library_sort_released_desc">Najnovšie vydané</string>
     <string name="collections_editor_catalog_missing">Katalóg nie je k dispozícii</string>
     <string name="player_torrent_fetching_metadata">Načítavajú sa metadáta torrentu…</string>
     <string name="player_torrent_preparing_stream">Pripravuje sa stream torrentu…</string>
@@ -3377,13 +3366,39 @@
     <string name="autosync_tolerance_off">Vypnuté</string>
     <string name="autosync_tolerance_value">%1$d ms</string>
     <string name="autosync_thorough_title">Dôkladné vyhľadávanie automatickej synchronizácie</string>
-    <string name="autosync_thorough_description">Pred synchronizáciou pokračovať v porovnávaní ostatných titulkov a vložených stôp pre presnejšiu zhodu. Keď je možnost vypnutá, prvý silný zhoda sa použije skôr. Použijú sa iba dostatočne spoľahlivé zhody.</string>
+    <string name="autosync_thorough_description">Pred synchronizáciou pokračovať v porovnávaní ostatných titulkov a vložených stôp pre presnejšiu zhodu. Keď je možnost vypnutá, prvá silná zhoda sa použije skôr. Použijú sa iba dostatočne spoľahlivé zhody.</string>
     <string name="autosync_toast_failed">Synchronizácia zlyhala: Automatickej synchronizácii sa nepodarilo priradiť tieto titulky k videu.</string>
     <string name="autosync_toast_failed_no_reference">Synchronizácia zlyhala: toto video nemá žiadne vložené titulky na porovnanie.</string>
     <string name="autosync_toast_failed_unsupported">Synchronizácia zlyhala: Automatická synchronizácia nepodporuje tento formát titulkov.</string>
     <string name="autosync_label_synced">Automaticky synchronizované</string>
 
-    <!-- Nuvio-test additions -->
+    <string name="ambient_mode_title">Ambientný režim</string>
+    <string name="ambient_mode_enabled_subtitle">Fill the screen with backdrops after a period with no remote input</string>
+    <string name="ambient_mode_timeout">Spustiť po</string>
+    <string name="ambient_mode_timeout_subtitle">Ako dlho čakať na spustenie ambientného režimu</string>
+    <string name="ambient_mode_catalogs">Katalógy</string>
+    <string name="ambient_mode_catalogs_subtitle">Vyberte až 3 katalógy, z ktorých sa budú čerpať obrázky</string>
+    <string name="ambient_mode_catalogs_dialog_subtitle">Vyberte až 3 katalógy</string>
+    <string name="ambient_mode_catalogs_default">Rovnako ako v hlavnom paneli</string>
+    <string name="ambient_mode_catalogs_count">%1$d z %2$d</string>
+    <string name="about_update_auto_install_title">Inštalovať aktualizácie automaticky</string>
+    <string name="about_update_auto_install_subtitle">Sťahovať nové verzie na pozadí a inštalovať ich, kým je zariadenie neaktívne</string>
+    <string name="about_update_auto_install_notice_title">Upozorniť po automatickej aktualizácii</string>
+    <string name="about_update_auto_install_notice_subtitle">Zobraziť banner pri ďalšom spustení po automatickej aktualizácii aplikácie</string>
+    <string name="sub_hdr_style">Samostatný štýl pre HDR / Dolby Vision</string>
+    <string name="sub_hdr_style_sub">Použiť odlišnú farbu textu a nižší jas pre titulky pri videách v HDR a Dolby Vision</string>
+    <string name="sub_hdr_text_color">Farba textu pre HDR</string>
+    <string name="sub_hdr_brightness">Jas titulkov pre HDR</string>
+    <string name="layout_custom_poster_screen_tv_recommendations">Odporúčania na TV</string>
+    <string name="settings_stream_badges_in_player_title">Zobraziť v prehrávači</string>
+    <string name="player_engine_switch_title">Prepnúť na %1$s?</string>
+    <string name="player_engine_switch_message">Video sa znova načíta od miesta, kde ste skončili.</string>
+    <string name="subtitle_style_text_color_hdr">Farba textu (HDR)</string>
+    <string name="subtitle_style_text_opacity_hdr">Priehľadnosť textu (HDR)</string>
+    <string name="subtitle_style_brightness_hdr">Jas (HDR)</string>
+    <string name="update_installed_automatically">Automaticky aktualizované, kým bolo zariadenie neaktívne</string>
+    <string name="stream_resume_from_time">Pokračovať od %1$s</string>
+    <string name="stream_resume_from_percent">Pokračovať od %1$d%%</string>
     <string name="cw_no_artwork">Bez obrázka</string>
     <string name="detail_eyebrow_episodes">Epizódy</string>
     <string name="detail_trailer_error_age_restricted">Tento trailer je na YouTube vekovo obmedzený a nedá sa tu prehrať.</string>
@@ -3391,21 +3406,12 @@
     <string name="detail_trailer_error_sign_in">YouTube vyžaduje na prehranie tohto traileru prihlásenie.</string>
     <string name="appearance_screensaver_group_title">Šetrič obrazovky</string>
     <string name="appearance_screensaver_group_subtitle">Čo obrazovka zobrazí po chvíli bez použitia diaľkového ovládača</string>
-    <string name="ambient_mode_title">Režim Ambient</string>
-    <string name="ambient_mode_enabled_subtitle">Vyplniť obrazovku pozadiami po čase bez použitia ovládača</string>
-    <string name="ambient_mode_timeout">Spustiť po</string>
-    <string name="ambient_mode_timeout_subtitle">Ako dlho čakať pred spustením režimu Ambient</string>
     <plurals name="ambient_mode_timeout_minutes">
         <item quantity="one">%1$d minúta</item>
         <item quantity="few">%1$d minúty</item>
         <item quantity="many">%1$d minúty</item>
         <item quantity="other">%1$d minút</item>
     </plurals>
-    <string name="ambient_mode_catalogs">Katalógy</string>
-    <string name="ambient_mode_catalogs_subtitle">Vyberte až 3 katalógy, z ktorých sa načítajú obrázky</string>
-    <string name="ambient_mode_catalogs_dialog_subtitle">Vyberte až 3 katalógy</string>
-    <string name="ambient_mode_catalogs_default">Rovnaké ako hero</string>
-    <string name="ambient_mode_catalogs_count">%1$d z %2$d</string>
     <string name="appearance_screensaver_enabled">Stlmiť pri nečinnosti</string>
     <string name="appearance_screensaver_enabled_subtitle">Po čase nečinnosti prekryje obrazovku tmavá vrstva. Stlačenie ľubovoľného tlačidla obrazovku prebudí.</string>
     <string name="appearance_screensaver_timeout">Čas nečinnosti</string>
@@ -3563,7 +3569,6 @@
     <string name="layout_trailer_logo">Logo cez trailer v karte</string>
     <string name="layout_trailer_logo_sub">Zobraziť logo titulu cez trailer prehrávaný v karte.</string>
     <string name="layout_preset_extra_large">Veľmi veľké</string>
-    <string name="layout_custom_poster_screen_tv_recommendations">Odporúčania TV</string>
     <string name="layout_addon_landscape_backdrop_logo">Pozadie s logom v riadkoch doplnkov na šírku</string>
     <string name="layout_addon_landscape_backdrop_logo_sub">Riadky, ktoré doplnok už zobrazuje na šírku, používajú jeho vlastné obrázky. Po zapnutí sa aj tam použije pozadie s logom titulu.</string>
     <string name="mdblist_account_title">Účet</string>
@@ -3585,6 +3590,26 @@
     <string name="player_layout_more_hidden_help">Tlačidlo Viac a akcie v jeho ponuke sú skryté. Zobrazte Viac, aby sa ponuka vrátila, alebo presuňte akciu mimo Viac, aby sa zobrazila priamo.</string>
     <string name="player_layout_more_fixed_help">Stlačením OK skryjete alebo zobrazíte Viac. Zostáva úplne vpravo. Presúvaním ostatných akcií cez hranicu jeho ponuky meníte obsah ponuky.</string>
     <string name="player_error_placeholder_stream">Tento stream vyzerá ako chybová karta poskytovateľa, nie ako video. Skúste iný zdroj.</string>
+    <string name="audio_listening_section">Počúvanie</string>
+    <string name="audio_night_mode_label">Nočný režim</string>
+    <string name="audio_night_mode_off">Vypnuté</string>
+    <string name="audio_night_mode_light">Mierny</string>
+    <string name="audio_night_mode_medium">Stredný</string>
+    <string name="audio_night_mode_strong">Silný</string>
+    <string name="audio_night_mode_help">Zmierňuje hlasné momenty a zdvíha tiché.</string>
+    <string name="audio_night_mode_unavailable">Vypnuté počas priechodu zvuku: zvuk ide k zosilňovaču bez zmeny.</string>
+    <string name="audio_night_mode_settings_sub">Zmierňuje hlasné momenty a zdvíha tiché. Funguje na zvuk dekódovaný aplikáciou, nie počas priechodu zvuku.</string>
+    <string name="audio_night_mode_dialog_subtitle">Vyrovnáva hlasné a tiché momenty. Funguje na reproduktoroch TV, soundbaroch a zosilňovačoch s PCM. Zvuk pri priechode sa nikdy nemení.</string>
+    <string name="audio_night_mode_off_desc">Zvuk tak, ako bol namiešaný.</string>
+    <string name="audio_night_mode_light_desc">Uberie z najhlasnejších momentov.</string>
+    <string name="audio_night_mode_medium_desc">Na večery. Hlasné scény pokojnejšie, tichú reč je lepšie počuť.</string>
+    <string name="audio_dialogue_boost_label">Zosilnenie dialógov</string>
+    <string name="audio_dialogue_boost_value_db">+%1$d dB</string>
+    <string name="audio_dialogue_boost_help">Zosilní stredný kanál, kde je väčšina reči. Od vypnuté do +12 dB.</string>
+    <string name="audio_dialogue_boost_stereo">Táto stopa je stereo, takže nie je žiadny samostatný kanál reči, ktorý by sa dal zosilniť.</string>
+    <string name="audio_dialogue_boost_mixed">Zvuk príde do aplikácie už zmiešaný do sterea. Ak to chcete použiť, zapnite downmix v nastaveniach zvuku.</string>
+    <string name="audio_dialogue_boost_mpv_multichannel">S MPV to funguje, keď sa zvuk mieša do sterea, napríklad na reproduktoroch TV.</string>
+    <string name="audio_night_mode_strong_desc">Na neskoré noci a malé izby. Najvyrovnanejší zvuk, akčné scény sú menej úderné.</string>
     <string name="subtitle_panel_languages">Jazyky</string>
     <string name="library_empty_mdblist_title">Žiadne %1$s vo watchliste</string>
     <string name="library_empty_mdblist_subtitle">Použite + v detailoch pre pridanie položiek do watchlistu MDBList</string>
@@ -3606,7 +3631,6 @@
     <string name="library_transfer_copy">Kopírovať</string>
     <string name="library_transfer_move">Presunúť (skopírovať, potom odstrániť zo zdroja)</string>
     <string name="library_transfer_none">Nie je čo kopírovať</string>
-    <string name="sub_mode_effects_warning">Náročné: v 4K môže vynechávať snímky a vypína tunelované prehrávanie.</string>
     <string name="cd_playback_stats">Štatistiky prehrávania</string>
     <string name="player_stats_unavailable_mpv">Štatistiky nie sú pre engine libmpv dostupné</string>
     <string name="player_dead_source_failover">Zdroj nedostupný - skúša sa ďalší zdroj (%1$d/%2$d)</string>
@@ -3817,7 +3841,7 @@
     <string name="player_pill_next_episode">Ďalšia epizóda</string>
     <string name="ui_scale_title">Mierka rozhrania</string>
     <string name="ui_scale_group_subtitle">Zmení veľkosť celého rozhrania medzi 85% a 115%</string>
-    <string name="panel_audio_adjustments">Oneskorenie a zosilnenie</string>
+    <string name="panel_audio_adjustments">Úpravy zvuku</string>
     <string name="panel_audio_back_to_tracks">Späť na stopy</string>
     <string name="v2_glass_preset">Predvoľba skla</string>
     <string name="v2_glass_clear">Číre</string>
@@ -3841,8 +3865,6 @@
     <string name="v2_settings_background_midnight">Polnočná modrá</string>
     <string name="v2_settings_background_charcoal">Antracitová</string>
     <string name="layout_trailer_feathered">Okno traileru s mäkkými okrajmi</string>
-    <string name="playback_dim_hdr_overlays">Stlmiť ovládanie a titulky v HDR</string>
-    <string name="playback_dim_hdr_overlays_sub">Jemnejšie ovládacie prvky a jasné miesta titulkov pri prehrávaní HDR, HLG a Dolby Vision. Jas videa sa nemení. Natívne štýly ASS zostávajú zachované.</string>
     <string name="subtitle_bitmap_style_note">Veľkosť obrázkových titulkov sa ukladá zvlášť od veľkosti textových. Písmo, obrys a farba sú súčasťou obrázka.</string>
     <string name="subtitle_bitmap_mpv_note">MPV zmenu veľkosti obrázkových titulkov nepodporuje. Na nastavenie ich veľkosti nezávisle od textu použite ExoPlayer.</string>
     <string name="subtitle_style_image_size">Veľkosť obrázkových titulkov</string>
@@ -3927,6 +3949,14 @@
     <string name="subtitle_edge_drop_shadow">Vrhnutý tieň</string>
     <string name="subtitle_shadow_note">Jemný tmavý tieň. V MPV nahrádza pozadie titulkov.</string>
     <string name="subtitle_font_and_weight">Písmo a hrúbka</string>
+    <string name="playback_seeking">Pretáčanie</string>
+    <string name="playback_seeking_sub">Ako rýchlo sa zrýchľuje podržanie doľava alebo doprava a ako dlho film čaká na miniatúre, kým skočí. Bez miniatúr skočí vždy hneď, ako tlačidlo pustíte.</string>
+    <string name="playback_seeking_gentle">Jemné</string>
+    <string name="playback_seeking_gentle_desc">Pomaly a plynulo. Prejde každá miniatúra; pred skokom čaká 2 s.</string>
+    <string name="playback_seeking_balanced">Vyvážené</string>
+    <string name="playback_seeking_balanced_desc">Začne pomaly, potom zrýchli. Pred skokom chvíľu počká.</string>
+    <string name="playback_seeking_fast">Rýchle</string>
+    <string name="playback_seeking_fast_desc">Ako oficiálna aplikácia. Veľké kroky, skočí hneď, ako tlačidlo pustíte.</string>
     <string name="seek_thumbnails_title">Miniatúry pri pretáčaní</string>
     <string name="seek_thumbnails_subtitle">Miniatúry titulu nad ukazovateľom priebehu pri pretáčaní.</string>
     <string name="seek_thumbnails_mode_off">Vypnuté</string>
@@ -3941,6 +3971,7 @@
     <string name="seek_thumbnails_prepare_off_desc">Prehrávanie začne hneď; miniatúry sa vytvárajú pri pozastavení a po skončení sledovania.</string>
     <string name="seek_thumbnails_prepare_on">Zapnuté</string>
     <string name="seek_thumbnails_prepare_on_desc">Vytvorí miniatúry titulu na pretáčanie pred spustením. \"Začať sledovať hneď\" alebo Späť spustí prehrávanie kedykoľvek.</string>
+    <string name="seek_thumbnails_prepare_on_small_desc">Na tomto zariadení sa filmy 4K načítajú až po vytvorení ich miniatúr.</string>
     <string name="seek_thumbnails_before_play_title">Miniatúry pred prehraním</string>
     <string name="seek_thumbnails_before_play_subtitle">Koľko miniatúr sa vytvorí, skôr než sa titul začne prehrávať. Ostatné vznikajú počas sledovania až po obvyklú hustotu.</string>
     <string name="seek_thumbnails_before_play_full">Plné</string>
@@ -3963,6 +3994,7 @@
     <string name="seek_thumbnails_ready_detail">Miniatúry: %1$d · spúšťa sa prehrávanie</string>
     <string name="seek_thumbnails_time_left_seconds">Zostáva asi %1$d s</string>
     <string name="seek_thumbnails_time_left_minutes">Zostáva asi %1$d min %2$d s</string>
+    <string name="seek_thumbnails_film_loads_after">4K na tomto zariadení: film sa načíta, keď sa toto dokončí</string>
     <string name="seek_thumbnails_count">%1$d z %2$d</string>
     <string name="seek_thumbnails_start_now">Začať sledovať hneď</string>
     <string name="seek_thumbnails_settings_hint">Zapnite alebo vypnite v Nastavenia › Prehrávanie › Rozhranie prehrávača</string>
@@ -4107,4 +4139,15 @@
     <string name="detail_episode_synopsis_none">Táto epizóda zatiaľ nemá popis.</string>
     <string name="player_track_role_commentary">Komentár</string>
     <string name="player_track_role_audio_description">Audiodeskripcia</string>
+
+    <!-- Nuvio-test additions -->
+    <string name="sub_libass_render_scale">Rozlíšenie vykresľovania titulkov</string>
+    <string name="sub_libass_render_scale_sub">Nižšie rozlíšenie zlepší výkon pri náročných efektoch titulkov na úkor ostrosti</string>
+    <string name="settings_stream_badges_in_player_description">Zobrazí pod názvom v prehrávači odznaky prehrávaného videa a zvuku. Používa vlastné odznaky Arc alebo váš balík odznakov, ak zodpovedá obyčajnému textu, napríklad 2160p alebo Atmos.</string>
+    <string name="settings_stream_player_badges_title">Odznaky prehrávača</string>
+    <string name="settings_stream_player_badges_description">Vyberte balík odznakov pre prehrávač.</string>
+    <string name="settings_stream_player_badges_same">Rovnaké ako odznaky streamov</string>
+    <string name="playback_dim_hdr_overlays">Stlmiť ovládanie v HDR</string>
+    <string name="playback_dim_hdr_overlays_sub">Jemnejšie ovládacie prvky prehrávača počas prehrávania HDR, HLG a Dolby Vision. Jas videa sa nemení. Titulky v HDR sa riadia štýlom HDR v nastaveniach titulkov.</string>
+    <string name="tvdb_metadata_credit">Metadáta poskytuje %1$s</string>
 </resources>
