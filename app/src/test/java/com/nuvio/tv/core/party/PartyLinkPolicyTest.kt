@@ -39,4 +39,25 @@ class PartyLinkPolicyTest {
         )
         refused.forEach { assertFalse(it.toString(), PartyLinkPolicy.isShareable(it)) }
     }
+
+    @Test
+    fun `addon links carrying a whole encoded config stay on this device`() {
+        val blob = "eyJkZWJyaWRTZXJ2aWNlIjoiYWxsZGVicmlkIiwiZGVicmlkQXBpS2V5IjoiQUJDREVGR0hJSktMTU5PUCJ9"
+        assertFalse(PartyLinkPolicy.isShareable("https://comet.example.org/$blob/playback/abc/0/film.mkv"))
+        assertFalse(PartyLinkPolicy.isShareable("https://mf.example.org/streaming_provider/${blob}_x/stream/film.mkv"))
+        assertFalse(PartyLinkPolicy.isShareable("https://proxy.example.org/play?c=$blob"))
+    }
+
+    @Test
+    fun `hashes and long release names are still shareable`() {
+        val infoHash = "0123456789abcdef0123456789abcdef01234567"
+        val sha256 = "0123456789abcdef".repeat(4)
+        assertTrue(PartyLinkPolicy.isShareable("https://cdn.example.org/$infoHash/0/film.mkv"))
+        assertTrue(PartyLinkPolicy.isShareable("https://cdn.example.org/$sha256/film.mkv"))
+        assertTrue(
+            PartyLinkPolicy.isShareable(
+                "https://cdn.example.org/Some.Film.2019.2160p.UHD.BluRay.REMUX.HDR.HEVC.TrueHD.Atmos.7.1-GROUP.mkv"
+            )
+        )
+    }
 }

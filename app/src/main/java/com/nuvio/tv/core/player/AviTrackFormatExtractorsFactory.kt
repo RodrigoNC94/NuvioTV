@@ -366,7 +366,9 @@ internal object AviHeader {
     fun hasPackedMpeg4Marker(window: ByteArray, length: Int, stream: Int): Boolean {
         val end = minOf(length, window.size)
         if (end < 12 || fourCc(window, 0) != "RIFF" || fourCc(window, 8) != "AVI ") return false
-        val streamTag = "%02d".format(stream)
+        // Locale.ROOT: the chunk id is ASCII ("00dc"); Arabic, Hindi or Bengali
+        // UI locales would otherwise format native digits and never match.
+        val streamTag = String.format(java.util.Locale.ROOT, "%02d", stream)
         var inMovi = false
         var at = 12L
         while (at + 12 <= end) {

@@ -124,6 +124,9 @@ internal fun PlayerRuntimeController.maybeRunTrackFormatAfr(rawFps: Float, forma
     // the finally re-enables exactly what was disabled and can never latch a
     // muted state on an unrelated exit path.
     var audioQuiesced = false
+    // The player audio was disabled on. A source switch keeps the same
+    // ExoPlayer, so a stale finally must still undo its own mute there.
+    var quiescedPlayer: androidx.media3.exoplayer.ExoPlayer? = null
     var displayModeSwitched = false
     var switchStartElapsedMs = 0L
 
@@ -187,6 +190,7 @@ internal fun PlayerRuntimeController.maybeRunTrackFormatAfr(rawFps: Float, forma
                                 .buildUpon()
                                 .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, true)
                                 .build()
+                            quiescedPlayer = p
                         }
                     }
                     audioQuiesced = true
@@ -258,6 +262,25 @@ internal fun PlayerRuntimeController.maybeRunTrackFormatAfr(rawFps: Float, forma
                     }
                 }
                 resumePlaybackAfterTrackAfrIfHeld()
+            } else if (audioQuiesced) {
+                // A source switch (manual or automatic failover) reuses the
+                // same ExoPlayer and bumps the generation while this switch
+                // still has audio disabled. Without this, the next source
+                // inherits the disabled audio track type and plays silent
+                // whenever its own track-AFR step doesn't run (cache/seed hit,
+                // playback already running). Leave it alone if a newer switch
+                // is in flight: that one quiesced audio itself and its own
+                // finally re-enables it after the mode change settles.
+                withContext(Dispatchers.Main) {
+                    val p = _exoPlayer
+                    if (p != null && p === quiescedPlayer && !afrTrackSwitchInFlight) {
+                        p.trackSelectionParameters = p.trackSelectionParameters
+                            .buildUpon()
+                            .setTrackTypeDisabled(C.TRACK_TYPE_AUDIO, false)
+                            .build()
+                        Log.d(PlayerRuntimeController.TAG, "Track AFR: stale switch re-enabled audio on the reused player")
+                    }
+                }
             }
         }
     }

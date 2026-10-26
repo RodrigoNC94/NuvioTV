@@ -211,7 +211,8 @@ internal object AviIndexReader {
         if (hdr.size < 8 || LegacyCodecs.fourccAt(hdr, 0) != "idx1") throw UnsupportedMediaException("AVI without an index")
         val len = u32(hdr, 4)
         if (len <= 0 || len > MAX_IDX1_BYTES) throw UnsupportedMediaException("AVI idx1 size $len")
-        val id = "%02d".format(s.index)
+        // Locale.ROOT: idx1 chunk ids are ASCII digits whatever the UI language.
+        val id = String.format(java.util.Locale.ROOT, "%02d", s.index)
         val raw = ArrayList<Triple<Long, Long, Int>>()   // frame, offset field, size (keyframes only)
         var frame = 0L
         var read = 0L

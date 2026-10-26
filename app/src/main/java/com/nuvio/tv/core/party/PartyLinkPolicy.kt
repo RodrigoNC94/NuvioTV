@@ -18,8 +18,25 @@ object PartyLinkPolicy {
         val host = uri.host?.lowercase()?.trim('[', ']') ?: return false
         if (isLocalHost(host)) return false
         val lowered = url.lowercase()
-        return ACCOUNT_MARKERS.none { it in lowered }
+        if (ACCOUNT_MARKERS.any { it in lowered }) return false
+        return !carriesOpaqueConfig(uri)
     }
+
+    /**
+     * Addon proxies (Comet, MediaFusion, AIOStreams, StremThru and the like) put the user's whole
+     * config, debrid key included, into one long base64/encrypted path segment or query value, so
+     * none of the markers above appear. Anything longer than a SHA-256 hex hash made only of
+     * base64url characters is treated as such a blob. Dots are excluded so release-name filenames
+     * still pass.
+     */
+    private fun carriesOpaqueConfig(uri: URI): Boolean {
+        val pieces = uri.rawPath.orEmpty().split('/') +
+            uri.rawQuery.orEmpty().split('&').map { it.substringAfter('=') }
+        return pieces.any { it.length > OPAQUE_MIN_CHARS && OPAQUE_BLOB.matches(it) }
+    }
+
+    private const val OPAQUE_MIN_CHARS = 64
+    private val OPAQUE_BLOB = Regex("[A-Za-z0-9_\\-=+%]+")
 
     private fun isLocalHost(host: String): Boolean {
         if (host == "localhost" || host.endsWith(".local") || host == "::1" || !host.contains('.') && !host.contains(':')) return true
