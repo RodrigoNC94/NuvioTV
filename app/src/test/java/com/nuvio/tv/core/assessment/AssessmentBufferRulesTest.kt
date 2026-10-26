@@ -1,5 +1,6 @@
 package com.nuvio.tv.core.assessment
 
+import com.nuvio.tv.core.assessment.AssessmentBufferRules.ConnectionsGrounds
 import com.nuvio.tv.core.network.StreamSweepEngine
 import com.nuvio.tv.core.network.StreamSweepEngine.MeasuredPass
 import com.nuvio.tv.core.player.BufferSizing
@@ -79,16 +80,64 @@ class AssessmentBufferRulesTest {
 
     @Test
     fun `custom network follows the parallel recommendation`() {
-        assertEquals(true, AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, true))
-        assertEquals(true, AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.MARGINAL, true))
-        assertEquals(false, AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF, false))
-        assertNull(AssessmentBufferRules.networkRecommendation(null, false))
-        assertNull(AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.NONE, false))
+        assertEquals(true, AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, true, false))
+        assertEquals(true, AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.MARGINAL, true, false))
+        assertEquals(false, AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF, false, false))
+        assertNull(AssessmentBufferRules.networkRecommendation(null, false, false))
+        assertNull(AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.NONE, false, false))
 
         assertEquals(true, AssessmentBufferRules.networkChange(true, false))
         assertNull(AssessmentBufferRules.networkChange(true, true))
         assertEquals(false, AssessmentBufferRules.networkChange(false, true))
         assertNull(AssessmentBufferRules.networkChange(null, true))
+    }
+
+    @Test
+    fun `Automatic speed-up keeps Connections on Automatic`() {
+        for (verdict in StreamSweepEngine.VerdictKind.values().toList() + listOf(null)) {
+            for (parallelRecommended in listOf(true, false)) {
+                assertEquals(false, AssessmentBufferRules.networkRecommendation(verdict, parallelRecommended, true))
+            }
+        }
+        assertEquals(false, AssessmentBufferRules.networkChange(
+            AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, true, true), true))
+        assertNull(AssessmentBufferRules.networkChange(
+            AssessmentBufferRules.networkRecommendation(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, true, true), false))
+    }
+
+    @Test
+    fun `the Connections row explains the speed test it has`() {
+        assertEquals(ConnectionsGrounds.MORE_HELP,
+            AssessmentBufferRules.connectionsGrounds(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, true))
+        assertEquals(ConnectionsGrounds.MORE_HELP,
+            AssessmentBufferRules.connectionsGrounds(StreamSweepEngine.VerdictKind.CANNOT_SUSTAIN, true))
+        assertEquals(ConnectionsGrounds.MORE_HELP,
+            AssessmentBufferRules.connectionsGrounds(StreamSweepEngine.VerdictKind.FASTEST_NO_BITRATE, true))
+        assertEquals(ConnectionsGrounds.ONE_IS_ENOUGH,
+            AssessmentBufferRules.connectionsGrounds(StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF, false))
+        assertEquals(ConnectionsGrounds.UNTESTED, AssessmentBufferRules.connectionsGrounds(null, false))
+        assertEquals(ConnectionsGrounds.UNTESTED, AssessmentBufferRules.connectionsGrounds(StreamSweepEngine.VerdictKind.NONE, false))
+        assertEquals(ConnectionsGrounds.UNTESTED,
+            AssessmentBufferRules.connectionsGrounds(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, false))
+    }
+
+    @Test
+    fun `with Automatic speed-up the connection count line is hidden but warnings stay`() {
+        for (verdict in StreamSweepEngine.VerdictKind.values()) {
+            assertTrue(AssessmentBufferRules.showSweepVerdict(verdict, false))
+        }
+        assertFalse(AssessmentBufferRules.showSweepVerdict(StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG, true))
+        assertFalse(AssessmentBufferRules.showSweepVerdict(StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF, true))
+        assertFalse(AssessmentBufferRules.showSweepVerdict(StreamSweepEngine.VerdictKind.FASTEST_NO_BITRATE, true))
+        assertTrue(AssessmentBufferRules.showSweepVerdict(StreamSweepEngine.VerdictKind.MARGINAL, true))
+        assertTrue(AssessmentBufferRules.showSweepVerdict(StreamSweepEngine.VerdictKind.CANNOT_SUSTAIN, true))
+    }
+
+    @Test
+    fun `stored parallel connections only count with Custom network on`() {
+        assertTrue(AssessmentBufferRules.parallelInUse(true, true))
+        assertFalse(AssessmentBufferRules.parallelInUse(false, true))
+        assertFalse(AssessmentBufferRules.parallelInUse(true, false))
     }
 
     @Test

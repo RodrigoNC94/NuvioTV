@@ -26,6 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -647,6 +650,11 @@ private fun LazyListScope.assessmentMutationItems(
 private fun AssessmentItemRow(item: AssessmentItem) {
     var isFocused by remember { mutableStateOf(false) }
     val zen = isFlatSettingsStyle()
+    val footer = assessmentRowFooter(
+        item,
+        stringResource(R.string.assessment_value_your_call),
+        stringResource(R.string.assessment_value_leave_as_is)
+    )
     val valueColor = when (item.memoryStatus) {
         com.nuvio.tv.ui.screens.settings.MemoryUsageStatus.DANGER -> NuvioTheme.colors.Error
         com.nuvio.tv.ui.screens.settings.MemoryUsageStatus.WARNING ->
@@ -697,7 +705,15 @@ private fun AssessmentItemRow(item: AssessmentItem) {
                 )
                 Spacer(modifier = Modifier.width(NuvioTheme.spacing.md))
                 Text(
-                    text = item.recommendedValue,
+                    text = if (item.changeNeeded) {
+                        suggestedValueText(
+                            stringResource(R.string.assessment_suggested, item.recommendedValue),
+                            item.recommendedValue,
+                            NuvioTheme.colors.TextSecondary
+                        )
+                    } else {
+                        AnnotatedString(item.recommendedValue)
+                    },
                     style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                     color = valueColor
                 )
@@ -710,17 +726,14 @@ private fun AssessmentItemRow(item: AssessmentItem) {
                 maxLines = 6,
                 overflow = TextOverflow.Ellipsis
             )
-            if (item.changeNeeded && !item.currentValue.isNullOrBlank()) {
+            if (footer == AssessmentRowFooter.CURRENTLY) {
                 Spacer(modifier = Modifier.height(NuvioTheme.spacing.xxs))
                 Text(
-                    text = stringResource(R.string.assessment_currently, item.currentValue),
+                    text = stringResource(R.string.assessment_currently, item.currentValue.orEmpty()),
                     style = MaterialTheme.typography.labelSmall,
                     color = NuvioTheme.colors.TextTertiary
                 )
-            } else if (!item.changeNeeded && !item.currentValue.isNullOrBlank() &&
-                item.recommendedValue != stringResource(R.string.assessment_value_your_call) &&
-                item.recommendedValue != stringResource(R.string.assessment_value_leave_as_is)
-            ) {
+            } else if (footer == AssessmentRowFooter.ALREADY_SET) {
                 // Endorsement marker: the row asserts a concrete value and the
                 // device already holds it. "No change" stays reserved for rows
                 // where the assessment declines to recommend at all.
@@ -732,6 +745,28 @@ private fun AssessmentItemRow(item: AssessmentItem) {
                 )
             }
         }
+    }
+}
+
+internal enum class AssessmentRowFooter { CURRENTLY, ALREADY_SET, NONE }
+
+/** "Currently" under a suggested change, a tick when the setting already matches, nothing for advice-only rows. */
+internal fun assessmentRowFooter(item: AssessmentItem, yourCall: String, leaveAsIs: String): AssessmentRowFooter = when {
+    item.currentValue.isNullOrBlank() -> AssessmentRowFooter.NONE
+    item.changeNeeded -> AssessmentRowFooter.CURRENTLY
+    item.recommendedValue != yourCall && item.recommendedValue != leaveAsIs -> AssessmentRowFooter.ALREADY_SET
+    else -> AssessmentRowFooter.NONE
+}
+
+/** The "Suggested:" wording in a quieter colour and regular weight, the value itself as before. */
+internal fun suggestedValueText(formatted: String, value: String, labelColor: Color): AnnotatedString {
+    val start = formatted.indexOf(value)
+    if (start < 0) return AnnotatedString(formatted)
+    val label = SpanStyle(color = labelColor, fontWeight = FontWeight.Normal)
+    return buildAnnotatedString {
+        append(formatted)
+        if (start > 0) addStyle(label, 0, start)
+        if (start + value.length < formatted.length) addStyle(label, start + value.length, formatted.length)
     }
 }
 

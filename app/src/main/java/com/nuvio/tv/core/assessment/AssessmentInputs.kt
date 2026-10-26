@@ -19,7 +19,7 @@ internal class AssessmentInputs private constructor(
                 s.vodCacheEnabled, s.vodCacheSizeMode, s.vodCacheSizeMb,
                 s.frameRateMatchingMode, s.resolutionMatchingEnabled, s.dv7HandlingMode,
                 s.dv5ToDv81Enabled, s.stripHdr10PlusSei, s.forceOpticalPassthrough,
-                s.tunnelingEnabled),
+                s.tunnelingEnabled, s.autoSpeedupEnabled),
             listOf(d.timestampMs, d.streamUrl, d.headersJson, d.filename, d.host,
                 d.videoBitrate, d.durationMs, d.dvSourceProfile, d.videoHdrType))
     }

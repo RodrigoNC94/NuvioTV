@@ -20,6 +20,7 @@ import com.nuvio.tv.data.local.PlayerSettings
 import com.nuvio.tv.data.local.VodCacheSizeMode
 import com.nuvio.tv.ui.screens.player.AudioOutputRouteDetector
 import com.nuvio.tv.ui.screens.player.NuvioExoPlayerPerformanceHelper
+import com.nuvio.tv.ui.screens.settings.ConnectionsChoice
 import com.nuvio.tv.ui.screens.settings.MemoryBudget
 import com.nuvio.tv.ui.screens.settings.MemoryUsageStatus
 import org.json.JSONObject
@@ -148,15 +149,60 @@ object DeviceAssessmentEngine {
         val off = s(R.string.assessment_value_off)
 
         val currentChunkLabel = chunkLabel(context, settings.parallelChunkSizeKb)
-        val currentParallelLabel = if (settings.useParallelConnections) {
+        val parallelInUse = AssessmentBufferRules.parallelInUse(
+            settings.parallelNetworkEnabled, settings.useParallelConnections
+        )
+        val currentParallelLabel = if (parallelInUse) {
             s(R.string.assessment_current_parallel_on, settings.parallelConnectionCount, currentChunkLabel)
         } else {
             off
         }
+        val currentConnectionsLabel = when (
+            ConnectionsChoice.from(
+                settings.parallelNetworkEnabled, settings.useParallelConnections, settings.parallelConnectionCount
+            )
+        ) {
+            ConnectionsChoice.AUTOMATIC -> s(R.string.playback_net_connections_auto)
+            1 -> "1"
+            else -> currentParallelLabel
+        }
+        val autoSpeedup = settings.autoSpeedupEnabled
 
         // --- Tier 1 rows ---
         val rec = sweep?.recommendation
-        if (sweep != null && sweep.errorText == null) {
+        val sweepUsable = sweep != null && sweep.errorText == null
+        if (autoSpeedup) {
+            val groundsKind =
+                AssessmentBufferRules.connectionsGrounds(sweep?.verdictKind?.takeIf { sweepUsable }, rec != null)
+            val grounds = when (groundsKind) {
+                AssessmentBufferRules.ConnectionsGrounds.MORE_HELP -> s(
+                    R.string.assessment_grounds_connections_auto,
+                    "%.1f Mbps".format(sweep!!.baselineMbps),
+                    "%.1f Mbps".format(rec!!.mbps),
+                    rec.connections,
+                    rec.chunkMb
+                )
+                AssessmentBufferRules.ConnectionsGrounds.ONE_IS_ENOUGH -> s(
+                    R.string.assessment_grounds_connections_auto_one,
+                    "%.1f Mbps".format(sweep!!.baselineMbps)
+                )
+                AssessmentBufferRules.ConnectionsGrounds.UNTESTED ->
+                    s(R.string.assessment_grounds_connections_auto_untested)
+            }
+            items += AssessmentItem(
+                key = "connections",
+                title = s(R.string.playback_net_connections),
+                currentValue = currentConnectionsLabel,
+                recommendedValue = s(R.string.assessment_value_connections_auto),
+                grounds = grounds,
+                tier = if (groundsKind == AssessmentBufferRules.ConnectionsGrounds.UNTESTED) {
+                    AssessmentTier.CALCULATED
+                } else {
+                    AssessmentTier.MEASURED
+                },
+                changeNeeded = settings.parallelNetworkEnabled
+            )
+        } else if (sweep != null && sweep.errorText == null) {
             when (sweep.verdictKind) {
                 StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF -> {
                     items += AssessmentItem(
@@ -169,7 +215,7 @@ object DeviceAssessmentEngine {
                             "%.1f Mbps".format(sweep.baselineMbps)
                         ),
                         tier = AssessmentTier.MEASURED,
-                        changeNeeded = settings.useParallelConnections
+                        changeNeeded = parallelInUse
                     )
                 }
                 StreamSweepEngine.VerdictKind.RECOMMEND_CONFIG,
@@ -222,7 +268,7 @@ object DeviceAssessmentEngine {
                                 ""
                             },
                             tier = AssessmentTier.MEASURED,
-                            changeNeeded = !settings.useParallelConnections ||
+                            changeNeeded = !parallelInUse ||
                                 settings.parallelConnectionCount != rec.connections ||
                                 settings.parallelChunkSizeKb != rec.chunkMb * 1024,
                             memoryStatus = status
@@ -269,11 +315,10 @@ object DeviceAssessmentEngine {
         )
 
         // Custom network is only needed for the parallel connections recommended above.
-        val sweepUsable = sweep != null && sweep.errorText == null
         val networkRecommended = AssessmentBufferRules.networkRecommendation(
-            sweep?.verdictKind?.takeIf { sweepUsable }, sweepUsable && rec != null
+            sweep?.verdictKind?.takeIf { sweepUsable }, sweepUsable && rec != null, autoSpeedup
         )
-        items += AssessmentItem(
+        if (!autoSpeedup) items += AssessmentItem(
             key = "network_master",
             title = s(R.string.assessment_item_network_master),
             currentValue = if (settings.parallelNetworkEnabled) on else off,
@@ -719,17 +764,17 @@ object DeviceAssessmentEngine {
                 capacityS != null && settings.bufferSettings.maxBufferMs / 1000 != recMaxS
             },
             useParallelConnections = when {
-                sweep == null || sweep.errorText != null -> null
+                autoSpeedup || sweep == null || sweep.errorText != null -> null
                 sweep.verdictKind == StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF ->
                     false.takeIf { settings.useParallelConnections }
                 rec != null -> true.takeIf { !settings.useParallelConnections }
                 else -> null
             },
             parallelConnectionCount = rec?.connections?.takeIf {
-                sweep?.errorText == null && settings.parallelConnectionCount != it
+                !autoSpeedup && sweep?.errorText == null && settings.parallelConnectionCount != it
             },
             parallelChunkSizeKb = rec?.let { it.chunkMb * 1024 }?.takeIf {
-                sweep?.errorText == null && settings.parallelChunkSizeKb != it
+                !autoSpeedup && sweep?.errorText == null && settings.parallelChunkSizeKb != it
             },
             vodCacheEnabled = if (autoBytes > 0L) {
                 true.takeIf { !settings.vodCacheEnabled }
@@ -759,7 +804,9 @@ object DeviceAssessmentEngine {
             timestampMs = now,
             header = header,
             sweepRan = sweep != null,
-            sweepVerdictText = sweep?.verdictText,
+            sweepVerdictText = sweep?.verdictText?.takeIf {
+                AssessmentBufferRules.showSweepVerdict(sweep?.verdictKind, autoSpeedup)
+            },
             items = items.toList(),
             profiles = profiles,
             suggestedProfile = suggestedProfile,

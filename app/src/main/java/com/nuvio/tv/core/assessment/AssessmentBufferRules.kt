@@ -32,12 +32,40 @@ internal object AssessmentBufferRules {
     fun recommendedMaxBufferSeconds(capacitySeconds: Int?): Int =
         (capacitySeconds ?: MAX_BUFFER_CAP_S).coerceIn(MAX_BUFFER_FLOOR_S, MAX_BUFFER_CAP_S)
 
-    /** Custom network: on when parallel connections are recommended, off when one connection is enough. */
-    fun networkRecommendation(verdict: StreamSweepEngine.VerdictKind?, parallelRecommended: Boolean): Boolean? = when {
+    /**
+     * Custom network: on when parallel connections are recommended, off when one connection is enough. With Automatic
+     * speed-up on it stays off (Connections: Automatic), since a fixed number would stop the speed-up.
+     */
+    fun networkRecommendation(
+        verdict: StreamSweepEngine.VerdictKind?,
+        parallelRecommended: Boolean,
+        autoSpeedup: Boolean
+    ): Boolean? = when {
+        autoSpeedup -> false
         verdict == StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF -> false
         parallelRecommended -> true
         else -> null
     }
+
+    enum class ConnectionsGrounds { MORE_HELP, ONE_IS_ENOUGH, UNTESTED }
+
+    /** Which speed test result explains the Connections: Automatic row. */
+    fun connectionsGrounds(verdict: StreamSweepEngine.VerdictKind?, hasRecommendation: Boolean): ConnectionsGrounds =
+        when {
+            verdict == StreamSweepEngine.VerdictKind.LEAVE_PARALLEL_OFF -> ConnectionsGrounds.ONE_IS_ENOUGH
+            verdict != null && verdict != StreamSweepEngine.VerdictKind.NONE && hasRecommendation ->
+                ConnectionsGrounds.MORE_HELP
+            else -> ConnectionsGrounds.UNTESTED
+        }
+
+    /** The sweep's summary line, kept only where it adds a warning the Connections row does not carry. */
+    fun showSweepVerdict(verdict: StreamSweepEngine.VerdictKind?, autoSpeedup: Boolean): Boolean =
+        !autoSpeedup ||
+            verdict == StreamSweepEngine.VerdictKind.MARGINAL ||
+            verdict == StreamSweepEngine.VerdictKind.CANNOT_SUSTAIN
+
+    /** Parallel connections only count when Custom network is on; otherwise the stored ones are unused. */
+    fun parallelInUse(customNetwork: Boolean, parallel: Boolean): Boolean = customNetwork && parallel
 
     fun networkChange(recommended: Boolean?, enabled: Boolean): Boolean? =
         recommended?.takeIf { it != enabled }

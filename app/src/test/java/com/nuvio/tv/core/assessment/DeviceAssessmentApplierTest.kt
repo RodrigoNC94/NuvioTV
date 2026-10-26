@@ -178,6 +178,43 @@ class DeviceAssessmentApplierTest {
     }
 
     @Test
+    fun `Connections back to Automatic keeps the saved count and chunk size`() = runBlocking {
+        withStore { store ->
+            store.setParallelNetworkEnabled(true)
+            store.setUseParallelConnections(true)
+            store.setParallelConnectionCount(4)
+            store.setParallelChunkSizeKb(16 * 1024)
+            val outcome = DeviceAssessmentApplier.apply(store,
+                AssessmentApplyPlan(parallelNetworkEnabled = false), null, 2_048)
+            assertEquals(1, outcome.writtenCount)
+            val after = store.playerSettings.first()
+            assertFalse(after.parallelNetworkEnabled)
+            assertTrue(after.useParallelConnections)
+            assertEquals(4, after.parallelConnectionCount)
+            assertEquals(16 * 1024, after.parallelChunkSizeKb)
+            assertTrue(DeviceAssessmentApplier.revert(store))
+            assertTrue(store.playerSettings.first().parallelNetworkEnabled)
+        }
+    }
+
+    @Test
+    fun `memory check ignores parallel connections that Custom network leaves unused`() = runBlocking {
+        for (customNetwork in listOf(false, true)) {
+            withStore { store ->
+                store.setBufferBudgetManaged(false)
+                store.setBufferTargetSizeMb(300)
+                store.setUseParallelConnections(true)
+                store.setParallelConnectionCount(4)
+                store.setParallelChunkSizeKb(16 * 1024)
+                store.setParallelNetworkEnabled(customNetwork)
+                DeviceAssessmentApplier.apply(store, AssessmentApplyPlan(stripHdr10PlusSei = true), null, 300)
+                val target = store.playerSettings.first().bufferSettings.targetBufferSizeMb
+                if (customNetwork) assertTrue(target < 300) else assertEquals(300, target)
+            }
+        }
+    }
+
+    @Test
     fun `revert without a snapshot leaves settings alone`() = runBlocking {
         withStore { store ->
             store.setBufferBackBufferDurationMs(19_000)

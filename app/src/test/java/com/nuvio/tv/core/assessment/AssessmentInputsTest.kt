@@ -16,7 +16,8 @@ class AssessmentInputsTest {
             settings.copy(parallelConnectionCount = settings.parallelConnectionCount + 1),
             settings.copy(vodCacheSizeMb = settings.vodCacheSizeMb + 1),
             settings.copy(forceOpticalPassthrough = !settings.forceOpticalPassthrough),
-            settings.copy(tunnelingEnabled = !settings.tunnelingEnabled))
+            settings.copy(tunnelingEnabled = !settings.tunnelingEnabled),
+            settings.copy(autoSpeedupEnabled = !settings.autoSpeedupEnabled))
         val captured = AssessmentInputs.capture(settings, source)
         changes.forEach { assertFalse(captured.matches(it, source)) }
     }

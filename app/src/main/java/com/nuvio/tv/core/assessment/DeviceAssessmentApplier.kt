@@ -138,7 +138,7 @@ object DeviceAssessmentApplier {
         // MIN_BUFFER_MB and does not fight it. No-op on the normal path, where
         // the engine already sized the target to safe minus overhead.
         val after = dataStore.playerSettingsForProfile(profileId).first()
-        val afterOverheadMb = if (after.useParallelConnections) {
+        val afterOverheadMb = if (AssessmentBufferRules.parallelInUse(after.parallelNetworkEnabled, after.useParallelConnections)) {
             MemoryBudget.parallelOverheadMb(
                 after.parallelConnectionCount,
                 (after.parallelChunkSizeKb + 1023) / 1024
