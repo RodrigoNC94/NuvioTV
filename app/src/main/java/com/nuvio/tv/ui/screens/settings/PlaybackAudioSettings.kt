@@ -21,6 +21,7 @@ import com.nuvio.tv.data.local.SurroundChannelTarget
 import com.nuvio.tv.data.local.SurroundFormatMode
 import com.nuvio.tv.data.local.displayName
 import com.nuvio.tv.ui.screens.player.PlayerTunnelAvSyncPolicy
+import com.nuvio.tv.ui.screens.player.TvArcAudioOutput
 import com.nuvio.tv.ui.screens.player.nightModeLabelRes
 
 /** Format names in learned rejection entries ("route::GROUP"), in passthrough settings order. */
@@ -245,6 +246,16 @@ private fun SurroundSettingsRows(
         onToggle = { onUpdate { setUseSystemPassthrough(!settings.useSystemPassthrough) } },
         enabled = enabled
     )
+    val tvArcOutput = remember { TvArcAudioOutput.isActive(context) }
+    if (tvArcOutput) {
+        SettingsActionRow(
+            title = stringResource(R.string.audio_dtshd_tv_passthrough),
+            subtitle = stringResource(R.string.audio_dtshd_tv_passthrough_sub),
+            value = dtsHdTvPassthroughLabel(settings.dtsHdTvPassthrough),
+            enabled = enabled && !settings.useSystemPassthrough,
+            onClick = { onOpenDialog(PlaybackDialog.DTS_HD_TV_PASSTHROUGH) }
+        )
+    }
     SettingsActionRow(
         title = stringResource(R.string.audio_surround_reset_iec_probe),
         subtitle = stringResource(R.string.audio_surround_reset_iec_probe_sub),
@@ -315,6 +326,11 @@ private fun surroundFormatModeLabel(mode: SurroundFormatMode): String = when (mo
     SurroundFormatMode.AUTO -> stringResource(R.string.audio_surround_mode_auto)
     SurroundFormatMode.MANUAL -> stringResource(R.string.audio_surround_mode_manual)
 }
+
+@Composable
+private fun dtsHdTvPassthroughLabel(tvPassthrough: Boolean): String = stringResource(
+    if (tvPassthrough) R.string.audio_dtshd_tv_passthrough_tv else R.string.audio_dtshd_tv_passthrough_standard
+)
 
 @Composable
 private fun surroundChannelTargetLabel(target: SurroundChannelTarget): String = when (target) {
@@ -392,6 +408,19 @@ internal fun AudioSettingsDialogs(
                 onDismiss()
             },
             onDismiss = onDismiss
+        )
+        PlaybackDialog.DTS_HD_TV_PASSTHROUGH -> SettingsSingleChoiceDialog(
+            title = stringResource(R.string.audio_dtshd_tv_passthrough),
+            subtitle = stringResource(R.string.audio_dtshd_tv_passthrough_sub),
+            options = listOf(false, true).map { SettingsPickerOption(it, dtsHdTvPassthroughLabel(it)) },
+            selectedValue = settings.dtsHdTvPassthrough,
+            onOptionSelected = { tvPassthrough ->
+                onUpdate { setDtsHdTvPassthrough(tvPassthrough) }
+                onDismiss()
+            },
+            onDismiss = onDismiss,
+            width = 460.dp,
+            maxHeight = 320.dp
         )
         else -> Unit
     }
