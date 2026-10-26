@@ -305,6 +305,7 @@ data class PlayerSettings(
     val tunnelingEnabled: Boolean = false,
     val forceOpticalPassthrough: Boolean = false,
     val useSystemPassthrough: Boolean = false,
+    val dtsHdTvPassthrough: Boolean = false,
     val surroundFormatMode: SurroundFormatMode = SurroundFormatMode.AUTO,
     val surroundChannelTarget: SurroundChannelTarget = SurroundChannelTarget.AUTO,
     val surroundTvArcSoundbar: Boolean = false,
@@ -482,7 +483,7 @@ data class PlayerSettings(
 
         const val DEFAULT_ADDON_STREAM_TIMEOUT_SECONDS = 60
 
-        val ADDON_STREAM_TIMEOUT_VALUES: List<Int> = listOf(10, 15, 20, 30, 45, 60, 90, 120)
+        val ADDON_STREAM_TIMEOUT_VALUES: List<Int> = listOf(10, 15, 20, 30, 45, 60)
 
         /** Missing or off-list stored values snap to the nearest allowed timeout. */
         fun sanitizeAddonStreamTimeout(stored: Int?): Int {
@@ -754,6 +755,7 @@ class PlayerSettingsDataStore @Inject constructor(
     private val allowDtshdPassthroughKey = booleanPreferencesKey("allow_dtshd_passthrough")
     private val allowDtshdPassthroughLegacyKey = booleanPreferencesKey("allow_dts_hd_passthrough")
     private val useSystemPassthroughKey = booleanPreferencesKey("use_system_passthrough")
+    private val dtsHdTvPassthroughKey = booleanPreferencesKey("dts_hd_tv_passthrough")
     private val surroundFormatModeKey = stringPreferencesKey("surround_format_mode")
     private val surroundChannelTargetKey = stringPreferencesKey("surround_channel_target")
     private val surroundTvArcSoundbarKey = booleanPreferencesKey("surround_tv_arc_soundbar")
@@ -1237,6 +1239,7 @@ class PlayerSettingsDataStore @Inject constructor(
                 tunnelingEnabled = prefs[tunnelingEnabledKey] ?: false,
                 forceOpticalPassthrough = prefs[forceOpticalPassthroughKey] ?: false,
                 useSystemPassthrough = prefs[useSystemPassthroughKey] ?: false,
+                dtsHdTvPassthrough = prefs[dtsHdTvPassthroughKey] ?: false,
                 surroundFormatMode = storedSurroundFormatMode(
                     storedMode = prefs[surroundFormatModeKey],
                     allowSwitches = listOf(
@@ -1613,6 +1616,12 @@ class PlayerSettingsDataStore @Inject constructor(
     suspend fun setUseSystemPassthrough(enabled: Boolean) {
         store().edit { prefs ->
             prefs[useSystemPassthroughKey] = enabled
+        }
+    }
+
+    suspend fun setDtsHdTvPassthrough(enabled: Boolean) {
+        store().edit { prefs ->
+            prefs[dtsHdTvPassthroughKey] = enabled
         }
     }
 
