@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import coil3.Image
 import coil3.imageLoader
+import coil3.request.ErrorResult
 import coil3.request.SuccessResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -59,11 +60,13 @@ internal fun rememberPreparedHeroScene(
                             }
                         }
                     }
-                    val (decoded, displayedUrl) = if (target.artwork == initial.artwork) initialBackdrop.await()
+                    val first = if (target.artwork == initial.artwork) initialBackdrop.await()
                         else {
                             initialBackdrop.cancel()
                             decodeHeroBackdrop(context, target, width, height)
                         }
+                    val decoded = first.image
+                    val displayedUrl = first.url
                     val logoImage = withTimeoutOrNull(250) { logo.await() }
                     logo.cancel()
                     coroutineContext.ensureActive()
@@ -81,6 +84,20 @@ internal fun rememberPreparedHeroScene(
                     } else {
                         // No full-bleed portrait fallback. Later enrichment may still provide landscape art.
                         presentation = presentation.fallback(ticket, prepared)
+                        // A busy start can miss the first window; try again for this title only.
+                        if (first.retryable) {
+                            val late = retryHeroBackdrop(HERO_BACKDROP_RETRY_DELAYS_MS) {
+                                decodeHeroBackdrop(context, target, width, height, HERO_BACKDROP_RETRY_TIMEOUT_MS)
+                                    .takeIf { it.image != null || !it.retryable }
+                            }
+                            if (late?.image != null) {
+                                presentation = presentation.ready(ticket, prepared.copy(
+                                    artwork = heroArtworkSelection(owner, late.url), heroBackdrop = late.url,
+                                    preparedImage = late.image
+                                ))
+                                HeroSceneTrace.event("late-backdrop", owner, "generation=${ticket.generation}")
+                            }
+                        }
                     }
                 }
             }
@@ -141,19 +158,37 @@ internal fun presentedHeroScene(shown: ModernHeroSceneState, live: ModernHeroSce
         )
     }
 
+internal const val HERO_BACKDROP_FIRST_TRY_MS = 2_000L
+internal const val HERO_BACKDROP_RETRY_TIMEOUT_MS = 8_000L
+internal val HERO_BACKDROP_RETRY_DELAYS_MS = listOf(1_000L, 3_000L, 8_000L)
+
+/** [retryable] is false when every candidate answered and none was landscape, so asking again cannot help. */
+private class HeroBackdropDecode(val image: Image?, val url: String?, val retryable: Boolean)
+
+internal suspend fun <T : Any> retryHeroBackdrop(delaysMs: List<Long>, attempt: suspend () -> T?): T? {
+    for (wait in delaysMs) {
+        delay(wait)
+        attempt()?.let { return it }
+    }
+    return null
+}
+
 private suspend fun decodeHeroBackdrop(
-    context: android.content.Context, scene: ModernHeroSceneState, width: Int, height: Int
-): Pair<Image?, String?> {
+    context: android.content.Context, scene: ModernHeroSceneState, width: Int, height: Int,
+    timeoutMs: Long = HERO_BACKDROP_FIRST_TRY_MS
+): HeroBackdropDecode {
+    var retryable = false
     for (url in scene.artwork.urls) {
         val start = HeroSceneTrace.now()
-        val result = withTimeoutOrNull(2000) {
+        val result = withTimeoutOrNull(timeoutMs) {
             context.imageLoader.execute(HeroImageRequests.backdrop(context, url, width, height).build())
         }
         HeroSceneTrace.image(scene.artwork.ownerKey, heroTransferUrl(url, width), width, height, start, result as? SuccessResult)
+        if (result == null || result is ErrorResult) retryable = true
         val image = (result as? SuccessResult)?.image
-        if (image != null && image.width > image.height) return image to heroTransferUrl(url, width)
+        if (image != null && image.width > image.height) return HeroBackdropDecode(image, heroTransferUrl(url, width), false)
     }
-    return null to null
+    return HeroBackdropDecode(null, null, retryable)
 }
 
 private fun ModernHeroSceneState.neutralHero() = copy(
