@@ -2829,6 +2829,10 @@
     <string name="audio_tunneled_sub_prefer_app">Недоступно, якщо в налаштуванні «Пріоритет декодерів» вибрано «Надавати перевагу програмним декодерам»</string>
     <string name="audio_use_system_passthrough">Системний прохід звуку</string>
     <string name="audio_use_system_passthrough_sub">Надсилає TrueHD і DTS-HD на ресивер через Android (системний шлях) замість Nuvio Arc (шлях IEC). Використовуйте, якщо формати без втрат дають шум, розсинхрон або тишу.</string>
+    <string name="audio_dtshd_tv_passthrough">Прохід звуку DTS-HD і DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Виберіть «Прохід через ТВ», якщо саундбар показує звичайний DTS або нічого не відтворює у фільмах з DTS-HD чи DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Стандартний</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Прохід через ТВ</string>
     <string name="audio_surround_header">Об\'ємний звук</string>
     <string name="audio_surround_reset_iec_probe">Скинути результат перевірки IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Перевірити вивід IEC 61937 знову. Використовуйте, якщо після зміни ресивера або входу формати без втрат переходять у PCM.</string>
@@ -3078,13 +3082,14 @@
     <string name="assessment_value_your_call">На ваш розсуд</string>
     <string name="assessment_value_leave_as_is">Залишити як є</string>
     <string name="assessment_value_auto">Авто</string>
-    <string name="assessment_value_on_auto">Увімк \u00b7 Авто (зараз \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Увімк · Авто, до ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d с</string>
     <string name="assessment_value_afr_start_stop">Увімк - при старті та зупинці</string>
     <string name="assessment_value_afr_start">Увімк - лише при старті</string>
     <string name="assessment_unit_mb">%1$d МБ</string>
     <string name="assessment_unit_kb">%1$d КБ</string>
     <string name="assessment_current_parallel_on">Увімк - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Автоматично (за Автоматичним прискоренням)</string>
     <string name="assessment_item_parallel">Паралельні з\'єднання</string>
     <string name="assessment_item_chunk">Розмір чанку</string>
     <string name="assessment_item_network_master">Користувацька мережа</string>
@@ -3108,6 +3113,9 @@
     <string name="assessment_grounds_parallel_cannot">Максимум %1$s при %2$d \u00d7 %3$d МБ - нижче бітрейту самого тайтлу; це підключення не тягне потік</string>
     <string name="assessment_grounds_parallel_fastest">Максимум %1$s при %2$d \u00d7 %3$d МБ - бітрейт тайтлу невідомий, тому висновку про достатність немає</string>
     <string name="assessment_grounds_chunk">У парі з кількістю з\'єднань вище, з того самого вимірювання</string>
+    <string name="assessment_grounds_connections_auto">Автоматичне прискорення увімкнено, і воно саме додає з\'єднання, коли фільму це потрібно; фіксоване число вимкнуло б його. Виміряно: одне з\'єднання %1$s, %3$d × %4$d МБ досягли %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Автоматичне прискорення увімкнено. Одне з\'єднання дало %1$s, це вже щонайменше 2× бітрейту цього тайтлу, тож додавати з\'єднання доведеться рідко.</string>
+    <string name="assessment_grounds_connections_auto_untested">Автоматичне прискорення увімкнено, і воно саме додає з\'єднання, коли фільму це потрібно. Жоден потік не перевірявся, тож швидкостей для показу немає.</string>
     <string name="assessment_grounds_perf_mode">Тримає буфери розміром із ремукс поза купою Java, щоб збирання сміття не спричиняло посмикування кадрів; ліміти пам\'яті залежать від класу пристрою %1$s (безпечно %2$d МБ / попередження %3$d МБ), а понад %4$d з\'єднань без неї не можна</string>
     <string name="assessment_grounds_perf_mode_unsupported">Потрібен Android 8.0 або новіший</string>
     <string name="assessment_grounds_native_auto">Застосунок підбирає буфер для цієї приставки на %1$s (до %2$d МБ, менше при нестачі пам\'яті) і тримає його в нативній пам\'яті</string>
@@ -3122,7 +3130,7 @@
     <string name="assessment_grounds_network_untested">Потрібно лише для паралельних з\'єднань, а для рішення не перевірявся жоден потік</string>
     <string name="assessment_grounds_max_buffer">Ціль %1$d МБ вміщує \u2248%2$d с цього тайтлу (%3$s) - секунди понад це не наберуться</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Бітрейт тайтлу невідомий - межу за байтами не обчислити; обмеження залишається %1$d с</string>
-    <string name="assessment_grounds_vod_auto">Авто підбирає розмір за вільним місцем (20%% вільного в межах лімітів, резерв 1 ГБ) - зараз на цьому пристрої \u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">Авто підбирає розмір за вільним місцем (20%% вільного в межах лімітів, резерв 1 ГБ), тож кеш на цьому пристрої може зрости до ≈%1$s. Поки кеш вимкнено, нічого не зберігається.</string>
     <string name="assessment_grounds_vod_off">Замало вільного місця для корисного кешу (потрібно \u2265 100 МБ понад резерв 1 ГБ) - потік однаково йшов би напряму</string>
     <string name="assessment_grounds_afr_on">Дисплей повідомляє кілька частот оновлення при поточній роздільній здатності (%1$s)</string>
     <string name="assessment_grounds_afr_already">Вже увімкнено - «при старті» чи «при старті та зупинці» справа смаку: менше пересинхронізацій HDMI або повернення інтерфейсу до 60 Гц</string>
@@ -3169,6 +3177,7 @@
     <string name="assessment_section_verify">Виявлено - перевірте самі</string>
     <string name="assessment_measured_skipped">Немає останнього відтвореного потоку - прогін пропущено. Відтворіть щось і запустіть знову, щоб отримати вимірювані рядки.</string>
     <string name="assessment_currently">Зараз: %1$s</string>
+    <string name="assessment_suggested">Рекомендовано: %1$s</string>
     <string name="assessment_profile_values">старт %1$d с \u00b7 повт. буферизація %2$d с \u00b7 мін. %3$d с</string>
     <string name="assessment_profile_suggested_stable">Рекомендовано - підключення було стабільним під час прогону</string>
     <string name="assessment_profile_suggested_variable">Рекомендовано - підключення було нестабільним під час прогону</string>

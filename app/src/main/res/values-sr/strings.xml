@@ -99,6 +99,10 @@
     <string name="audio_tunneled_sub_prefer_app">Није доступно док је Приоритет декодера подешен на Дај предност декодерима апликације</string>
     <string name="audio_use_system_passthrough">Системски passthrough</string>
     <string name="audio_use_system_passthrough_sub">Шаље TrueHD и DTS-HD пријемнику преко Android-а (системска путања) уместо преко Nuvio Arc (IEC путања). Користите ако формати без губитака дају шум, губе синхронизацију или немају звук.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD и DTS:X passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Изаберите TV passthrough ако звучна трака приказује обичан DTS или не пушта ништа на DTS-HD или DTS:X филмовима.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Стандардно</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV passthrough</string>
     <string name="audio_surround_header">Surround звук</string>
     <string name="audio_surround_reset_iec_probe">Обриши одлуку IEC провере</string>
     <string name="audio_surround_reset_iec_probe_sub">Поново тестира IEC 61937 излаз. Користите ако формати без губитака прелазе на PCM после промене пријемника или улаза.</string>
@@ -348,13 +352,14 @@
     <string name="assessment_value_your_call">Ваш избор</string>
     <string name="assessment_value_leave_as_is">Оставите како јесте</string>
     <string name="assessment_value_auto">Аутоматски</string>
-    <string name="assessment_value_on_auto">Укључено \u00b7 Аутоматски (\u2248%1$s сада)</string>
+    <string name="assessment_value_on_auto">Укључено · Аутоматски, до ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Укључено - покретање и заустављање</string>
     <string name="assessment_value_afr_start">Укључено - само покретање</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Укључено - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Аутоматски (прати Аутоматско убрзање)</string>
     <string name="assessment_item_parallel">Паралелне везе</string>
     <string name="assessment_item_chunk">Величина блока (Chunk)</string>
     <string name="assessment_item_network_master">Прилагођена мрежа</string>
@@ -378,6 +383,9 @@
     <string name="assessment_grounds_parallel_cannot">Најбрже измерено %1$s при %2$d \u00d7 %3$d MB - испод битрејта самог наслова; ова веза не може да издржи стрим</string>
     <string name="assessment_grounds_parallel_fastest">Најбрже измерено %1$s при %2$d \u00d7 %3$d MB - битрејт наслова није био познат, па нема оцене довољности</string>
     <string name="assessment_grounds_chunk">Упарено са бројем веза изнад, из истог мереног пролаза</string>
+    <string name="assessment_grounds_connections_auto">Аутоматско убрзање је укључено и само додаје везе када филм то затреба; фиксан број би га искључио. Измерено: једна веза %1$s, %3$d × %4$d MB достигло је %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Аутоматско убрзање је укључено. Једна веза је измерила %1$s, већ најмање 2× битрејта овог наслова, па ће ретко морати да додаје још.</string>
+    <string name="assessment_grounds_connections_auto_untested">Аутоматско убрзање је укључено и само додаје везе када филм то затреба. Ниједан стрим није тестиран, па нема брзина за приказ.</string>
     <string name="assessment_grounds_perf_mode">Држи бафере величине ремукса ван Java heap-а да чишћење меморије не изазива трзање слике; ограничења меморије се прилагођавају класи овог уређаја %1$s (безбедно %2$d MB / упозорење %3$d MB), а више од %4$d веза то захтева</string>
     <string name="assessment_grounds_perf_mode_unsupported">Захтева Android 8.0 или новији</string>
     <string name="assessment_grounds_native_auto">Апликација одређује бафер за овај уређај од %1$s (до %2$d MB, мање кад недостаје меморије) и држи га у нативној меморији</string>
@@ -392,7 +400,7 @@
     <string name="assessment_grounds_network_untested">Потребно само за паралелне везе, а ниједан стрим није тестиран да би се о њима одлучило</string>
     <string name="assessment_grounds_max_buffer">Циљ од %1$d MB држи \u2248%2$d s овог наслова (%3$s) - секунде преко тога не могу да се остваре</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Битрејт наслова није познат - граница у бајтовима не може да се израчуна; ограничење остаје %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Аутоматски одређује величину према слободном простору (20%% слободног у оквиру граница, 1 GB резерве) - \u2248%1$s на овом уређају сада</string>
+    <string name="assessment_grounds_vod_auto">Аутоматски одређује величину према слободном простору (20%% слободног у оквиру граница, 1 GB резерве), па кеш може да нарасте до ≈%1$s на овом уређају. Ништа се не чува док је кеш искључен.</string>
     <string name="assessment_grounds_vod_off">Нема довољно слободног простора за користан кеш (треба \u2265 100 MB после резерве од 1 GB) - стримовало би се директно у сваком случају</string>
     <string name="assessment_grounds_afr_on">Екран пријављује више брзина освежавања на тренутној резолуцији (%1$s)</string>
     <string name="assessment_grounds_afr_already">Већ укључено - покретање или покретање и заустављање је ствар избора: мање HDMI ресинхронизација наспрам повратка интерфејса на 60 Hz</string>
@@ -439,6 +447,7 @@
     <string name="assessment_section_verify">Откривено - проверите сами</string>
     <string name="assessment_measured_skipped">Нема последњег пуштеног стрима - мерење је прескочено. Пустите нешто, па покрените поново за мерене редове.</string>
     <string name="assessment_currently">Тренутно: %1$s</string>
+    <string name="assessment_suggested">Предлог: %1$s</string>
     <string name="assessment_profile_values">почетак %1$d s \u00b7 после застоја %2$d s \u00b7 мин %3$d s</string>
     <string name="assessment_profile_suggested_stable">Предложено - ваша веза је била стабилна током мерења</string>
     <string name="assessment_profile_suggested_variable">Предложено - ваша веза је варирала током мерења</string>

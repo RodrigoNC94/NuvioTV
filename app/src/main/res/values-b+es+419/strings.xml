@@ -3454,6 +3454,10 @@
     <string name="audio_tunneled_sub_prefer_app">No disponible mientras Prioridad de Decodificación esté en Preferir decodificadores de la app</string>
     <string name="audio_use_system_passthrough">Passthrough del sistema</string>
     <string name="audio_use_system_passthrough_sub">Envía TrueHD y DTS-HD a tu receptor a través de Android (ruta del sistema) en lugar de Nuvio Arc (ruta IEC). Úsalo si los formatos sin pérdida producen ruido, desfase o silencio.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough de DTS-HD y DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Elige Passthrough de la TV si tu barra de sonido muestra DTS simple o no reproduce nada en películas DTS-HD o DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Estándar</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough de la TV</string>
     <string name="audio_surround_header">Sonido envolvente</string>
     <string name="audio_surround_reset_iec_probe">Borrar decisión de la prueba IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Prueba de nuevo la salida IEC 61937. Úsalo si los formatos sin pérdida pasan a PCM tras cambiar de receptor o de entrada.</string>
@@ -3700,13 +3704,14 @@
     <string name="assessment_value_your_call">Tú decides</string>
     <string name="assessment_value_leave_as_is">Dejar como está</string>
     <string name="assessment_value_auto">Automático</string>
-    <string name="assessment_value_on_auto">Activado \u00b7 Automático (\u2248%1$s ahora)</string>
+    <string name="assessment_value_on_auto">Activado · Automático, hasta ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Activado - al iniciar y al detener</string>
     <string name="assessment_value_afr_start">Activado - solo al iniciar</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Activado - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automático (sigue a Aceleración automática)</string>
     <string name="assessment_item_parallel">Conexiones paralelas</string>
     <string name="assessment_item_chunk">Tamaño de fragmento</string>
     <string name="assessment_item_network_master">Red personalizada</string>
@@ -3730,6 +3735,9 @@
     <string name="assessment_grounds_parallel_cannot">Lo más rápido medido: %1$s con %2$d \u00d7 %3$d MB - por debajo del bitrate del título; esta conexión no puede sostener el stream</string>
     <string name="assessment_grounds_parallel_fastest">Lo más rápido medido: %1$s con %2$d \u00d7 %3$d MB - no se conocía el bitrate del título, así que no hay veredicto de suficiencia</string>
     <string name="assessment_grounds_chunk">Va junto con el número de conexiones de arriba, de la misma medición</string>
+    <string name="assessment_grounds_connections_auto">Aceleración automática está activada y agrega conexiones por sí sola cuando una película las necesita; un número fijo la desactivaría. Medido: una conexión %1$s, %3$d × %4$d MB alcanzó %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Aceleración automática está activada. Una conexión midió %1$s, ya al menos 2× el bitrate de este título, así que rara vez necesitará agregar más.</string>
+    <string name="assessment_grounds_connections_auto_untested">Aceleración automática está activada y agrega conexiones por sí sola cuando una película las necesita. No se probó ninguna transmisión, así que no hay velocidades para mostrar.</string>
     <string name="assessment_grounds_perf_mode">Mantiene los búferes de tamaño remux fuera del heap de Java para que la recolección de basura no provoque saltos de cuadros; los límites de memoria se ajustan al nivel %1$s de este dispositivo (seguro %2$d MB / advertencia %3$d MB) y más de %4$d conexiones lo requieren</string>
     <string name="assessment_grounds_perf_mode_unsupported">Requiere Android 8.0 o posterior</string>
     <string name="assessment_grounds_native_auto">La aplicación ajusta el búfer para este dispositivo de %1$s (hasta %2$d MB, menos si falta memoria) y lo mantiene en memoria nativa</string>
@@ -3744,7 +3752,7 @@
     <string name="assessment_grounds_network_untested">Solo hace falta para conexiones paralelas, y no se probó ninguna transmisión para decidirlo</string>
     <string name="assessment_grounds_max_buffer">Un objetivo de %1$d MB guarda \u2248%2$d s de este título (%3$s) - los segundos más allá de eso no pueden materializarse</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitrate del título desconocido - no se puede calcular el techo en bytes; el tope se deja en %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automático ajusta el tamaño según el espacio libre (20%% del libre dentro de los límites, 1 GB de reserva) - \u2248%1$s en este dispositivo ahora mismo</string>
+    <string name="assessment_grounds_vod_auto">Automático ajusta el tamaño según el espacio libre (20%% del libre dentro de los límites, 1 GB de reserva), así que la caché puede crecer hasta ≈%1$s en este dispositivo. No se guarda nada mientras la caché está desactivada.</string>
     <string name="assessment_grounds_vod_off">No hay espacio libre suficiente para una caché útil (necesita \u2265 100 MB tras la reserva de 1 GB) - de todos modos se transmitiría directamente, sin caché</string>
     <string name="assessment_grounds_afr_on">La pantalla informa varias frecuencias de actualización en la resolución actual (%1$s)</string>
     <string name="assessment_grounds_afr_already">Ya activado - Al iniciar o Al iniciar/detener es cuestión de preferencia: menos resincronizaciones HDMI frente a que la interfaz vuelva a 60 Hz</string>
@@ -3791,6 +3799,7 @@
     <string name="assessment_section_verify">Detectado - compruébalo tú</string>
     <string name="assessment_measured_skipped">No hay último stream reproducido - barrido omitido. Reproduce algo y repite para obtener las filas medidas.</string>
     <string name="assessment_currently">Actual: %1$s</string>
+    <string name="assessment_suggested">Sugerido: %1$s</string>
     <string name="assessment_profile_values">inicio %1$d s \u00b7 recarga %2$d s \u00b7 mín. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Sugerido - tu conexión se mantuvo estable durante el barrido</string>
     <string name="assessment_profile_suggested_variable">Sugerido - tu conexión fluctuó durante el barrido</string>

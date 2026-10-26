@@ -3266,6 +3266,10 @@
     <string name="audio_tunneled_sub_prefer_app">Nije dostupno dok je Prioritet dekodera podešen na Daj prednost dekoderima aplikacije</string>
     <string name="audio_use_system_passthrough">Sistemski passthrough</string>
     <string name="audio_use_system_passthrough_sub">Šalje TrueHD i DTS-HD prijemniku preko Android-a (sistemska putanja) umesto preko Nuvio Arc (IEC putanja). Koristite ako formati bez gubitaka daju šum, gube sinhronizaciju ili nemaju zvuk.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD i DTS:X passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Izaberite TV passthrough ako zvučna traka prikazuje običan DTS ili ne pušta ništa na DTS-HD ili DTS:X filmovima.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standardno</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV passthrough</string>
     <string name="audio_surround_header">Surround zvuk</string>
     <string name="audio_surround_reset_iec_probe">Obriši odluku IEC provere</string>
     <string name="audio_surround_reset_iec_probe_sub">Ponovo testira IEC 61937 izlaz. Koristite ako formati bez gubitaka prelaze na PCM posle promene prijemnika ili ulaza.</string>
@@ -3515,13 +3519,14 @@
     <string name="assessment_value_your_call">Vaš izbor</string>
     <string name="assessment_value_leave_as_is">Ostavite kako jeste</string>
     <string name="assessment_value_auto">Automatski</string>
-    <string name="assessment_value_on_auto">Uključeno \u00b7 Automatski (\u2248%1$s sada)</string>
+    <string name="assessment_value_on_auto">Uključeno · Automatski, do ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Uključeno - pokretanje i zaustavljanje</string>
     <string name="assessment_value_afr_start">Uključeno - samo pokretanje</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Uključeno - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatski (prati Automatsko ubrzanje)</string>
     <string name="assessment_item_parallel">Paralelne veze</string>
     <string name="assessment_item_chunk">Veličina bloka (Chunk)</string>
     <string name="assessment_item_network_master">Prilagođena mreža</string>
@@ -3545,6 +3550,9 @@
     <string name="assessment_grounds_parallel_cannot">Najbrže izmereno %1$s pri %2$d \u00d7 %3$d MB - ispod bitrejta samog naslova; ova veza ne može da izdrži strim</string>
     <string name="assessment_grounds_parallel_fastest">Najbrže izmereno %1$s pri %2$d \u00d7 %3$d MB - bitrejt naslova nije bio poznat, pa nema ocene dovoljnosti</string>
     <string name="assessment_grounds_chunk">Upareno sa brojem veza iznad, iz istog merenog prolaza</string>
+    <string name="assessment_grounds_connections_auto">Automatsko ubrzanje je uključeno i samo dodaje veze kada film to zatreba; fiksan broj bi ga isključio. Izmereno: jedna veza %1$s, %3$d × %4$d MB dostiglo je %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatsko ubrzanje je uključeno. Jedna veza je izmerila %1$s, već najmanje 2× bitrejta ovog naslova, pa će retko morati da dodaje još.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatsko ubrzanje je uključeno i samo dodaje veze kada film to zatreba. Nijedan strim nije testiran, pa nema brzina za prikaz.</string>
     <string name="assessment_grounds_perf_mode">Drži bafere veličine remuksa van Java heap-a da čišćenje memorije ne izaziva trzanje slike; ograničenja memorije se prilagođavaju klasi ovog uređaja %1$s (bezbedno %2$d MB / upozorenje %3$d MB), a više od %4$d veza to zahteva</string>
     <string name="assessment_grounds_perf_mode_unsupported">Zahteva Android 8.0 ili noviji</string>
     <string name="assessment_grounds_native_auto">Aplikacija određuje bafer za ovaj uređaj od %1$s (do %2$d MB, manje kad nedostaje memorije) i drži ga u nativnoj memoriji</string>
@@ -3559,7 +3567,7 @@
     <string name="assessment_grounds_network_untested">Potrebno samo za paralelne veze, a nijedan strim nije testiran da bi se o njima odlučilo</string>
     <string name="assessment_grounds_max_buffer">Cilj od %1$d MB drži \u2248%2$d s ovog naslova (%3$s) - sekunde preko toga ne mogu da se ostvare</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitrejt naslova nije poznat - granica u bajtovima ne može da se izračuna; ograničenje ostaje %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automatski određuje veličinu prema slobodnom prostoru (20%% slobodnog u okviru granica, 1 GB rezerve) - \u2248%1$s na ovom uređaju sada</string>
+    <string name="assessment_grounds_vod_auto">Automatski određuje veličinu prema slobodnom prostoru (20%% slobodnog u okviru granica, 1 GB rezerve), pa keš može da naraste do ≈%1$s na ovom uređaju. Ništa se ne čuva dok je keš isključen.</string>
     <string name="assessment_grounds_vod_off">Nema dovoljno slobodnog prostora za koristan keš (treba \u2265 100 MB posle rezerve od 1 GB) - strimovalo bi se direktno u svakom slučaju</string>
     <string name="assessment_grounds_afr_on">Ekran prijavljuje više brzina osvežavanja na trenutnoj rezoluciji (%1$s)</string>
     <string name="assessment_grounds_afr_already">Već uključeno - pokretanje ili pokretanje i zaustavljanje je stvar izbora: manje HDMI resinhronizacija naspram povratka interfejsa na 60 Hz</string>
@@ -3606,6 +3614,7 @@
     <string name="assessment_section_verify">Otkriveno - proverite sami</string>
     <string name="assessment_measured_skipped">Nema poslednjeg puštenog strima - merenje je preskočeno. Pustite nešto, pa pokrenite ponovo za merene redove.</string>
     <string name="assessment_currently">Trenutno: %1$s</string>
+    <string name="assessment_suggested">Predlog: %1$s</string>
     <string name="assessment_profile_values">početak %1$d s \u00b7 posle zastoja %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Predloženo - vaša veza je bila stabilna tokom merenja</string>
     <string name="assessment_profile_suggested_variable">Predloženo - vaša veza je varirala tokom merenja</string>

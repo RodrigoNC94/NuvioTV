@@ -3469,6 +3469,10 @@
     <string name="audio_tunneled_sub_prefer_app">Decoder Önceliği, Uygulama kod çözücülerini tercih et olarak ayarlıyken kullanılamaz</string>
     <string name="audio_use_system_passthrough">Sistem Ses Geçidi</string>
     <string name="audio_use_system_passthrough_sub">TrueHD ve DTS-HD\'yi alıcınıza Nuvio Arc (IEC yolu) yerine Android üzerinden (Sistem yolu) gönderir. Kayıpsız formatlarda gürültü, kayma veya sessizlik oluyorsa bunu kullanın.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD ve DTS:X Ses Geçidi</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Ses çubuğunuz düz DTS gösteriyorsa veya DTS-HD ya da DTS:X filmlerde hiç ses vermiyorsa TV Ses Geçidi seçeneğini seçin.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standart</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV Ses Geçidi</string>
     <string name="audio_surround_header">Surround Ses</string>
     <string name="audio_surround_reset_iec_probe">IEC Yoklama Kararını Temizle</string>
     <string name="audio_surround_reset_iec_probe_sub">IEC 61937 çıkışını yeniden test eder. Alıcıyı veya girişi değiştirdikten sonra kayıpsız formatlar PCM\'e düşüyorsa bunu kullanın.</string>
@@ -3716,13 +3720,14 @@
     <string name="assessment_value_your_call">Karar sizin</string>
     <string name="assessment_value_leave_as_is">Olduğu gibi bırakın</string>
     <string name="assessment_value_auto">Otomatik</string>
-    <string name="assessment_value_on_auto">Açık \u00b7 Otomatik (şu an \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Açık · Otomatik, en fazla ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Açık - başlarken &amp; dururken</string>
     <string name="assessment_value_afr_start">Açık - yalnızca başlarken</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Açık - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Otomatik (Otomatik hızlandırmayı izler)</string>
     <string name="assessment_item_parallel">Paralel Bağlantılar</string>
     <string name="assessment_item_chunk">Parça Boyutu</string>
     <string name="assessment_item_network_master">Özel Ağ Yapılandırması</string>
@@ -3746,6 +3751,9 @@
     <string name="assessment_grounds_parallel_cannot">En hızlı ölçüm %2$d \u00d7 %3$d MB ile %1$s - içeriğin kendi bit hızının altında; bu bağlantı yayını taşıyamaz</string>
     <string name="assessment_grounds_parallel_fastest">En hızlı ölçüm %2$d \u00d7 %3$d MB ile %1$s - içeriğin bit hızı bilinmediği için yeterlilik kararı yok</string>
     <string name="assessment_grounds_chunk">Yukarıdaki bağlantı sayısıyla eşlenir, aynı ölçüm geçişinden</string>
+    <string name="assessment_grounds_connections_auto">Otomatik hızlandırma açık ve film ihtiyaç duyduğunda bağlantıları kendisi ekler; sabit bir sayı onu kapatır. Ölçülen: tek bağlantı %1$s, %3$d × %4$d MB %2$s hıza ulaştı.</string>
+    <string name="assessment_grounds_connections_auto_one">Otomatik hızlandırma açık. Tek bağlantı %1$s ölçüldü; bu zaten bu içeriğin bit hızının en az 2× katı, bu yüzden nadiren daha fazla eklemesi gerekir.</string>
+    <string name="assessment_grounds_connections_auto_untested">Otomatik hızlandırma açık ve film ihtiyaç duyduğunda bağlantıları kendisi ekler. Hiçbir yayın test edilmedi, bu yüzden gösterilecek hız yok.</string>
     <string name="assessment_grounds_perf_mode">Remux boyutundaki arabellekleri Java heap dışında tutar, böylece çöp toplama karelerde takılmaya yol açamaz; bellek sınırları bu cihazın %1$s kademesine göre ölçeklenir (güvenli %2$d MB / uyarı %3$d MB) ve %4$d üzerindeki bağlantı sayıları bunu gerektirir</string>
     <string name="assessment_grounds_perf_mode_unsupported">Android 8.0 veya daha yenisini gerektirir</string>
     <string name="assessment_grounds_native_auto">Uygulama arabelleği bu %1$s cihaza göre boyutlandırır (en fazla %2$d MB, bellek azaldığında daha az) ve yerel bellekte tutar</string>
@@ -3760,7 +3768,7 @@
     <string name="assessment_grounds_network_untested">Yalnızca paralel bağlantılar için gerekir ve bunlara karar vermek için hiçbir yayın test edilmedi</string>
     <string name="assessment_grounds_max_buffer">%1$d MB\'lık hedef bu içeriğin \u2248%2$d s\'sini tutar (%3$s) - bunun ötesindeki saniyeler gerçekleşemez</string>
     <string name="assessment_grounds_max_buffer_nobitrate">İçeriğin bit hızı bilinmiyor - bayt tavanı hesaplanamıyor; sınır %1$d s olarak bırakılıyor</string>
-    <string name="assessment_grounds_vod_auto">Otomatik, boş alana göre boyutlandırır (sınırlar içinde boş alanın %%20\'si, 1 GB yedek) - bu cihazda şu an \u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">Otomatik, boş alana göre boyutlandırır (sınırlar içinde boş alanın %%20\'si, 1 GB yedek); bu yüzden önbellek bu cihazda en fazla ≈%1$s olabilir. Önbellek kapalıyken hiçbir şey kaydedilmez.</string>
     <string name="assessment_grounds_vod_off">Yararlı bir önbellek için yeterli boş alan yok (1 GB yedekten sonra \u2265 100 MB gerekir) - çalışma zamanı zaten doğrudan yayınlardı</string>
     <string name="assessment_grounds_afr_on">Ekran, mevcut çözünürlükte birden çok yenileme hızı bildiriyor (%1$s)</string>
     <string name="assessment_grounds_afr_already">Zaten açık - Başlarken ile Başlarken &amp; dururken arasındaki seçim tercihtir: daha az HDMI yeniden eşitlemesi veya arayüzün 60 Hz\'e dönmesi</string>
@@ -3807,6 +3815,7 @@
     <string name="assessment_section_verify">Algılanan - kendiniz doğrulayın</string>
     <string name="assessment_measured_skipped">Son oynatılan yayın yok - tarama atlandı. Bir şey oynatın, sonra ölçülen satırlar için yeniden çalıştırın.</string>
     <string name="assessment_currently">Şu an: %1$s</string>
+    <string name="assessment_suggested">Önerilen: %1$s</string>
     <string name="assessment_profile_values">başlangıç %1$d s \u00b7 yeniden yükleme %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Önerilen - bağlantınız tarama boyunca sabit kaldı</string>
     <string name="assessment_profile_suggested_variable">Önerilen - bağlantınız tarama boyunca dalgalandı</string>

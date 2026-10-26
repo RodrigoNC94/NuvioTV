@@ -2795,6 +2795,10 @@
     <string name="audio_tunneled_sub_prefer_app">「デコーダー優先度」が「アプリデコーダーを優先」に設定されている間は利用できません</string>
     <string name="audio_use_system_passthrough">システムパススルー</string>
     <string name="audio_use_system_passthrough_sub">TrueHDとDTS-HDをNuvio Arc（IEC経路）ではなくAndroid（システム経路）経由でレシーバーに送ります。ロスレス形式でノイズ、ずれ、無音が起きる場合に使用してください。</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD と DTS:X のパススルー</string>
+    <string name="audio_dtshd_tv_passthrough_sub">サウンドバーに通常の DTS と表示される、または DTS-HD や DTS:X の映画で音が出ない場合は「テレビ経由のパススルー」を選択してください。</string>
+    <string name="audio_dtshd_tv_passthrough_standard">標準</string>
+    <string name="audio_dtshd_tv_passthrough_tv">テレビ経由のパススルー</string>
     <string name="audio_surround_header">サラウンドサウンド</string>
     <string name="audio_surround_reset_iec_probe">IECプローブの判定をクリア</string>
     <string name="audio_surround_reset_iec_probe_sub">IEC 61937出力をもう一度テストします。レシーバーや入力を変えた後にロスレス形式がPCMになる場合に使用してください。</string>
@@ -3044,13 +3048,14 @@
     <string name="assessment_value_your_call">お好みで</string>
     <string name="assessment_value_leave_as_is">現状のまま</string>
     <string name="assessment_value_auto">自動</string>
-    <string name="assessment_value_on_auto">オン \u00b7 自動（現在\u2248%1$s）</string>
+    <string name="assessment_value_on_auto">オン · 自動（最大≈%1$s）</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">オン - 開始時と停止時</string>
     <string name="assessment_value_afr_start">オン - 開始時のみ</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">オン - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">自動（自動高速化に従う）</string>
     <string name="assessment_item_parallel">並列接続</string>
     <string name="assessment_item_chunk">チャンクサイズ</string>
     <string name="assessment_item_network_master">カスタムネットワーク</string>
@@ -3074,6 +3079,9 @@
     <string name="assessment_grounds_parallel_cannot">最速は%2$d \u00d7 %3$d MBで%1$s - タイトル自体のビットレートを下回ります。この回線ではストリームを維持できません</string>
     <string name="assessment_grounds_parallel_fastest">最速は%2$d \u00d7 %3$d MBで%1$s - タイトルのビットレートが不明なため、十分かどうかは判定できません</string>
     <string name="assessment_grounds_chunk">上の接続数と組み合わせた値。同じ計測パスの結果です</string>
+    <string name="assessment_grounds_connections_auto">自動高速化がオンで、映画に必要なときに自分で接続を追加します。固定の数にすると自動高速化はオフになります。計測: 1本の接続で%1$s、%3$d × %4$d MBで%2$s。</string>
+    <string name="assessment_grounds_connections_auto_one">自動高速化がオンです。1本の接続で%1$sを計測し、すでにこのタイトルのビットレートの2×以上あるため、接続を追加することはほとんどありません。</string>
+    <string name="assessment_grounds_connections_auto_untested">自動高速化がオンで、映画に必要なときに自分で接続を追加します。ストリームはテストされていないため、表示できる速度はありません。</string>
     <string name="assessment_grounds_perf_mode">リマックス級のバッファをJavaヒープの外に置き、ガベージコレクションによるコマ落ちを防ぎます。メモリ上限はこのデバイスの%1$sクラスに合わせて調整され（安全%2$d MB / 警告%3$d MB）、%4$d接続を超える場合は必須です</string>
     <string name="assessment_grounds_perf_mode_unsupported">Android 8.0以降が必要です</string>
     <string name="assessment_grounds_native_auto">この%1$sデバイス向けにアプリがバッファサイズを決め（最大%2$d MB、メモリ不足時は減少）、ネイティブメモリに保持します</string>
@@ -3088,7 +3096,7 @@
     <string name="assessment_grounds_network_untested">並列接続にのみ必要ですが、判断のためのストリームはまだテストされていません</string>
     <string name="assessment_grounds_max_buffer">%1$d MBの目標で保持できるのはこのタイトル（%3$s）の\u2248%2$d s分です - それを超える秒数は実現しません</string>
     <string name="assessment_grounds_max_buffer_nobitrate">タイトルのビットレートが不明です - バイト上限を計算できないため、上限は%1$d sのままにします</string>
-    <string name="assessment_grounds_vod_auto">自動は空き容量から決めます（上限内で空きの20%%、1 GBを確保） - このデバイスでは現在\u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">自動は空き容量から決めます（上限内で空きの20%%、1 GBを確保）。このデバイスではキャッシュが最大≈%1$sまで増えることがあります。キャッシュがオフの間は何も保存されません。</string>
     <string name="assessment_grounds_vod_off">有効なキャッシュに必要な空き容量がありません（1 GBの確保後に\u2265 100 MBが必要） - いずれにせよ直接ストリーミングになります</string>
     <string name="assessment_grounds_afr_on">ディスプレイは現在の解像度で複数のリフレッシュレートを報告しています（%1$s）</string>
     <string name="assessment_grounds_afr_already">すでにオン - 「開始時」か「開始時と停止時」かは好みです。HDMIの再同期が減るか、UIが60 Hzに戻るかの違いです</string>
@@ -3135,6 +3143,7 @@
     <string name="assessment_section_verify">検出 - ご自身で確認</string>
     <string name="assessment_measured_skipped">最後に再生したストリームがありません - スイープをスキップしました。何か再生してから再実行すると計測の行が出ます。</string>
     <string name="assessment_currently">現在: %1$s</string>
+    <string name="assessment_suggested">おすすめ: %1$s</string>
     <string name="assessment_profile_values">開始%1$d s \u00b7 再バッファ%2$d s \u00b7 最小%3$d s</string>
     <string name="assessment_profile_suggested_stable">おすすめ - スイープ中、回線は安定していました</string>
     <string name="assessment_profile_suggested_variable">おすすめ - スイープ中、回線が不安定でした</string>

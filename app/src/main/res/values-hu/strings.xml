@@ -3477,7 +3477,6 @@
     <string name="assessment_value_your_call">Te döntesz</string>
     <string name="assessment_value_leave_as_is">Maradjon így</string>
     <string name="assessment_value_auto">Automatikus</string>
-    <string name="assessment_value_on_auto">Be \u00b7 Automatikus (most \u2248%1$s)</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Be - induláskor &amp; leállításkor</string>
     <string name="assessment_value_afr_start">Be - csak induláskor</string>
@@ -3521,7 +3520,6 @@
     <string name="assessment_grounds_network_untested">Csak párhuzamos kapcsolatokhoz kell, és nem volt tesztelt stream, ami alapján dönteni lehetne</string>
     <string name="assessment_grounds_max_buffer">Egy %1$d MB-os cél \u2248%2$d s-ot tart ebből a címből (%3$s) - az ezen felüli másodpercek nem jöhetnek létre</string>
     <string name="assessment_grounds_max_buffer_nobitrate">A cím bitrátája nem ismert - a bájtkorlát nem számítható ki; a felső határ %1$d s marad</string>
-    <string name="assessment_grounds_vod_auto">Az Automatikus a szabad helyből méretez (a szabad hely 20%%-a a korlátokon belül, 1 GB tartalékkal) - ezen az eszközön most \u2248%1$s</string>
     <string name="assessment_grounds_vod_off">Nincs elég szabad hely egy hasznos gyorsítótárhoz (az 1 GB tartalék után \u2265 100 MB kell) - a lejátszás így is közvetlenül streamelne</string>
     <string name="assessment_grounds_afr_on">A kijelző több képfrissítést jelent a jelenlegi felbontáson (%1$s)</string>
     <string name="assessment_grounds_afr_already">Már be van kapcsolva - az Induláskor, illetve Induláskor &amp; leállításkor ízlés kérdése: kevesebb HDMI-újraszinkron, vagy a felület visszatér 60 Hz-re</string>
@@ -3909,9 +3907,20 @@
     <string name="player_track_role_audio_description">Audioleírás</string>
 
     <!-- Nuvio-test additions -->
+    <string name="audio_dtshd_tv_passthrough">DTS-HD és DTS:X passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Válassza a TV passthrough lehetőséget, ha a hangprojektor csak sima DTS-t mutat, vagy DTS-HD és DTS:X filmeknél nem szól semmi.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Normál</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV passthrough</string>
     <string name="sub_libass_render_scale">Feliratok megjelenítési felbontása</string>
     <string name="sub_libass_render_scale_sub">Az alacsonyabb felbontás gyorsítja a bonyolult, stílusos feliratokat, de csökken az élesség</string>
     <string name="settings_stream_badges_in_player_description">Jelvények megjelenítése a lejátszott videóhoz és hanghoz a lejátszó címe alatt. Az Arc saját jelvényeit használja, vagy a jelvénycsomagodat, ha egyszerű szövegre illeszkedik, például 2160p vagy Atmos.</string>
+    <string name="assessment_value_on_auto">Be · Automatikus, legfeljebb ≈%1$s</string>
+    <string name="assessment_value_connections_auto">Automatikus (az Automatikus gyorsítást követi)</string>
+    <string name="assessment_grounds_connections_auto">Az Automatikus gyorsítás be van kapcsolva, és magától ad hozzá kapcsolatokat, ha egy filmnek szüksége van rá; egy rögzített szám kikapcsolná. Mért: egy kapcsolat %1$s, %3$d × %4$d MB elérte a(z) %2$s értéket.</string>
+    <string name="assessment_grounds_connections_auto_one">Az Automatikus gyorsítás be van kapcsolva. Egy kapcsolat %1$s sebességet mért, ez már legalább a cím bitrátájának 2×-ese, így ritkán kell majd többet hozzáadnia.</string>
+    <string name="assessment_grounds_connections_auto_untested">Az Automatikus gyorsítás be van kapcsolva, és magától ad hozzá kapcsolatokat, ha egy filmnek szüksége van rá. Nem volt tesztelt stream, így nincs megjeleníthető sebesség.</string>
+    <string name="assessment_grounds_vod_auto">Az Automatikus a szabad helyből méretez (a szabad hely 20%%-a a korlátokon belül, 1 GB tartalékkal), így a gyorsítótár ezen az eszközön legfeljebb ≈%1$s méretűre nőhet. Amíg a gyorsítótár ki van kapcsolva, semmi sem kerül mentésre.</string>
+    <string name="assessment_suggested">Javasolt: %1$s</string>
     <string name="playback_dim_hdr_overlays">Vezérlők halványítása HDR-ben</string>
     <string name="playback_dim_hdr_overlays_sub">Lágyabb lejátszóvezérlők HDR, HLG és Dolby Vision lejátszás közben. A videó fényereje nem változik. A HDR-feliratok a feliratbeállítások HDR-stílusát követik.</string>
     <string name="tvdb_metadata_credit">A metaadatokat a(z) %1$s biztosítja</string>

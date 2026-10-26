@@ -1093,6 +1093,10 @@
     <string name="audio_tunneled_sub_prefer_app">जब \"डिकोडर प्राथमिकता\" \"ऐप डिकोडर को प्राथमिकता दें\" पर सेट हो, तब उपलब्ध नहीं</string>
     <string name="audio_use_system_passthrough">सिस्टम पासथ्रू</string>
     <string name="audio_use_system_passthrough_sub">TrueHD और DTS-HD को Nuvio Arc (IEC पाथ) की जगह Android (सिस्टम पाथ) से रिसीवर को भेजता है। लॉसलेस फ़ॉर्मेट में शोर, ड्रिफ़्ट या आवाज़ न आने पर इसे इस्तेमाल करें।</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD और DTS:X पासथ्रू</string>
+    <string name="audio_dtshd_tv_passthrough_sub">अगर आपका साउंडबार सादा DTS दिखाता है या DTS-HD या DTS:X फ़िल्मों पर कुछ नहीं चलाता, तो TV पासथ्रू चुनें।</string>
+    <string name="audio_dtshd_tv_passthrough_standard">मानक</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV पासथ्रू</string>
     <string name="audio_surround_header">सराउंड साउंड</string>
     <string name="audio_surround_reset_iec_probe">IEC जाँच का फ़ैसला साफ़ करें</string>
     <string name="audio_surround_reset_iec_probe_sub">IEC 61937 आउटपुट फिर टेस्ट करें। रिसीवर या इनपुट बदलने के बाद लॉसलेस फ़ॉर्मेट PCM पर आ जाएँ तो इसे इस्तेमाल करें।</string>
@@ -1342,13 +1346,14 @@
     <string name="assessment_value_your_call">आपकी मर्ज़ी</string>
     <string name="assessment_value_leave_as_is">जैसा है रहने दें</string>
     <string name="assessment_value_auto">ऑटो</string>
-    <string name="assessment_value_on_auto">चालू · ऑटो (अभी ≈%1$s)</string>
+    <string name="assessment_value_on_auto">चालू · ऑटो, ≈%1$s तक</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">चालू - शुरू और बंद होने पर</string>
     <string name="assessment_value_afr_start">चालू - केवल शुरू होने पर</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">चालू - %1$d × %2$s</string>
+    <string name="assessment_value_connections_auto">स्वचालित (स्वचालित स्पीड-अप के अनुसार)</string>
     <string name="assessment_item_parallel">पैरेलल कनेक्शन</string>
     <string name="assessment_item_chunk">चंक साइज़</string>
     <string name="assessment_item_network_master">कस्टम नेटवर्क</string>
@@ -1372,6 +1377,9 @@
     <string name="assessment_grounds_parallel_cannot">सबसे तेज़ ने %2$d × %3$d MB पर %1$s मापा - टाइटल के अपने बिटरेट से कम; यह लिंक स्ट्रीम नहीं संभाल सकता</string>
     <string name="assessment_grounds_parallel_fastest">सबसे तेज़ ने %2$d × %3$d MB पर %1$s मापा - टाइटल का बिटरेट पता नहीं था, इसलिए पर्याप्तता पर कोई फ़ैसला नहीं</string>
     <string name="assessment_grounds_chunk">ऊपर की कनेक्शन संख्या के साथ जोड़ा गया, उसी मापे गए पास से</string>
+    <string name="assessment_grounds_connections_auto">स्वचालित स्पीड-अप चालू है और फ़िल्म को ज़रूरत होने पर खुद कनेक्शन जोड़ता है; तय संख्या इसे बंद कर देगी। मापा गया: एक कनेक्शन %1$s, %3$d × %4$d MB ने %2$s छुआ।</string>
+    <string name="assessment_grounds_connections_auto_one">स्वचालित स्पीड-अप चालू है। एक कनेक्शन ने %1$s मापा, जो पहले से इस टाइटल के बिटरेट का कम से कम 2× है, इसलिए इसे शायद ही और जोड़ने पड़ेंगे।</string>
+    <string name="assessment_grounds_connections_auto_untested">स्वचालित स्पीड-अप चालू है और फ़िल्म को ज़रूरत होने पर खुद कनेक्शन जोड़ता है। कोई स्ट्रीम टेस्ट नहीं हुई, इसलिए दिखाने के लिए कोई स्पीड नहीं है।</string>
     <string name="assessment_grounds_perf_mode">remux आकार के बफर को Java heap से बाहर रखता है ताकि गार्बेज कलेक्शन से फ़्रेम न अटकें; मेमोरी सीमाएँ इस डिवाइस के %1$s टियर के अनुसार हैं (सुरक्षित %2$d MB / चेतावनी %3$d MB) और %4$d से ज़्यादा कनेक्शन के लिए यह ज़रूरी है</string>
     <string name="assessment_grounds_perf_mode_unsupported">Android 8.0 या नया ज़रूरी है</string>
     <string name="assessment_grounds_native_auto">ऐप इस %1$s डिवाइस के लिए बफर का साइज़ तय करता है (%2$d MB तक, मेमोरी कम होने पर कम) और उसे नेटिव मेमोरी में रखता है</string>
@@ -1386,7 +1394,7 @@
     <string name="assessment_grounds_network_untested">सिर्फ़ पैरेलल कनेक्शन के लिए ज़रूरी, और इन्हें तय करने के लिए कोई स्ट्रीम टेस्ट नहीं हुई</string>
     <string name="assessment_grounds_max_buffer">%1$d MB का टारगेट इस टाइटल (%3$s) का ≈%2$d s रखता है - उससे आगे के सेकंड बन ही नहीं सकते</string>
     <string name="assessment_grounds_max_buffer_nobitrate">टाइटल का बिटरेट पता नहीं - बाइट सीमा नहीं निकाली जा सकती; कैप %1$d s पर रहेगा</string>
-    <string name="assessment_grounds_vod_auto">ऑटो खाली जगह से साइज़ तय करता है (सीमाओं के भीतर खाली जगह का 20%%, 1 GB रिज़र्व) - इस डिवाइस पर अभी ≈%1$s</string>
+    <string name="assessment_grounds_vod_auto">ऑटो खाली जगह से साइज़ तय करता है (सीमाओं के भीतर खाली जगह का 20%%, 1 GB रिज़र्व), इसलिए इस डिवाइस पर कैश ≈%1$s तक बढ़ सकता है। कैश बंद रहने पर कुछ भी सेव नहीं होता।</string>
     <string name="assessment_grounds_vod_off">काम के कैश के लिए खाली जगह काफ़ी नहीं (1 GB रिज़र्व के बाद ≥ 100 MB चाहिए) - रनटाइम वैसे भी सीधे स्ट्रीम करेगा</string>
     <string name="assessment_grounds_afr_on">डिस्प्ले मौजूदा रिज़ॉल्यूशन पर कई रिफ्रेश रेट बताता है (%1$s)</string>
     <string name="assessment_grounds_afr_already">पहले से चालू - शुरू या शुरू और बंद, पसंद की बात है: कम HDMI रीसिंक बनाम UI का 60 Hz पर लौटना</string>
@@ -1433,6 +1441,7 @@
     <string name="assessment_section_verify">पहचाना गया - खुद जाँचें</string>
     <string name="assessment_measured_skipped">कोई पिछली चली स्ट्रीम नहीं - स्वीप छोड़ा गया। कुछ चलाएँ, फिर मापी गई पंक्तियों के लिए दोबारा चलाएँ।</string>
     <string name="assessment_currently">अभी: %1$s</string>
+    <string name="assessment_suggested">सुझाव: %1$s</string>
     <string name="assessment_profile_values">शुरू %1$d s · रीबफर %2$d s · न्यूनतम %3$d s</string>
     <string name="assessment_profile_suggested_stable">सुझाया गया - स्वीप के दौरान आपका लिंक स्थिर रहा</string>
     <string name="assessment_profile_suggested_variable">सुझाया गया - स्वीप के दौरान आपका लिंक डगमगाया</string>

@@ -3236,6 +3236,10 @@
     <string name="audio_tunneled_sub_prefer_app">Niet beschikbaar zolang Decoderprioriteit op Voorkeur voor app-decoders staat</string>
     <string name="audio_use_system_passthrough">Systeempassthrough</string>
     <string name="audio_use_system_passthrough_sub">Stuurt TrueHD en DTS-HD via Android (systeempad) naar je receiver in plaats van via Nuvio Arc (IEC-pad). Gebruik dit als lossless formaten ruis, verschuiving of geen geluid geven.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD- en DTS:X-passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Kies TV-passthrough als je soundbar gewone DTS toont of niets afspeelt bij films met DTS-HD of DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standaard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV-passthrough</string>
     <string name="audio_surround_header">Surroundgeluid</string>
     <string name="audio_surround_reset_iec_probe">IEC-testresultaat wissen</string>
     <string name="audio_surround_reset_iec_probe_sub">Test de IEC 61937-uitvoer opnieuw. Gebruik dit als lossless formaten terugvallen op PCM na het wisselen van receiver of ingang.</string>
@@ -3485,13 +3489,14 @@
     <string name="assessment_value_your_call">Jouw keuze</string>
     <string name="assessment_value_leave_as_is">Zo laten</string>
     <string name="assessment_value_auto">Automatisch</string>
-    <string name="assessment_value_on_auto">Aan \u00b7 Automatisch (nu \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Aan · Automatisch, tot ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Aan - starten &amp; stoppen</string>
     <string name="assessment_value_afr_start">Aan - alleen starten</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Aan - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatisch (volgt Automatische versnelling)</string>
     <string name="assessment_item_parallel">Parallelle verbindingen</string>
     <string name="assessment_item_chunk">Blokgrootte</string>
     <string name="assessment_item_network_master">Aangepast netwerk</string>
@@ -3515,6 +3520,9 @@
     <string name="assessment_grounds_parallel_cannot">Snelste meting %1$s bij %2$d \u00d7 %3$d MB - onder de bitrate van de titel zelf; deze verbinding kan de stream niet aan</string>
     <string name="assessment_grounds_parallel_fastest">Snelste meting %1$s bij %2$d \u00d7 %3$d MB - geen titelbitrate bekend, dus geen oordeel of het genoeg is</string>
     <string name="assessment_grounds_chunk">Hoort bij het aantal verbindingen hierboven, uit dezelfde meetronde</string>
+    <string name="assessment_grounds_connections_auto">Automatische versnelling staat aan en voegt zelf verbindingen toe als een film ze nodig heeft; een vast aantal zou die uitschakelen. Gemeten: één verbinding %1$s, %3$d × %4$d MB haalde %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatische versnelling staat aan. Eén verbinding mat %1$s, al minstens 2× de bitrate van deze titel, dus er hoeven zelden verbindingen bij.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatische versnelling staat aan en voegt zelf verbindingen toe als een film ze nodig heeft. Er is geen stream getest, dus er zijn geen snelheden om te tonen.</string>
     <string name="assessment_grounds_perf_mode">Houdt buffers van remuxformaat buiten de Java-heap, zodat garbage collection geen beelden laat haperen; de geheugenlimieten volgen het niveau %1$s van dit apparaat (veilig %2$d MB / waarschuwing %3$d MB) en meer dan %4$d verbindingen vereisen het</string>
     <string name="assessment_grounds_perf_mode_unsupported">Vereist Android 8.0 of nieuwer</string>
     <string name="assessment_grounds_native_auto">De app bepaalt de buffer voor dit apparaat met %1$s (tot %2$d MB, minder als het geheugen krap is) en houdt hem in native geheugen</string>
@@ -3529,7 +3537,7 @@
     <string name="assessment_grounds_network_untested">Alleen nodig voor parallelle verbindingen, en er is geen stream getest om daarover te beslissen</string>
     <string name="assessment_grounds_max_buffer">Een doel van %1$d MB houdt \u2248%2$d s van deze titel vast (%3$s) - seconden daarboven kunnen niet ontstaan</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Geen titelbitrate bekend - het byteplafond kan niet worden berekend; de limiet blijft op %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automatisch kiest de grootte op basis van vrije ruimte (20%% van vrij binnen limieten, 1 GB reserve) - nu \u2248%1$s op dit apparaat</string>
+    <string name="assessment_grounds_vod_auto">Automatisch kiest de grootte op basis van vrije ruimte (20%% van vrij binnen limieten, 1 GB reserve), dus de cache kan op dit apparaat groeien tot ≈%1$s. Zolang de cache uit staat, wordt er niets opgeslagen.</string>
     <string name="assessment_grounds_vod_off">Niet genoeg vrije ruimte voor een nuttige cache (heeft \u2265 100 MB nodig na de reserve van 1 GB) - er zou toch direct worden gestreamd</string>
     <string name="assessment_grounds_afr_on">Scherm meldt meerdere verversingsfrequenties bij de huidige resolutie (%1$s)</string>
     <string name="assessment_grounds_afr_already">Staat al aan - Starten of Starten &amp; stoppen is een voorkeur: minder HDMI-hersynchronisaties tegenover de interface die terugkeert naar 60 Hz</string>
@@ -3576,6 +3584,7 @@
     <string name="assessment_section_verify">Gedetecteerd - zelf controleren</string>
     <string name="assessment_measured_skipped">Geen laatst afgespeelde stream - meetreeks overgeslagen. Speel iets af en voer opnieuw uit voor gemeten rijen.</string>
     <string name="assessment_currently">Nu: %1$s</string>
+    <string name="assessment_suggested">Voorstel: %1$s</string>
     <string name="assessment_profile_values">start %1$d s \u00b7 herbufferen %2$d s \u00b7 min. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Voorgesteld - je verbinding bleef stabiel tijdens de meetreeks</string>
     <string name="assessment_profile_suggested_variable">Voorgesteld - je verbinding schommelde tijdens de meetreeks</string>

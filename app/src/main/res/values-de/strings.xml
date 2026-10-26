@@ -2366,6 +2366,10 @@
     <string name="audio_tunneled_sub_prefer_app">Nicht verfügbar, solange „Decoder-Priorität“ auf „App-Decoder bevorzugen“ steht</string>
     <string name="audio_use_system_passthrough">System-Passthrough</string>
     <string name="audio_use_system_passthrough_sub">Sendet TrueHD und DTS-HD über Android (Systempfad) statt über Nuvio Arc (IEC-Pfad) an den Receiver. Verwenden, wenn verlustfreie Formate Rauschen, Versatz oder keinen Ton erzeugen.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD- und DTS:X-Passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">TV-Passthrough wählen, wenn die Soundbar nur DTS anzeigt oder bei DTS-HD- oder DTS:X-Filmen nichts abspielt.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV-Passthrough</string>
     <string name="audio_surround_header">Surround-Sound</string>
     <string name="audio_surround_reset_iec_probe">IEC-Prüfergebnis löschen</string>
     <string name="audio_surround_reset_iec_probe_sub">IEC-61937-Ausgabe erneut testen. Verwenden, wenn verlustfreie Formate nach einem Wechsel von Receiver oder Eingang auf PCM zurückfallen.</string>
@@ -2615,13 +2619,14 @@
     <string name="assessment_value_your_call">Ihre Entscheidung</string>
     <string name="assessment_value_leave_as_is">So lassen</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">Ein \u00b7 Auto (\u2248%1$s aktuell)</string>
+    <string name="assessment_value_on_auto">Ein · Auto, bis zu ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Ein - Start &amp; Stopp</string>
     <string name="assessment_value_afr_start">Ein - nur Start</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Ein - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatisch (folgt Automatische Beschleunigung)</string>
     <string name="assessment_item_parallel">Parallele Verbindungen</string>
     <string name="assessment_item_chunk">Blockgröße</string>
     <string name="assessment_item_network_master">Benutzerdefiniertes Netzwerk</string>
@@ -2645,6 +2650,9 @@
     <string name="assessment_grounds_parallel_cannot">Schnellste Messung %1$s bei %2$d \u00d7 %3$d MB - unter der Bitrate des Titels; diese Verbindung reicht für den Stream nicht aus</string>
     <string name="assessment_grounds_parallel_fastest">Schnellste Messung %1$s bei %2$d \u00d7 %3$d MB - keine Titel-Bitrate bekannt, daher kein Urteil, ob es reicht</string>
     <string name="assessment_grounds_chunk">Gehört zur Verbindungszahl oben, aus demselben Messdurchlauf</string>
+    <string name="assessment_grounds_connections_auto">Automatische Beschleunigung ist an und fügt selbst Verbindungen hinzu, wenn ein Film sie braucht; eine feste Zahl würde sie abschalten. Gemessen: eine Verbindung %1$s, %3$d × %4$d MB erreichten %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatische Beschleunigung ist an. Eine Verbindung erreichte %1$s, bereits mindestens 2× die Bitrate dieses Titels, daher muss sie selten weitere hinzufügen.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatische Beschleunigung ist an und fügt selbst Verbindungen hinzu, wenn ein Film sie braucht. Es wurde kein Stream getestet, daher gibt es keine Geschwindigkeiten.</string>
     <string name="assessment_grounds_perf_mode">Hält Puffer in Remux-Größe vom Java-Heap fern, damit die Garbage Collection keine Bilder ruckeln lässt; die Speicherlimits richten sich nach der Stufe %1$s dieses Geräts (sicher %2$d MB / Warnung %3$d MB), und mehr als %4$d Verbindungen setzen es voraus</string>
     <string name="assessment_grounds_perf_mode_unsupported">Erfordert Android 8.0 oder neuer</string>
     <string name="assessment_grounds_native_auto">Die App bemisst den Puffer für dieses Gerät mit %1$s (bis %2$d MB, weniger bei Speichermangel) und hält ihn im nativen Speicher</string>
@@ -2659,7 +2667,7 @@
     <string name="assessment_grounds_network_untested">Nur für parallele Verbindungen nötig, und es wurde kein Stream getestet, um darüber zu entscheiden</string>
     <string name="assessment_grounds_max_buffer">Ein Ziel von %1$d MB hält \u2248%2$d s dieses Titels (%3$s) - Sekunden darüber hinaus können nicht entstehen</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Keine Titel-Bitrate bekannt - die Byte-Obergrenze lässt sich nicht berechnen; die Grenze bleibt bei %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto richtet sich nach dem freien Speicher (20%% des freien Platzes in Grenzen, 1 GB Reserve) - \u2248%1$s auf diesem Gerät im Moment</string>
+    <string name="assessment_grounds_vod_auto">Auto richtet sich nach dem freien Speicher (20%% des freien Platzes in Grenzen, 1 GB Reserve), der Cache kann auf diesem Gerät also bis zu ≈%1$s groß werden. Solange der Cache aus ist, wird nichts gespeichert.</string>
     <string name="assessment_grounds_vod_off">Nicht genug freier Speicher für einen sinnvollen Cache (braucht \u2265 100 MB nach der 1-GB-Reserve) - es würde ohnehin direkt gestreamt</string>
     <string name="assessment_grounds_afr_on">Display meldet mehrere Bildwiederholraten bei der aktuellen Auflösung (%1$s)</string>
     <string name="assessment_grounds_afr_already">Bereits ein - Start oder Start &amp; Stopp ist Geschmackssache: weniger HDMI-Neusynchronisierungen oder Rückkehr der Oberfläche zu 60 Hz</string>
@@ -2706,6 +2714,7 @@
     <string name="assessment_section_verify">Erkannt - selbst prüfen</string>
     <string name="assessment_measured_skipped">Kein zuletzt abgespielter Stream - Messreihe übersprungen. Etwas abspielen und für gemessene Zeilen erneut starten.</string>
     <string name="assessment_currently">Aktuell: %1$s</string>
+    <string name="assessment_suggested">Vorschlag: %1$s</string>
     <string name="assessment_profile_values">Start %1$d s \u00b7 Nachpuffern %2$d s \u00b7 Min. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Vorschlag - Ihre Verbindung blieb während der Messreihe stabil</string>
     <string name="assessment_profile_suggested_variable">Vorschlag - Ihre Verbindung schwankte während der Messreihe</string>

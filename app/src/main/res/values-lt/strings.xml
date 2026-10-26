@@ -1099,6 +1099,10 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="audio_tunneled_sub_prefer_app">Negalima naudoti, kai nustatyme „Dekoderio prioritetas“ pasirinkta „Teikti pirmenybę programos dekoderiams“</string>
     <string name="audio_use_system_passthrough">Sistemos passthrough</string>
     <string name="audio_use_system_passthrough_sub">TrueHD ir DTS-HD į imtuvą siunčia per „Android“ (sistemos kelias), o ne per „Nuvio Arc“ (IEC kelias). Naudokite, jei nenuostolingi formatai skleidžia triukšmą, išsiskiria su vaizdu arba nėra garso.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD ir DTS:X passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Pasirinkite TV passthrough, jei garso juosta rodo paprastą DTS arba DTS-HD ar DTS:X filmuose nieko negroja.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standartinis</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV passthrough</string>
     <string name="audio_surround_header">Erdvinis garsas</string>
     <string name="audio_surround_reset_iec_probe">Išvalyti IEC patikros sprendimą</string>
     <string name="audio_surround_reset_iec_probe_sub">Dar kartą išbandyti IEC 61937 išvestį. Naudokite, jei pakeitus imtuvą ar įvestį nenuostolingi formatai persijungia į PCM.</string>
@@ -1348,13 +1352,14 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="assessment_value_your_call">Jūsų pasirinkimas</string>
     <string name="assessment_value_leave_as_is">Palikti kaip yra</string>
     <string name="assessment_value_auto">Automatinis</string>
-    <string name="assessment_value_on_auto">Įjungta \u00b7 Automatinis (dabar \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Įjungta · Automatinis, iki ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Įjungta - pradžioje ir pabaigoje</string>
     <string name="assessment_value_afr_start">Įjungta - tik pradžioje</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Įjungta - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatinis (pagal Automatinį spartinimą)</string>
     <string name="assessment_item_parallel">Lygiagrečios jungtys</string>
     <string name="assessment_item_chunk">Bloko dydis</string>
     <string name="assessment_item_network_master">Pasirinktinis tinklas</string>
@@ -1378,6 +1383,9 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="assessment_grounds_parallel_cannot">Greičiausiai išmatuota %1$s su %2$d \u00d7 %3$d MB - mažiau nei paties pavadinimo bitų sparta; šis ryšys srauto neišlaikys</string>
     <string name="assessment_grounds_parallel_fastest">Greičiausiai išmatuota %1$s su %2$d \u00d7 %3$d MB - pavadinimo bitų sparta nežinoma, todėl pakankamumas neįvertintas</string>
     <string name="assessment_grounds_chunk">Suporuota su aukščiau nurodytu jungčių skaičiumi, iš to paties matavimo</string>
+    <string name="assessment_grounds_connections_auto">Automatinis spartinimas įjungtas ir pats prideda jungčių, kai filmui jų reikia; fiksuotas skaičius jį išjungtų. Išmatuota: viena jungtis %1$s, %3$d × %4$d MB pasiekė %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatinis spartinimas įjungtas. Viena jungtis išmatuota %1$s, jau bent 2× šio pavadinimo bitų spartos, todėl pridėti daugiau prireiks retai.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatinis spartinimas įjungtas ir pats prideda jungčių, kai filmui jų reikia. Joks srautas nebuvo išbandytas, todėl nėra greičių, kuriuos būtų galima parodyti.</string>
     <string name="assessment_grounds_perf_mode">Laiko remux dydžio buferius ne Java krūvoje, kad šiukšlių surinkimas nesukeltų kadrų trūkčiojimo; atminties ribos pritaikomos šio įrenginio %1$s klasei (saugu %2$d MB / įspėjimas %3$d MB), o daugiau nei %4$d jungtims to reikia</string>
     <string name="assessment_grounds_perf_mode_unsupported">Reikalinga „Android“ 8.0 arba naujesnė</string>
     <string name="assessment_grounds_native_auto">Programa parenka buferį šiam %1$s įrenginiui (iki %2$d MB, mažiau, kai trūksta atminties) ir laiko jį savojoje atmintyje</string>
@@ -1392,7 +1400,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="assessment_grounds_network_untested">Reikia tik lygiagrečioms jungtims, o joms įvertinti nebuvo išbandytas joks srautas</string>
     <string name="assessment_grounds_max_buffer">%1$d MB tikslas talpina \u2248%2$d s šio pavadinimo (%3$s) - daugiau sekundžių susikaupti negali</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Pavadinimo bitų sparta nežinoma - baitų ribos apskaičiuoti negalima; riba paliekama %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automatinis dydis pagal laisvą vietą (20%% laisvos vietos ribose, 1 GB rezervas) - šiuo metu šiame įrenginyje \u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">Automatinis dydis pagal laisvą vietą (20%% laisvos vietos ribose, 1 GB rezervas), todėl talpykla šiame įrenginyje gali išaugti iki ≈%1$s. Kol talpykla išjungta, niekas neįrašoma.</string>
     <string name="assessment_grounds_vod_off">Nepakanka laisvos vietos naudingai talpyklai (reikia \u2265 100 MB po 1 GB rezervo) - vis tiek būtų transliuojama tiesiogiai</string>
     <string name="assessment_grounds_afr_on">Ekranas praneša kelis atnaujinimo dažnius esant dabartinei skiriamajai gebai (%1$s)</string>
     <string name="assessment_grounds_afr_already">Jau įjungta - Pradžioje ar Pradžioje ir pabaigoje yra pasirinkimo reikalas: mažiau HDMI persinchronizavimų arba sąsajos grįžimas į 60 Hz</string>
@@ -1439,6 +1447,7 @@ Klaida: Bandomoji simuliuojama klaida — tai nėra tikras gedimas. Šaltinis gr
     <string name="assessment_section_verify">Aptikta - patikrinkite patys</string>
     <string name="assessment_measured_skipped">Nėra paskutinio leisto srauto - matavimas praleistas. Paleiskite ką nors, tada paleiskite iš naujo, kad gautumėte išmatuotas eilutes.</string>
     <string name="assessment_currently">Dabar: %1$s</string>
+    <string name="assessment_suggested">Siūloma: %1$s</string>
     <string name="assessment_profile_values">pradžia %1$d s \u00b7 po strigimo %2$d s \u00b7 min. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Siūloma - matavimo metu jūsų ryšys buvo stabilus</string>
     <string name="assessment_profile_suggested_variable">Siūloma - matavimo metu jūsų ryšys svyravo</string>

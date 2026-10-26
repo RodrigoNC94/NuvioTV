@@ -2784,6 +2784,10 @@
     <string name="audio_tunneled_sub_prefer_app">Недостъпно, когато „Приоритет на декодера“ е зададен на „Предпочитай декодери на приложението“</string>
     <string name="audio_use_system_passthrough">Системен passthrough</string>
     <string name="audio_use_system_passthrough_sub">Изпраща TrueHD и DTS-HD към твоя receiver през Android (системен път) вместо през Nuvio Arc (IEC път). Използвай, ако lossless форматите дават шум, разминаване или няма звук.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough за DTS-HD и DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Изберете Passthrough през телевизора, ако саундбарът показва обикновен DTS или не възпроизвежда нищо при филми с DTS-HD или DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Стандартно</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough през телевизора</string>
     <string name="audio_surround_header">Съраунд звук</string>
     <string name="audio_surround_reset_iec_probe">Изчисти решението от IEC проверката</string>
     <string name="audio_surround_reset_iec_probe_sub">Тествай IEC 61937 изхода отново. Използвай, ако lossless форматите минават към PCM след смяна на receiver или вход.</string>
@@ -3033,13 +3037,14 @@
     <string name="assessment_value_your_call">По твой избор</string>
     <string name="assessment_value_leave_as_is">Остави както е</string>
     <string name="assessment_value_auto">Автоматично</string>
-    <string name="assessment_value_on_auto">Вкл \u00b7 Автоматично (сега \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Вкл · Автоматично, до ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Вкл - при стартиране и спиране</string>
     <string name="assessment_value_afr_start">Вкл - само при стартиране</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Вкл - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Автоматично (следва Автоматично ускоряване)</string>
     <string name="assessment_item_parallel">Паралелни връзки</string>
     <string name="assessment_item_chunk">Размер на chunk</string>
     <string name="assessment_item_network_master">Персонализирана мрежа</string>
@@ -3063,6 +3068,9 @@
     <string name="assessment_grounds_parallel_cannot">Най-бързо измерени %1$s при %2$d \u00d7 %3$d MB - под битрейта на самото заглавие; тази връзка не може да поддържа потока</string>
     <string name="assessment_grounds_parallel_fastest">Най-бързо измерени %1$s при %2$d \u00d7 %3$d MB - битрейтът на заглавието не е известен, затова няма оценка за достатъчност</string>
     <string name="assessment_grounds_chunk">В комплект с броя връзки по-горе, от същото измерване</string>
+    <string name="assessment_grounds_connections_auto">Автоматично ускоряване е включено и само добавя връзки, когато филмът има нужда; фиксиран брой би го изключил. Измерено: една връзка %1$s, %3$d × %4$d MB достигна %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Автоматично ускоряване е включено. Една връзка измери %1$s, вече поне 2× битрейта на това заглавие, така че рядко ще се налага да добавя още.</string>
+    <string name="assessment_grounds_connections_auto_untested">Автоматично ускоряване е включено и само добавя връзки, когато филмът има нужда. Не е тестван поток, така че няма скорости за показване.</string>
     <string name="assessment_grounds_perf_mode">Държи буферите с размер на remux извън Java heap, за да не насича кадрите garbage collection; лимитите на паметта се мащабират според класа на устройството %1$s (безопасно %2$d MB / предупреждение %3$d MB), а над %4$d връзки го изискват</string>
     <string name="assessment_grounds_perf_mode_unsupported">Изисква Android 8.0 или по-нов</string>
     <string name="assessment_grounds_native_auto">Приложението избира буфера за това устройство с %1$s (до %2$d MB, по-малко при недостиг на памет) и го държи в нативна памет</string>
@@ -3077,7 +3085,7 @@
     <string name="assessment_grounds_network_untested">Нужно е само за паралелни връзки, а не е тестван поток, за да се реши за тях</string>
     <string name="assessment_grounds_max_buffer">Цел от %1$d MB побира \u2248%2$d s от това заглавие (%3$s) - секундите над това няма как да се натрупат</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Битрейтът на заглавието не е известен - таванът по байтове не може да се изчисли; ограничението остава %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Автоматично определя размера според свободното място (20%% от свободното в рамките на лимитите, 1 GB резерв) - \u2248%1$s на това устройство в момента</string>
+    <string name="assessment_grounds_vod_auto">Автоматично определя размера според свободното място (20%% от свободното в рамките на лимитите, 1 GB резерв), така че кешът може да нарасне до ≈%1$s на това устройство. Нищо не се записва, докато кешът е изключен.</string>
     <string name="assessment_grounds_vod_off">Няма достатъчно свободно място за полезен кеш (нужни са \u2265 100 MB след резерва от 1 GB) - така или иначе би се стриймвало директно</string>
     <string name="assessment_grounds_afr_on">Дисплеят отчита няколко честоти на опресняване при текущата резолюция (%1$s)</string>
     <string name="assessment_grounds_afr_already">Вече е включено - „при стартиране“ или „при стартиране и спиране“ е въпрос на предпочитание: по-малко HDMI ресинхронизации срещу връщане на интерфейса към 60 Hz</string>
@@ -3124,6 +3132,7 @@
     <string name="assessment_section_verify">Открито - провери сам</string>
     <string name="assessment_measured_skipped">Няма последно пуснат поток - тестът е пропуснат. Пусни нещо и стартирай отново за измерените редове.</string>
     <string name="assessment_currently">В момента: %1$s</string>
+    <string name="assessment_suggested">Предложение: %1$s</string>
     <string name="assessment_profile_values">старт %1$d s \u00b7 повт. буфериране %2$d s \u00b7 мин. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Препоръчан - връзката ти беше стабилна по време на теста</string>
     <string name="assessment_profile_suggested_variable">Препоръчан - връзката ти се колебаеше по време на теста</string>

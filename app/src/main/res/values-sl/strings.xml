@@ -2270,6 +2270,10 @@
     <string name="audio_tunneled_sub_prefer_app">Ni na voljo, ko je Prioriteta dekoderja nastavljena na Preferiraj dekoderje aplikacije</string>
     <string name="audio_use_system_passthrough">Sistemski prehod zvoka</string>
     <string name="audio_use_system_passthrough_sub">TrueHD in DTS-HD pošlje sprejemniku prek Androida (sistemska pot) namesto prek Nuvia (pot IEC). Uporabite, če formati brez izgub povzročajo šum, zamik ali ni zvoka.</string>
+    <string name="audio_dtshd_tv_passthrough">Prehod zvoka DTS-HD in DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Izberite Prehod prek TV, če zvočnik soundbar prikazuje navaden DTS ali pri filmih z DTS-HD ali DTS:X ne predvaja ničesar.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standardno</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Prehod prek TV</string>
     <string name="audio_surround_header">Prostorski zvok</string>
     <string name="audio_surround_reset_iec_probe">Počisti odločitev preverjanja IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Znova preizkusi izhod IEC 61937. Uporabite, če formati brez izgub po menjavi sprejemnika ali vhoda preklopijo na PCM.</string>
@@ -2519,13 +2523,14 @@
     <string name="assessment_value_your_call">Po vaši izbiri</string>
     <string name="assessment_value_leave_as_is">Pustite, kot je</string>
     <string name="assessment_value_auto">Samodejno</string>
-    <string name="assessment_value_on_auto">Vklopljeno \u00b7 Samodejno (zdaj \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Vklopljeno · Samodejno, do ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Vklopljeno - zagon in ustavitev</string>
     <string name="assessment_value_afr_start">Vklopljeno - samo zagon</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Vklopljeno - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Samodejno (sledi Samodejni pospešitvi)</string>
     <string name="assessment_item_parallel">Vzporedne povezave</string>
     <string name="assessment_item_chunk">Velikost kosa</string>
     <string name="assessment_item_network_master">Omrežje po meri</string>
@@ -2549,6 +2554,9 @@
     <string name="assessment_grounds_parallel_cannot">Najhitreje izmerjeno %1$s pri %2$d \u00d7 %3$d MB - pod bitno hitrostjo samega naslova; ta povezava prenosa ne zmore</string>
     <string name="assessment_grounds_parallel_fastest">Najhitreje izmerjeno %1$s pri %2$d \u00d7 %3$d MB - bitna hitrost naslova ni znana, zato ni ocene zadostnosti</string>
     <string name="assessment_grounds_chunk">V paru z zgornjim številom povezav, iz istega merilnega prehoda</string>
+    <string name="assessment_grounds_connections_auto">Samodejna pospešitev je vklopljena in sama doda povezave, ko jih film potrebuje; fiksno število bi jo izklopilo. Izmerjeno: ena povezava %1$s, %3$d × %4$d MB je doseglo %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Samodejna pospešitev je vklopljena. Ena povezava je izmerila %1$s, že vsaj 2× bitno hitrost tega naslova, zato bo le redko morala dodati več.</string>
+    <string name="assessment_grounds_connections_auto_untested">Samodejna pospešitev je vklopljena in sama doda povezave, ko jih film potrebuje. Noben prenos ni bil preizkušen, zato ni hitrosti za prikaz.</string>
     <string name="assessment_grounds_perf_mode">Medpomnilnike velikosti remuxa drži zunaj kopice Java, da čiščenje pomnilnika ne povzroča zatikanja sličic; pomnilniške meje sledijo razredu te naprave %1$s (varno %2$d MB / opozorilo %3$d MB), več kot %4$d povezav pa to zahteva</string>
     <string name="assessment_grounds_perf_mode_unsupported">Zahteva Android 8.0 ali novejši</string>
     <string name="assessment_grounds_native_auto">Aplikacija prilagodi medpomnilnik tej napravi s pomnilnikom %1$s (do %2$d MB, manj, ko pomnilnika primanjkuje) in ga hrani v izvornem pomnilniku</string>
@@ -2563,7 +2571,7 @@
     <string name="assessment_grounds_network_untested">Potrebno samo za vzporedne povezave, a noben prenos ni bil preizkušen, da bi se o njih odločili</string>
     <string name="assessment_grounds_max_buffer">Cilj %1$d MB drži \u2248%2$d s tega naslova (%3$s) - sekunde nad tem se ne morejo uresničiti</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitna hitrost naslova ni znana - zgornje meje v bajtih ni mogoče izračunati; omejitev ostane %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Samodejno določi velikost glede na prosti prostor (20%% prostega znotraj omejitev, 1 GB rezerve) - zdaj \u2248%1$s na tej napravi</string>
+    <string name="assessment_grounds_vod_auto">Samodejno določi velikost glede na prosti prostor (20%% prostega znotraj omejitev, 1 GB rezerve), zato lahko predpomnilnik na tej napravi zraste do ≈%1$s. Dokler je predpomnilnik izklopljen, se nič ne shrani.</string>
     <string name="assessment_grounds_vod_off">Premalo prostega prostora za uporaben predpomnilnik (potrebnih \u2265 100 MB po 1 GB rezerve) - predvajanje bi tako ali tako teklo neposredno</string>
     <string name="assessment_grounds_afr_on">Zaslon pri trenutni ločljivosti sporoča več hitrosti osveževanja (%1$s)</string>
     <string name="assessment_grounds_afr_already">Že vklopljeno - Zagon ali Zagon in ustavitev je stvar izbire: manj ponovnih sinhronizacij HDMI ali vrnitev vmesnika na 60 Hz</string>
@@ -2610,6 +2618,7 @@
     <string name="assessment_section_verify">Zaznano - preverite sami</string>
     <string name="assessment_measured_skipped">Ni nazadnje predvajanega prenosa - meritev je preskočena. Predvajajte nekaj in ponovite za izmerjene vrstice.</string>
     <string name="assessment_currently">Trenutno: %1$s</string>
+    <string name="assessment_suggested">Predlog: %1$s</string>
     <string name="assessment_profile_values">začetek %1$d s \u00b7 po zastoju %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Predlagano - povezava je bila med meritvijo stabilna</string>
     <string name="assessment_profile_suggested_variable">Predlagano - povezava je med meritvijo nihala</string>

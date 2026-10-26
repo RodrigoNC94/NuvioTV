@@ -1708,6 +1708,10 @@
     <string name="audio_tunneled_sub_prefer_app">Inte tillgängligt när Avkodarprioritet är inställd på Föredra appens avkodare</string>
     <string name="audio_use_system_passthrough">Systemgenomströmning</string>
     <string name="audio_use_system_passthrough_sub">Skickar TrueHD och DTS-HD till din receiver via Android (systemvägen) i stället för Nuvio Arc (IEC-vägen). Använd detta om förlustfria format ger brus, glidning eller inget ljud.</string>
+    <string name="audio_dtshd_tv_passthrough">Genomströmning av DTS-HD och DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Välj TV-genomströmning om din soundbar visar vanlig DTS eller inte spelar något på filmer med DTS-HD eller DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV-genomströmning</string>
     <string name="audio_surround_header">Surroundljud</string>
     <string name="audio_surround_reset_iec_probe">Rensa IEC-testbeslut</string>
     <string name="audio_surround_reset_iec_probe_sub">Testa IEC 61937-utmatning igen. Använd detta om förlustfria format faller tillbaka till PCM efter byte av receiver eller ingång.</string>
@@ -1957,13 +1961,14 @@
     <string name="assessment_value_your_call">Ditt val</string>
     <string name="assessment_value_leave_as_is">Låt vara</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">På \u00b7 Auto (\u2248%1$s nu)</string>
+    <string name="assessment_value_on_auto">På · Auto, upp till ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">På - start &amp; stopp</string>
     <string name="assessment_value_afr_start">På - bara start</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">På - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatiskt (följer Automatisk acceleration)</string>
     <string name="assessment_item_parallel">Parallella anslutningar</string>
     <string name="assessment_item_chunk">Blockstorlek</string>
     <string name="assessment_item_network_master">Anpassat nätverk</string>
@@ -1987,6 +1992,9 @@
     <string name="assessment_grounds_parallel_cannot">Snabbaste uppmätta %1$s med %2$d \u00d7 %3$d MB - under titelns egen bitrate; den här länken klarar inte strömmen</string>
     <string name="assessment_grounds_parallel_fastest">Snabbaste uppmätta %1$s med %2$d \u00d7 %3$d MB - ingen bitrate för titeln var känd, så ingen bedömning av om det räcker</string>
     <string name="assessment_grounds_chunk">Hör ihop med antalet anslutningar ovan, från samma mätomgång</string>
+    <string name="assessment_grounds_connections_auto">Automatisk acceleration är på och lägger själv till anslutningar när en film behöver dem; ett fast antal skulle stänga av den. Uppmätt: en anslutning %1$s, %3$d × %4$d MB nådde %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatisk acceleration är på. En anslutning mätte %1$s, redan minst 2× titelns bitrate, så den behöver sällan lägga till fler.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatisk acceleration är på och lägger själv till anslutningar när en film behöver dem. Ingen ström testades, så det finns inga hastigheter att visa.</string>
     <string name="assessment_grounds_perf_mode">Håller remux-stora buffertar utanför Java-heapen så att skräpinsamlingen inte kan få bilden att hacka; minnesgränserna anpassas till enhetens nivå %1$s (säker %2$d MB / varning %3$d MB) och fler än %4$d anslutningar kräver det</string>
     <string name="assessment_grounds_perf_mode_unsupported">Kräver Android 8.0 eller senare</string>
     <string name="assessment_grounds_native_auto">Appen anpassar bufferten för den här boxen med %1$s (upp till %2$d MB, mindre när minnet är knappt) och håller den i nativt minne</string>
@@ -2001,7 +2009,7 @@
     <string name="assessment_grounds_network_untested">Behövs bara för parallella anslutningar, och ingen ström testades för att avgöra det</string>
     <string name="assessment_grounds_max_buffer">Ett mål på %1$d MB rymmer \u2248%2$d s av den här titeln (%3$s) - sekunder utöver det kan inte uppstå</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Ingen bitrate för titeln är känd - bytetaket kan inte beräknas; taket lämnas på %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto anpassar efter ledigt utrymme (20%% av det lediga inom gränserna, 1 GB reserv) - \u2248%1$s på den här enheten just nu</string>
+    <string name="assessment_grounds_vod_auto">Auto anpassar efter ledigt utrymme (20%% av det lediga inom gränserna, 1 GB reserv), så cachen kan växa till ≈%1$s på den här enheten. Inget sparas medan cachen är avstängd.</string>
     <string name="assessment_grounds_vod_off">Inte nog med ledigt utrymme för en användbar cache (kräver \u2265 100 MB efter reserven på 1 GB) - uppspelningen skulle ändå strömma direkt</string>
     <string name="assessment_grounds_afr_on">Skärmen rapporterar flera uppdateringsfrekvenser vid aktuell upplösning (%1$s)</string>
     <string name="assessment_grounds_afr_already">Redan på - Start eller Start &amp; stopp är en smaksak: färre HDMI-omsynkningar mot att gränssnittet går tillbaka till 60 Hz</string>
@@ -2048,6 +2056,7 @@
     <string name="assessment_section_verify">Upptäckt - kontrollera själv</string>
     <string name="assessment_measured_skipped">Ingen senast spelad ström - svepet hoppades över. Spela något och kör sedan igen för uppmätta rader.</string>
     <string name="assessment_currently">Nu: %1$s</string>
+    <string name="assessment_suggested">Förslag: %1$s</string>
     <string name="assessment_profile_values">start %1$d s \u00b7 ombuffring %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Föreslås - din länk var stabil under svepet</string>
     <string name="assessment_profile_suggested_variable">Föreslås - din länk svajade under svepet</string>

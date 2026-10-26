@@ -3459,6 +3459,10 @@
     <string name="audio_tunneled_sub_prefer_app">לא זמין כאשר \"איך לנגן את הקול\" מוגדר ל-\"העדפת מפענחי אפליקציה\"</string>
     <string name="audio_use_system_passthrough">מעבר שמע דרך המערכת</string>
     <string name="audio_use_system_passthrough_sub">שולח TrueHD ו-DTS-HD למקלט דרך Android (נתיב המערכת) במקום דרך Nuvio Arc (נתיב IEC). מתאים אם פורמטים ללא אובדן גורמים לרעש, לסטייה או להיעדר שמע.</string>
+    <string name="audio_dtshd_tv_passthrough">העברת DTS-HD ו-DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">בחרו העברה דרך הטלוויזיה אם מקרן הקול מציג DTS רגיל או לא מנגן כלום בסרטי DTS-HD או DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">רגיל</string>
+    <string name="audio_dtshd_tv_passthrough_tv">העברה דרך הטלוויזיה</string>
     <string name="audio_surround_header">סאונד היקפי</string>
     <string name="audio_surround_reset_iec_probe">ניקוי החלטת בדיקת IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">בדיקה חוזרת של פלט IEC 61937. מתאים אם פורמטים ללא אובדן חוזרים ל-PCM אחרי החלפת מקלט או כניסה.</string>
@@ -3705,13 +3709,14 @@
     <string name="assessment_value_your_call">לבחירתך</string>
     <string name="assessment_value_leave_as_is">להשאיר כמו שהוא</string>
     <string name="assessment_value_auto">אוטומטי</string>
-    <string name="assessment_value_on_auto">פועל · אוטומטי (≈%1$s כעת)</string>
+    <string name="assessment_value_on_auto">פועל · אוטומטי, עד ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">פועל - בהתחלה ובסיום</string>
     <string name="assessment_value_afr_start">פועל - בהתחלה בלבד</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">פועל - %1$d × %2$s</string>
+    <string name="assessment_value_connections_auto">אוטומטי (לפי האצה אוטומטית)</string>
     <string name="assessment_item_parallel">חיבורים מקבילים</string>
     <string name="assessment_item_chunk">גודל מקטע</string>
     <string name="assessment_item_network_master">הורדה מהירה יותר (מתקדם)</string>
@@ -3735,6 +3740,9 @@
     <string name="assessment_grounds_parallel_cannot">המהירה ביותר מדדה %1$s ב-%2$d × %3$d MB - מתחת לקצב הסיביות של הכותר עצמו; החיבור הזה לא יכול להחזיק את הסטרים</string>
     <string name="assessment_grounds_parallel_fastest">המהירה ביותר מדדה %1$s ב-%2$d × %3$d MB - קצב הסיביות של הכותר לא היה ידוע, ולכן אין קביעה אם זה מספיק</string>
     <string name="assessment_grounds_chunk">מוצמד למספר החיבורים שלמעלה, מאותו מעבר מדידה</string>
+    <string name="assessment_grounds_connections_auto">האצה אוטומטית פועלת ומוסיפה חיבורים בעצמה כשסרט צריך אותם; מספר קבוע היה מכבה אותה. נמדד: חיבור אחד %1$s, %3$d × %4$d MB הגיעו ל-%2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">האצה אוטומטית פועלת. חיבור אחד מדד %1$s, כבר לפחות 2× קצב הסיביות של הכותר, כך שרק לעיתים רחוקות תצטרך להוסיף עוד.</string>
+    <string name="assessment_grounds_connections_auto_untested">האצה אוטומטית פועלת ומוסיפה חיבורים בעצמה כשסרט צריך אותם. לא נבדק אף סטרים, כך שאין מהירויות להציג.</string>
     <string name="assessment_grounds_perf_mode">שומר מאגרים בגודל remux מחוץ ל-heap של Java כדי שאיסוף אשפה לא יגרום לגמגום פריימים; מגבלות הזיכרון מותאמות לדרגת %1$s של המכשיר (בטוח %2$d MB / אזהרה %3$d MB), ומעל %4$d חיבורים הוא נדרש</string>
     <string name="assessment_grounds_perf_mode_unsupported">נדרש Android 8.0 ומעלה</string>
     <string name="assessment_grounds_native_auto">האפליקציה קובעת את גודל המאגר למכשיר הזה עם %1$s (עד %2$d MB, פחות כשחסר זיכרון) ושומרת אותו בזיכרון מקורי</string>
@@ -3749,7 +3757,7 @@
     <string name="assessment_grounds_network_untested">נדרש רק לחיבורים מקבילים, ולא נבדק אף סטרים כדי להחליט עליהם</string>
     <string name="assessment_grounds_max_buffer">יעד של %1$d MB מחזיק ≈%2$d s מהכותר הזה (%3$s) - שניות מעבר לכך לא יכולות להתממש</string>
     <string name="assessment_grounds_max_buffer_nobitrate">קצב הסיביות של הכותר לא ידוע - אי אפשר לחשב את תקרת הבייטים; המגבלה נשארת %1$d s</string>
-    <string name="assessment_grounds_vod_auto">אוטומטי קובע גודל לפי השטח הפנוי (20%% מהפנוי בתוך הגבולות, רזרבה של 1 GB) - ≈%1$s במכשיר זה כרגע</string>
+    <string name="assessment_grounds_vod_auto">אוטומטי קובע גודל לפי השטח הפנוי (20%% מהפנוי בתוך הגבולות, רזרבה של 1 GB), כך שהמטמון יכול לגדול עד ≈%1$s במכשיר זה. דבר לא נשמר כל עוד המטמון כבוי.</string>
     <string name="assessment_grounds_vod_off">אין מספיק שטח פנוי למטמון שימושי (נדרשים ≥ 100 MB אחרי רזרבה של 1 GB) - ממילא ההזרמה תהיה ישירה</string>
     <string name="assessment_grounds_afr_on">התצוגה מדווחת על כמה קצבי רענון ברזולוציה הנוכחית (%1$s)</string>
     <string name="assessment_grounds_afr_already">כבר פועל - בהתחלה מול בהתחלה ובסיום הוא עניין של העדפה: פחות סנכרוני HDMI מחדש מול חזרת הממשק ל-60 Hz</string>
@@ -3796,6 +3804,7 @@
     <string name="assessment_section_verify">זוהה - לבדיקה עצמית</string>
     <string name="assessment_measured_skipped">אין סטרים אחרון שנוגן - הסריקה דולגה. יש לנגן משהו ואז להריץ שוב לקבלת שורות נמדדות.</string>
     <string name="assessment_currently">כעת: %1$s</string>
+    <string name="assessment_suggested">מוצע: %1$s</string>
     <string name="assessment_profile_values">התחלה %1$d s · טעינה מחדש %2$d s · מינימום %3$d s</string>
     <string name="assessment_profile_suggested_stable">מוצע - החיבור שלך נשאר יציב במהלך הסריקה</string>
     <string name="assessment_profile_suggested_variable">מוצע - החיבור שלך התנדנד במהלך הסריקה</string>

@@ -2540,6 +2540,10 @@
     <string name="audio_tunneled_sub_prefer_app">Tidak tersedia saat Prioritas Dekoder disetel ke Utamakan dekoder aplikasi</string>
     <string name="audio_use_system_passthrough">Passthrough Sistem</string>
     <string name="audio_use_system_passthrough_sub">Mengirim TrueHD dan DTS-HD ke penerima AV Anda melalui Android (jalur Sistem), bukan Nuvio Arc (jalur IEC). Gunakan ini jika format lossless menghasilkan derau, pergeseran, atau tanpa suara.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough DTS-HD dan DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Pilih Passthrough TV jika soundbar menampilkan DTS biasa atau tidak memutar apa pun pada film DTS-HD atau DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standar</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough TV</string>
     <string name="audio_surround_header">Suara Surround</string>
     <string name="audio_surround_reset_iec_probe">Hapus Keputusan Uji IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Uji lagi output IEC 61937. Gunakan ini jika format lossless turun ke PCM setelah mengganti penerima AV atau input.</string>
@@ -2789,13 +2793,14 @@
     <string name="assessment_value_your_call">Terserah Anda</string>
     <string name="assessment_value_leave_as_is">Biarkan apa adanya</string>
     <string name="assessment_value_auto">Otomatis</string>
-    <string name="assessment_value_on_auto">Aktif \u00b7 Otomatis (\u2248%1$s saat ini)</string>
+    <string name="assessment_value_on_auto">Aktif · Otomatis, hingga ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Aktif - mulai &amp; berhenti</string>
     <string name="assessment_value_afr_start">Aktif - hanya saat mulai</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Aktif - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Otomatis (mengikuti Percepatan otomatis)</string>
     <string name="assessment_item_parallel">Koneksi Paralel</string>
     <string name="assessment_item_chunk">Ukuran Chunk</string>
     <string name="assessment_item_network_master">Jaringan Kustom</string>
@@ -2819,6 +2824,9 @@
     <string name="assessment_grounds_parallel_cannot">Tercepat terukur %1$s pada %2$d \u00d7 %3$d MB - di bawah bitrate judul itu sendiri; koneksi ini tidak sanggup menopang stream</string>
     <string name="assessment_grounds_parallel_fastest">Tercepat terukur %1$s pada %2$d \u00d7 %3$d MB - bitrate judul tidak diketahui, jadi tidak ada penilaian kecukupan</string>
     <string name="assessment_grounds_chunk">Dipasangkan dengan jumlah koneksi di atas, dari pengukuran yang sama</string>
+    <string name="assessment_grounds_connections_auto">Percepatan otomatis aktif dan menambah koneksi sendiri saat film membutuhkannya; angka tetap akan mematikannya. Terukur: satu koneksi %1$s, %3$d × %4$d MB mencapai %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Percepatan otomatis aktif. Satu koneksi terukur %1$s, sudah setidaknya 2× bitrate judul ini, jadi jarang perlu menambah lagi.</string>
+    <string name="assessment_grounds_connections_auto_untested">Percepatan otomatis aktif dan menambah koneksi sendiri saat film membutuhkannya. Belum ada stream yang diuji, jadi tidak ada kecepatan untuk ditampilkan.</string>
     <string name="assessment_grounds_perf_mode">Menjaga buffer seukuran remux di luar heap Java agar garbage collection tidak membuat frame tersendat; batas memori mengikuti tingkat %1$s perangkat ini (aman %2$d MB / peringatan %3$d MB) dan jumlah koneksi di atas %4$d memerlukannya</string>
     <string name="assessment_grounds_perf_mode_unsupported">Memerlukan Android 8.0 atau lebih baru</string>
     <string name="assessment_grounds_native_auto">Aplikasi menentukan ukuran buffer untuk perangkat %1$s ini (hingga %2$d MB, lebih sedikit saat memori menipis) dan menyimpannya di memori native</string>
@@ -2833,7 +2841,7 @@
     <string name="assessment_grounds_network_untested">Hanya perlu untuk koneksi paralel, dan belum ada stream yang diuji untuk menentukannya</string>
     <string name="assessment_grounds_max_buffer">Target %1$d MB menampung \u2248%2$d s judul ini (%3$s) - detik di luar itu tidak akan terwujud</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitrate judul tidak diketahui - batas byte tidak dapat dihitung; batas dibiarkan %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Otomatis menyesuaikan dengan ruang kosong (20%% dari ruang kosong dalam batas, cadangan 1 GB) - \u2248%1$s di perangkat ini saat ini</string>
+    <string name="assessment_grounds_vod_auto">Otomatis menyesuaikan dengan ruang kosong (20%% dari ruang kosong dalam batas, cadangan 1 GB), jadi cache bisa tumbuh hingga ≈%1$s di perangkat ini. Tidak ada yang disimpan selama cache nonaktif.</string>
     <string name="assessment_grounds_vod_off">Ruang kosong tidak cukup untuk cache yang berguna (perlu \u2265 100 MB setelah cadangan 1 GB) - runtime akan tetap streaming langsung</string>
     <string name="assessment_grounds_afr_on">Layar melaporkan beberapa refresh rate pada resolusi saat ini (%1$s)</string>
     <string name="assessment_grounds_afr_already">Sudah aktif - Mulai atau Mulai &amp; berhenti adalah soal selera: lebih sedikit sinkron ulang HDMI atau UI kembali ke 60 Hz</string>
@@ -2880,6 +2888,7 @@
     <string name="assessment_section_verify">Terdeteksi - periksa sendiri</string>
     <string name="assessment_measured_skipped">Tidak ada stream yang terakhir diputar - pemindaian dilewati. Putar sesuatu, lalu jalankan ulang untuk baris terukur.</string>
     <string name="assessment_currently">Saat ini: %1$s</string>
+    <string name="assessment_suggested">Disarankan: %1$s</string>
     <string name="assessment_profile_values">mulai %1$d s \u00b7 rebuffer %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Disarankan - koneksi Anda stabil selama pemindaian</string>
     <string name="assessment_profile_suggested_variable">Disarankan - koneksi Anda naik turun selama pemindaian</string>

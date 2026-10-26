@@ -3697,7 +3697,6 @@
     <string name="assessment_value_your_call">Tùy bạn</string>
     <string name="assessment_value_leave_as_is">Giữ nguyên</string>
     <string name="assessment_value_auto">Tự động</string>
-    <string name="assessment_value_on_auto">Bật \u00b7 Tự động (hiện \u2248%1$s)</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Bật - khi bắt đầu &amp; dừng</string>
     <string name="assessment_value_afr_start">Bật - chỉ khi bắt đầu</string>
@@ -3741,7 +3740,6 @@
     <string name="assessment_grounds_network_untested">Chỉ cần cho kết nối đồng thời, và chưa có luồng nào được kiểm tra để quyết định</string>
     <string name="assessment_grounds_max_buffer">Mục tiêu %1$d MB chứa \u2248%2$d s của nội dung này (%3$s) - số giây vượt mức đó không thể có được</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Chưa rõ bitrate của nội dung - không tính được trần theo byte; giữ giới hạn ở %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Tự động tính theo dung lượng trống (20%% dung lượng trống trong giới hạn, dự trữ 1 GB) - hiện \u2248%1$s trên thiết bị này</string>
     <string name="assessment_grounds_vod_off">Không đủ dung lượng trống cho bộ nhớ đệm hữu ích (cần \u2265 100 MB sau khi dự trữ 1 GB) - đằng nào cũng sẽ phát trực tiếp</string>
     <string name="assessment_grounds_afr_on">Màn hình báo nhiều tần số quét ở độ phân giải hiện tại (%1$s)</string>
     <string name="assessment_grounds_afr_already">Đã bật - Khi bắt đầu hay Khi bắt đầu &amp; dừng là tùy sở thích: ít lần đồng bộ lại HDMI hơn hay giao diện trở về 60 Hz</string>
@@ -4129,9 +4127,20 @@
     <string name="player_track_role_audio_description">Mô tả âm thanh</string>
 
     <!-- Nuvio-test additions -->
+    <string name="audio_dtshd_tv_passthrough">Truyền thẳng DTS-HD và DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Chọn Truyền thẳng qua TV nếu loa thanh chỉ hiện DTS thường hoặc không phát gì với phim DTS-HD hay DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Tiêu chuẩn</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Truyền thẳng qua TV</string>
     <string name="sub_libass_render_scale">Độ phân giải kết xuất phụ đề</string>
     <string name="sub_libass_render_scale_sub">Độ phân giải thấp hơn giúp mượt hơn với phụ đề nhiều hiệu ứng nhưng kém sắc nét hơn</string>
     <string name="settings_stream_badges_in_player_description">Hiển thị nhãn cho video và âm thanh đang phát dưới tiêu đề trình phát. Dùng nhãn riêng của Arc, hoặc bộ nhãn của bạn nếu khớp với văn bản thường, như 2160p hoặc Atmos.</string>
+    <string name="assessment_value_on_auto">Bật · Tự động, tối đa ≈%1$s</string>
+    <string name="assessment_value_connections_auto">Tự động (theo Tăng tốc tự động)</string>
+    <string name="assessment_grounds_connections_auto">Tăng tốc tự động đang bật và tự thêm kết nối khi phim cần; một con số cố định sẽ tắt nó. Đo được: một kết nối %1$s, %3$d × %4$d MB đạt %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Tăng tốc tự động đang bật. Một kết nối đo được %1$s, đã ít nhất 2× bitrate của nội dung này, nên hiếm khi cần thêm kết nối.</string>
+    <string name="assessment_grounds_connections_auto_untested">Tăng tốc tự động đang bật và tự thêm kết nối khi phim cần. Chưa có luồng nào được kiểm tra, nên không có tốc độ để hiển thị.</string>
+    <string name="assessment_grounds_vod_auto">Tự động tính theo dung lượng trống (20%% dung lượng trống trong giới hạn, dự trữ 1 GB), nên bộ nhớ đệm có thể tăng tới ≈%1$s trên thiết bị này. Không có gì được lưu khi bộ nhớ đệm đang tắt.</string>
+    <string name="assessment_suggested">Đề xuất: %1$s</string>
     <string name="playback_dim_hdr_overlays">Làm mờ điều khiển khi HDR</string>
     <string name="playback_dim_hdr_overlays_sub">Điều khiển trình phát dịu hơn khi phát HDR, HLG và Dolby Vision. Độ sáng video không đổi. Phụ đề trong HDR theo kiểu HDR trong cài đặt phụ đề.</string>
     <string name="tvdb_metadata_credit">Siêu dữ liệu do %1$s cung cấp</string>

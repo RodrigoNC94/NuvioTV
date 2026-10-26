@@ -2795,6 +2795,10 @@
     <string name="audio_tunneled_sub_prefer_app">Ikke tilgængelig, når Decoder-prioritet er sat til Foretræk app-decodere</string>
     <string name="audio_use_system_passthrough">System-passthrough</string>
     <string name="audio_use_system_passthrough_sub">Sender TrueHD og DTS-HD til din receiver gennem Android (systemvejen) i stedet for Nuvio Arc (IEC-vejen). Brug dette, hvis tabsfri formater giver støj, lydforskydning eller ingen lyd.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD- og DTS:X-passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Vælg TV-passthrough, hvis din soundbar viser almindelig DTS eller ikke afspiller noget på film med DTS-HD eller DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV-passthrough</string>
     <string name="audio_surround_header">Surroundlyd</string>
     <string name="audio_surround_reset_iec_probe">Ryd IEC-testresultat</string>
     <string name="audio_surround_reset_iec_probe_sub">Test IEC 61937-output igen. Brug dette, hvis tabsfri formater falder tilbage til PCM, efter at du har skiftet receiver eller indgang.</string>
@@ -3044,13 +3048,14 @@
     <string name="assessment_value_your_call">Dit valg</string>
     <string name="assessment_value_leave_as_is">Lad være som det er</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">Til \u00b7 Auto (\u2248%1$s nu)</string>
+    <string name="assessment_value_on_auto">Til · Auto, op til ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Til - start &amp; stop</string>
     <string name="assessment_value_afr_start">Til - kun start</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Til - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatisk (følger Automatisk acceleration)</string>
     <string name="assessment_item_parallel">Parallelle forbindelser</string>
     <string name="assessment_item_chunk">Chunkstørrelse</string>
     <string name="assessment_item_network_master">Brugerdefineret netværk</string>
@@ -3074,6 +3079,9 @@
     <string name="assessment_grounds_parallel_cannot">Hurtigste målte %1$s med %2$d \u00d7 %3$d MB - under titlens egen bitrate; denne forbindelse kan ikke bære streamen</string>
     <string name="assessment_grounds_parallel_fastest">Hurtigste målte %1$s med %2$d \u00d7 %3$d MB - titlens bitrate var ukendt, så ingen vurdering af, om det er nok</string>
     <string name="assessment_grounds_chunk">Hører sammen med antallet af forbindelser ovenfor, fra samme målerunde</string>
+    <string name="assessment_grounds_connections_auto">Automatisk acceleration er slået til og tilføjer selv forbindelser, når en film har brug for dem; et fast antal ville slå den fra. Målt: én forbindelse %1$s, %3$d × %4$d MB nåede %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatisk acceleration er slået til. Én forbindelse målte %1$s, allerede mindst 2× titlens bitrate, så den vil sjældent have brug for at tilføje flere.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatisk acceleration er slået til og tilføjer selv forbindelser, når en film har brug for dem. Ingen stream blev testet, så der er ingen hastigheder at vise.</string>
     <string name="assessment_grounds_perf_mode">Holder buffere i remux-størrelse uden for Java-heapen, så garbage collection ikke kan få billedet til at hakke; hukommelsesgrænserne tilpasses enhedens niveau %1$s (sikker %2$d MB / advarsel %3$d MB), og flere end %4$d forbindelser kræver det</string>
     <string name="assessment_grounds_perf_mode_unsupported">Kræver Android 8.0 eller nyere</string>
     <string name="assessment_grounds_native_auto">Appen tilpasser bufferen til denne boks med %1$s (op til %2$d MB, mindre når hukommelsen er knap) og holder den i native hukommelse</string>
@@ -3088,7 +3096,7 @@
     <string name="assessment_grounds_network_untested">Kun nødvendig for parallelle forbindelser, og ingen stream blev testet til at afgøre det</string>
     <string name="assessment_grounds_max_buffer">Et mål på %1$d MB rummer \u2248%2$d s af denne titel (%3$s) - sekunder ud over det kan ikke opstå</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Titlens bitrate er ukendt - byteloftet kan ikke beregnes; loftet bliver på %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto tilpasser efter ledig plads (20%% af den ledige plads inden for grænserne, 1 GB reserve) - \u2248%1$s på denne enhed lige nu</string>
+    <string name="assessment_grounds_vod_auto">Auto tilpasser efter ledig plads (20%% af den ledige plads inden for grænserne, 1 GB reserve), så cachen kan vokse til ≈%1$s på denne enhed. Intet gemmes, mens cachen er slået fra.</string>
     <string name="assessment_grounds_vod_off">Ikke nok ledig plads til en brugbar cache (kræver \u2265 100 MB efter reserven på 1 GB) - afspilningen ville alligevel streame direkte</string>
     <string name="assessment_grounds_afr_on">Skærmen oplyser flere opdateringshastigheder ved den aktuelle opløsning (%1$s)</string>
     <string name="assessment_grounds_afr_already">Allerede til - Start eller Start &amp; stop er en smagssag: færre HDMI-gensynkroniseringer mod at brugerfladen går tilbage til 60 Hz</string>
@@ -3135,6 +3143,7 @@
     <string name="assessment_section_verify">Registreret - tjek selv</string>
     <string name="assessment_measured_skipped">Ingen senest afspillet stream - gennemløbet blev sprunget over. Afspil noget, og kør derefter igen for målte rækker.</string>
     <string name="assessment_currently">Nu: %1$s</string>
+    <string name="assessment_suggested">Forslag: %1$s</string>
     <string name="assessment_profile_values">start %1$d s \u00b7 genbuffer %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Foreslået - din forbindelse var stabil under gennemløbet</string>
     <string name="assessment_profile_suggested_variable">Foreslået - din forbindelse svingede under gennemløbet</string>

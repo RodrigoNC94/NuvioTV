@@ -3670,7 +3670,6 @@
     <string name="assessment_value_your_call">Scegli tu</string>
     <string name="assessment_value_leave_as_is">Lascia così</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">Attivo \u00b7 Auto (\u2248%1$s ora)</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Attivo - inizio &amp; fine</string>
     <string name="assessment_value_afr_start">Attivo - solo all\'inizio</string>
@@ -3714,7 +3713,6 @@
     <string name="assessment_grounds_network_untested">Serve solo per le connessioni parallele, e nessuno stream è stato testato per decidere</string>
     <string name="assessment_grounds_max_buffer">Un target di %1$d MB contiene \u2248%2$d s di questo titolo (%3$s) - i secondi oltre questo valore non possono esistere</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitrate del titolo sconosciuto - il tetto in byte non si può calcolare; il limite resta a %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto dimensiona in base allo spazio libero (20%% dello spazio libero entro i limiti, 1 GB di riserva) - \u2248%1$s su questo dispositivo in questo momento</string>
     <string name="assessment_grounds_vod_off">Spazio libero insufficiente per una cache utile (servono \u2265 100 MB dopo la riserva di 1 GB) - la riproduzione avverrebbe comunque direttamente dalla sorgente</string>
     <string name="assessment_grounds_afr_on">Il display dichiara più frequenze di aggiornamento alla risoluzione attuale (%1$s)</string>
     <string name="assessment_grounds_afr_already">Già attivo - Inizio o Inizio &amp; fine è una preferenza: meno risincronizzazioni HDMI oppure l\'interfaccia che torna a 60 Hz</string>
@@ -4106,6 +4104,10 @@
     <string name="about_update_auto_install_subtitle">Scarica le nuove versioni in background e installale quando il dispositivo è inattivo</string>
     <string name="about_update_auto_install_notice_title">Avvisa dopo gli aggiornamenti automatici</string>
     <string name="about_update_auto_install_notice_subtitle">Mostra un banner all\'avvio successivo dopo che l\'app si è aggiornata da sola</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough DTS-HD e DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Scegli Passthrough dalla TV se la soundbar mostra solo DTS o non riproduce nulla con i film DTS-HD o DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough dalla TV</string>
     <string name="sub_hdr_style">Stile separato HDR / Dolby Vision</string>
     <string name="sub_hdr_style_sub">Usa un colore del testo diverso e una luminosità più bassa per i sottotitoli dei video HDR e Dolby Vision</string>
     <string name="sub_hdr_text_color">Colore del testo HDR</string>
@@ -4123,6 +4125,13 @@
     <string name="subtitle_style_text_opacity_hdr">Opacità testo (HDR)</string>
     <string name="subtitle_style_brightness_hdr">Luminosità (HDR)</string>
     <string name="update_installed_automatically">Aggiornata automaticamente mentre il dispositivo era inattivo</string>
+    <string name="assessment_value_on_auto">Attivo · Auto, fino a ≈%1$s</string>
+    <string name="assessment_value_connections_auto">Automatico (segue Accelerazione automatica)</string>
+    <string name="assessment_grounds_connections_auto">Accelerazione automatica è attiva e aggiunge da sola connessioni quando un film ne ha bisogno; un numero fisso la disattiverebbe. Misurato: una connessione %1$s, %3$d × %4$d MB hanno raggiunto %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Accelerazione automatica è attiva. Una connessione ha misurato %1$s, già almeno 2× il bitrate di questo titolo, quindi raramente dovrà aggiungerne altre.</string>
+    <string name="assessment_grounds_connections_auto_untested">Accelerazione automatica è attiva e aggiunge da sola connessioni quando un film ne ha bisogno. Nessuno stream è stato testato, quindi non ci sono velocità da mostrare.</string>
+    <string name="assessment_grounds_vod_auto">Auto dimensiona in base allo spazio libero (20%% dello spazio libero entro i limiti, 1 GB di riserva), quindi la cache può arrivare fino a ≈%1$s su questo dispositivo. Finché la cache è disattivata non viene salvato nulla.</string>
+    <string name="assessment_suggested">Consigliato: %1$s</string>
     <string name="playback_dim_hdr_overlays">Attenua i controlli in HDR</string>
     <string name="playback_dim_hdr_overlays_sub">Controlli del player più tenui durante la riproduzione HDR, HLG e Dolby Vision. La luminosità del video non cambia. I sottotitoli in HDR seguono lo stile HDR nelle impostazioni dei sottotitoli.</string>
     <string name="tvdb_metadata_credit">Metadati forniti da %1$s</string>

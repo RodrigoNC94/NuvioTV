@@ -3361,6 +3361,10 @@
     <string name="audio_tunneled_sub_prefer_app">Μη διαθέσιμο όταν η «Προτεραιότητα αποκωδικοποιητή» έχει οριστεί σε «Προτίμηση αποκωδικοποιητών εφαρμογής»</string>
     <string name="audio_use_system_passthrough">Passthrough συστήματος</string>
     <string name="audio_use_system_passthrough_sub">Στέλνει TrueHD και DTS-HD στον receiver μέσω Android (διαδρομή συστήματος) αντί για το Nuvio Arc (διαδρομή IEC). Χρησιμοποιήστε το αν τα lossless φορμά βγάζουν θόρυβο, χάνουν συγχρονισμό ή δεν έχουν ήχο.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough DTS-HD και DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Επιλέξτε Passthrough τηλεόρασης αν το soundbar δείχνει απλό DTS ή δεν παίζει τίποτα σε ταινίες DTS-HD ή DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Τυπικό</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough τηλεόρασης</string>
     <string name="audio_surround_header">Ήχος surround</string>
     <string name="audio_surround_reset_iec_probe">Διαγραφή απόφασης ελέγχου IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Δοκιμάζει ξανά την έξοδο IEC 61937. Χρησιμοποιήστε το αν τα lossless φορμά γυρίζουν σε PCM μετά από αλλαγή receiver ή εισόδου.</string>
@@ -3607,13 +3611,14 @@
     <string name="assessment_value_your_call">Δική σας επιλογή</string>
     <string name="assessment_value_leave_as_is">Αφήστε το ως έχει</string>
     <string name="assessment_value_auto">Αυτόματο</string>
-    <string name="assessment_value_on_auto">Ενεργό \u00b7 Αυτόματο (\u2248%1$s τώρα)</string>
+    <string name="assessment_value_on_auto">Ενεργό · Αυτόματο, έως ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Ενεργό - έναρξη &amp; διακοπή</string>
     <string name="assessment_value_afr_start">Ενεργό - μόνο έναρξη</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Ενεργό - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Αυτόματο (ακολουθεί την Αυτόματη επιτάχυνση)</string>
     <string name="assessment_item_parallel">Παράλληλες συνδέσεις</string>
     <string name="assessment_item_chunk">Μέγεθος τμήματος</string>
     <string name="assessment_item_network_master">Προσαρμοσμένο δίκτυο</string>
@@ -3637,6 +3642,9 @@
     <string name="assessment_grounds_parallel_cannot">Ταχύτερη μέτρηση %1$s με %2$d \u00d7 %3$d MB - κάτω από τον ρυθμό μετάδοσης του ίδιου του τίτλου· αυτή η σύνδεση δεν μπορεί να υποστηρίξει τη ροή</string>
     <string name="assessment_grounds_parallel_fastest">Ταχύτερη μέτρηση %1$s με %2$d \u00d7 %3$d MB - ο ρυθμός μετάδοσης του τίτλου ήταν άγνωστος, οπότε δεν υπάρχει κρίση επάρκειας</string>
     <string name="assessment_grounds_chunk">Συνδυάζεται με τον παραπάνω αριθμό συνδέσεων, από το ίδιο πέρασμα μέτρησης</string>
+    <string name="assessment_grounds_connections_auto">Η Αυτόματη επιτάχυνση είναι ενεργή και προσθέτει μόνη της συνδέσεις όταν τις χρειάζεται μια ταινία· ένας σταθερός αριθμός θα την απενεργοποιούσε. Μέτρηση: μία σύνδεση %1$s, %3$d × %4$d MB έφτασαν τα %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Η Αυτόματη επιτάχυνση είναι ενεργή. Μία σύνδεση μέτρησε %1$s, ήδη τουλάχιστον 2× τον ρυθμό μετάδοσης αυτού του τίτλου, οπότε σπάνια θα χρειαστεί να προσθέσει κι άλλες.</string>
+    <string name="assessment_grounds_connections_auto_untested">Η Αυτόματη επιτάχυνση είναι ενεργή και προσθέτει μόνη της συνδέσεις όταν τις χρειάζεται μια ταινία. Δεν δοκιμάστηκε καμία ροή, οπότε δεν υπάρχουν ταχύτητες για εμφάνιση.</string>
     <string name="assessment_grounds_perf_mode">Κρατά τα buffer μεγέθους remux εκτός Java heap, ώστε το garbage collection να μην προκαλεί κολλήματα στα καρέ· τα όρια μνήμης προσαρμόζονται στη βαθμίδα %1$s αυτής της συσκευής (ασφαλές %2$d MB / προειδοποίηση %3$d MB) και πάνω από %4$d συνδέσεις είναι απαραίτητο</string>
     <string name="assessment_grounds_perf_mode_unsupported">Απαιτεί Android 8.0 ή νεότερο</string>
     <string name="assessment_grounds_native_auto">Η εφαρμογή ορίζει το buffer για αυτή τη συσκευή των %1$s (έως %2$d MB, λιγότερο όταν λείπει μνήμη) και το κρατά στην εγγενή μνήμη</string>
@@ -3651,7 +3659,7 @@
     <string name="assessment_grounds_network_untested">Χρειάζεται μόνο για παράλληλες συνδέσεις, και δεν δοκιμάστηκε καμία ροή για να αποφασιστεί</string>
     <string name="assessment_grounds_max_buffer">Στόχος %1$d MB κρατά \u2248%2$d s αυτού του τίτλου (%3$s) - περισσότερα δευτερόλεπτα δεν μπορούν να υπάρξουν</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Άγνωστος ρυθμός μετάδοσης τίτλου - το όριο σε byte δεν υπολογίζεται· το όριο μένει στα %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Το Αυτόματο ορίζει το μέγεθος από τον ελεύθερο χώρο (20%% του ελεύθερου εντός ορίων, 1 GB εφεδρεία) - \u2248%1$s σε αυτή τη συσκευή τώρα</string>
+    <string name="assessment_grounds_vod_auto">Το Αυτόματο ορίζει το μέγεθος από τον ελεύθερο χώρο (20%% του ελεύθερου εντός ορίων, 1 GB εφεδρεία), οπότε η κρυφή μνήμη μπορεί να φτάσει έως ≈%1$s σε αυτή τη συσκευή. Τίποτα δεν αποθηκεύεται όσο η κρυφή μνήμη είναι ανενεργή.</string>
     <string name="assessment_grounds_vod_off">Δεν υπάρχει αρκετός ελεύθερος χώρος για χρήσιμη προσωρινή μνήμη (χρειάζονται \u2265 100 MB μετά την εφεδρεία 1 GB) - η ροή θα γινόταν ούτως ή άλλως απευθείας</string>
     <string name="assessment_grounds_afr_on">Η οθόνη αναφέρει πολλούς ρυθμούς ανανέωσης στην τρέχουσα ανάλυση (%1$s)</string>
     <string name="assessment_grounds_afr_already">Ήδη ενεργό - Έναρξη ή Έναρξη &amp; διακοπή είναι θέμα προτίμησης: λιγότεροι επανασυγχρονισμοί HDMI ή επιστροφή της διεπαφής στα 60 Hz</string>
@@ -3698,6 +3706,7 @@
     <string name="assessment_section_verify">Ανιχνεύτηκαν - ελέγξτε μόνοι σας</string>
     <string name="assessment_measured_skipped">Δεν υπάρχει τελευταία ροή - η σάρωση παραλείφθηκε. Παίξτε κάτι και εκτελέστε ξανά για τις μετρήσεις.</string>
     <string name="assessment_currently">Τώρα: %1$s</string>
+    <string name="assessment_suggested">Πρόταση: %1$s</string>
     <string name="assessment_profile_values">έναρξη %1$d s \u00b7 rebuffer %2$d s \u00b7 ελάχ. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Προτείνεται - η σύνδεσή σας έμεινε σταθερή στη σάρωση</string>
     <string name="assessment_profile_suggested_variable">Προτείνεται - η σύνδεσή σας είχε διακυμάνσεις στη σάρωση</string>

@@ -1218,6 +1218,10 @@
     <string name="audio_tunneled_sub_prefer_app">Ikke tilgjengelig når Dekoder prioritering er satt til Foretrekk appdekodere</string>
     <string name="audio_use_system_passthrough">Systemgjennomgang</string>
     <string name="audio_use_system_passthrough_sub">Sender TrueHD og DTS-HD til mottakeren din gjennom Android (systemveien) i stedet for Nuvio Arc (IEC-veien). Bruk dette hvis tapsfrie formater gir støy, lydforskyvning eller ingen lyd.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD- og DTS:X-gjennomgang</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Velg TV-gjennomgang hvis lydplanken viser vanlig DTS eller ikke spiller noe på filmer med DTS-HD eller DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV-gjennomgang</string>
     <string name="audio_surround_header">Surroundlyd</string>
     <string name="audio_surround_reset_iec_probe">Nullstill IEC-testresultat</string>
     <string name="audio_surround_reset_iec_probe_sub">Test IEC 61937-utgang på nytt. Bruk dette hvis tapsfrie formater faller tilbake til PCM etter bytte av mottaker eller inngang.</string>
@@ -1467,13 +1471,14 @@
     <string name="assessment_value_your_call">Ditt valg</string>
     <string name="assessment_value_leave_as_is">La stå som det er</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">På \u00b7 Auto (\u2248%1$s nå)</string>
+    <string name="assessment_value_on_auto">På · Auto, opptil ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">På - start &amp; stopp</string>
     <string name="assessment_value_afr_start">På - bare start</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">På - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatisk (følger Automatisk akselerasjon)</string>
     <string name="assessment_item_parallel">Parallelle tilkoblinger</string>
     <string name="assessment_item_chunk">Blokkstørrelse</string>
     <string name="assessment_item_network_master">Tilpasset nettverk</string>
@@ -1497,6 +1502,9 @@
     <string name="assessment_grounds_parallel_cannot">Raskeste målte %1$s med %2$d \u00d7 %3$d MB - under tittelens egen bitrate; denne tilkoblingen klarer ikke strømmen</string>
     <string name="assessment_grounds_parallel_fastest">Raskeste målte %1$s med %2$d \u00d7 %3$d MB - tittelens bitrate var ukjent, så ingen vurdering av om det holder</string>
     <string name="assessment_grounds_chunk">Hører sammen med antallet tilkoblinger ovenfor, fra samme målerunde</string>
+    <string name="assessment_grounds_connections_auto">Automatisk akselerasjon er på og legger selv til tilkoblinger når en film trenger dem; et fast antall ville slått den av. Målt: én tilkobling %1$s, %3$d × %4$d MB nådde %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatisk akselerasjon er på. Én tilkobling målte %1$s, allerede minst 2× tittelens bitrate, så den trenger sjelden å legge til flere.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatisk akselerasjon er på og legger selv til tilkoblinger når en film trenger dem. Ingen strøm ble testet, så det er ingen hastigheter å vise.</string>
     <string name="assessment_grounds_perf_mode">Holder buffere i remux-størrelse utenfor Java-heapen, slik at søppelinnsamling ikke kan få bildet til å hakke; minnegrensene tilpasses enhetens nivå %1$s (trygg %2$d MB / advarsel %3$d MB), og flere enn %4$d tilkoblinger krever det</string>
     <string name="assessment_grounds_perf_mode_unsupported">Krever Android 8.0 eller nyere</string>
     <string name="assessment_grounds_native_auto">Appen tilpasser bufferen til denne boksen med %1$s (opptil %2$d MB, mindre når minnet er knapt) og holder den i nativt minne</string>
@@ -1511,7 +1519,7 @@
     <string name="assessment_grounds_network_untested">Bare nødvendig for parallelle tilkoblinger, og ingen strøm ble testet for å avgjøre det</string>
     <string name="assessment_grounds_max_buffer">Et mål på %1$d MB rommer \u2248%2$d s av denne tittelen (%3$s) - sekunder ut over det kan ikke oppstå</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Tittelens bitrate er ukjent - bytetaket kan ikke beregnes; taket blir stående på %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto tilpasser etter ledig plass (20%% av det ledige innenfor grensene, 1 GB reserve) - \u2248%1$s på denne enheten akkurat nå</string>
+    <string name="assessment_grounds_vod_auto">Auto tilpasser etter ledig plass (20%% av det ledige innenfor grensene, 1 GB reserve), så hurtigbufferen kan vokse til ≈%1$s på denne enheten. Ingenting lagres mens hurtigbufferen er av.</string>
     <string name="assessment_grounds_vod_off">Ikke nok ledig plass til en brukbar buffer (krever \u2265 100 MB etter reserven på 1 GB) - avspillingen ville uansett strømmet direkte</string>
     <string name="assessment_grounds_afr_on">Skjermen rapporterer flere oppdateringsfrekvenser ved gjeldende oppløsning (%1$s)</string>
     <string name="assessment_grounds_afr_already">Allerede på - Start eller Start &amp; stopp er en smakssak: færre HDMI-resynkroniseringer mot at grensesnittet går tilbake til 60 Hz</string>
@@ -1558,6 +1566,7 @@
     <string name="assessment_section_verify">Oppdaget - sjekk selv</string>
     <string name="assessment_measured_skipped">Ingen sist avspilt strøm - gjennomløpet ble hoppet over. Spill av noe, og kjør deretter på nytt for målte rader.</string>
     <string name="assessment_currently">Nå: %1$s</string>
+    <string name="assessment_suggested">Forslag: %1$s</string>
     <string name="assessment_profile_values">start %1$d s \u00b7 ny bufring %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Foreslått - tilkoblingen din var stabil under gjennomløpet</string>
     <string name="assessment_profile_suggested_variable">Foreslått - tilkoblingen din svingte under gjennomløpet</string>

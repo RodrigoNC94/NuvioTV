@@ -3713,7 +3713,6 @@
     <string name="assessment_value_your_call">Na vás</string>
     <string name="assessment_value_leave_as_is">Nechať bez zmeny</string>
     <string name="assessment_value_auto">Automaticky</string>
-    <string name="assessment_value_on_auto">Zapnuté \u00b7 Automaticky (teraz \u2248%1$s)</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Zapnuté - štart a stop</string>
     <string name="assessment_value_afr_start">Zapnuté - len štart</string>
@@ -3757,7 +3756,6 @@
     <string name="assessment_grounds_network_untested">Potrebné len pre paralelné pripojenia a nebol otestovaný žiadny stream, podľa ktorého by sa dalo rozhodnúť</string>
     <string name="assessment_grounds_max_buffer">Cieľ %1$d MB pojme \u2248%2$d s tohto titulu (%3$s) - viac sekúnd sa aj tak nenačíta</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitová rýchlosť titulu nie je známa - strop v bajtoch sa nedá vypočítať; limit zostáva na %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automaticky určí veľkosť podľa voľného miesta (20%% voľného v rámci limitov, rezerva 1 GB) - na tomto zariadení teraz \u2248%1$s</string>
     <string name="assessment_grounds_vod_off">Málo voľného miesta pre užitočnú vyrovnávaciu pamäť (treba \u2265 100 MB po rezerve 1 GB) - prehrávanie by aj tak bežalo priamo</string>
     <string name="assessment_grounds_afr_on">Displej hlási v aktuálnom rozlíšení viac obnovovacích frekvencií (%1$s)</string>
     <string name="assessment_grounds_afr_already">Už zapnuté - Štart alebo Štart a stop je vec preferencie: menej resynchronizácií HDMI, alebo návrat rozhrania na 60 Hz</string>
@@ -4145,12 +4143,23 @@
     <string name="player_track_role_audio_description">Audiodeskripcia</string>
 
     <!-- Nuvio-test additions -->
+    <string name="audio_dtshd_tv_passthrough">Priechod zvuku DTS-HD a DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Zvoľte Priechod cez TV, ak soundbar ukazuje len DTS alebo pri filmoch s DTS-HD či DTS:X nehrá nič.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Štandardný</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Priechod cez TV</string>
     <string name="sub_libass_render_scale">Rozlíšenie vykresľovania titulkov</string>
     <string name="sub_libass_render_scale_sub">Nižšie rozlíšenie zlepší výkon pri náročných efektoch titulkov na úkor ostrosti</string>
     <string name="settings_stream_badges_in_player_description">Zobrazí pod názvom v prehrávači odznaky prehrávaného videa a zvuku. Používa vlastné odznaky Arc alebo váš balík odznakov, ak zodpovedá obyčajnému textu, napríklad 2160p alebo Atmos.</string>
     <string name="settings_stream_player_badges_title">Odznaky prehrávača</string>
     <string name="settings_stream_player_badges_description">Vyberte balík odznakov pre prehrávač.</string>
     <string name="settings_stream_player_badges_same">Rovnaké ako odznaky streamov</string>
+    <string name="assessment_value_on_auto">Zapnuté · Automaticky, až ≈%1$s</string>
+    <string name="assessment_value_connections_auto">Automaticky (podľa Automatického zrýchlenia)</string>
+    <string name="assessment_grounds_connections_auto">Automatické zrýchlenie je zapnuté a samo pridáva pripojenia, keď ich film potrebuje; pevný počet by ho vypol. Namerané: jedno pripojenie %1$s, %3$d × %4$d MB dosiahlo %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatické zrýchlenie je zapnuté. Jedno pripojenie namerálo %1$s, to už je najmenej 2× bitová rýchlosť tohto titulu, takže ďalšie bude pridávať len zriedka.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatické zrýchlenie je zapnuté a samo pridáva pripojenia, keď ich film potrebuje. Nebol otestovaný žiadny stream, takže nie sú žiadne rýchlosti na zobrazenie.</string>
+    <string name="assessment_grounds_vod_auto">Automaticky určí veľkosť podľa voľného miesta (20%% voľného v rámci limitov, rezerva 1 GB), takže vyrovnávacia pamäť môže na tomto zariadení narásť až na ≈%1$s. Kým je vyrovnávacia pamäť vypnutá, nič sa neukladá.</string>
+    <string name="assessment_suggested">Odporúčané: %1$s</string>
     <string name="playback_dim_hdr_overlays">Stlmiť ovládanie v HDR</string>
     <string name="playback_dim_hdr_overlays_sub">Jemnejšie ovládacie prvky prehrávača počas prehrávania HDR, HLG a Dolby Vision. Jas videa sa nemení. Titulky v HDR sa riadia štýlom HDR v nastaveniach titulkov.</string>
     <string name="tvdb_metadata_credit">Metadáta poskytuje %1$s</string>

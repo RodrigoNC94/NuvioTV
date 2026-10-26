@@ -3774,7 +3774,6 @@
     <string name="assessment_value_your_call">Twój wybór</string>
     <string name="assessment_value_leave_as_is">Zostaw bez zmian</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">Wł. \u00b7 Auto (teraz \u2248%1$s)</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Wł. - start i stop</string>
     <string name="assessment_value_afr_start">Wł. - tylko start</string>
@@ -3818,7 +3817,6 @@
     <string name="assessment_grounds_network_untested">Potrzebne tylko do połączeń równoległych, a żaden strumień nie został przetestowany, by o nich zdecydować</string>
     <string name="assessment_grounds_max_buffer">Cel %1$d MB mieści \u2248%2$d s tego tytułu (%3$s) - więcej sekund i tak się nie zbuforuje</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitrate tytułu nieznany - nie da się policzyć limitu w bajtach; limit zostaje na %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto dobiera rozmiar z wolnego miejsca (20%% wolnego w granicach limitów, 1 GB rezerwy) - teraz \u2248%1$s na tym urządzeniu</string>
     <string name="assessment_grounds_vod_off">Za mało wolnego miejsca na użyteczny cache (potrzeba \u2265 100 MB po rezerwie 1 GB) - odtwarzanie i tak szłoby bezpośrednio</string>
     <string name="assessment_grounds_afr_on">Wyświetlacz zgłasza kilka częstotliwości odświeżania w bieżącej rozdzielczości (%1$s)</string>
     <string name="assessment_grounds_afr_already">Już włączone - Start czy Start i stop to kwestia preferencji: mniej resynchronizacji HDMI albo powrót interfejsu do 60 Hz</string>
@@ -4206,10 +4204,21 @@
     <string name="player_track_role_audio_description">Audiodeskrypcja</string>
 
     <!-- Nuvio-test additions -->
+    <string name="audio_dtshd_tv_passthrough">Przepuszczanie DTS-HD i DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Wybierz Przepuszczanie przez TV, jeśli soundbar pokazuje zwykłe DTS lub nic nie odtwarza w filmach DTS-HD albo DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standardowe</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Przepuszczanie przez TV</string>
     <string name="settings_stream_badges_in_player_description">Pokazuj odznaki odtwarzanego wideo i dźwięku pod tytułem w odtwarzaczu. Używa własnych odznak Arc albo Twojego pakietu odznak, jeśli pasuje do zwykłego tekstu, np. 2160p lub Atmos.</string>
     <string name="settings_stream_player_badges_title">Odznaki odtwarzacza</string>
     <string name="settings_stream_player_badges_description">Wybierz pakiet odznak używany przez odtwarzacz.</string>
     <string name="settings_stream_player_badges_same">Jak odznaki strumieni</string>
+    <string name="assessment_value_on_auto">Wł. · Auto, do ≈%1$s</string>
+    <string name="assessment_value_connections_auto">Automatycznie (zgodnie z Automatycznym przyspieszeniem)</string>
+    <string name="assessment_grounds_connections_auto">Automatyczne przyspieszenie jest włączone i samo dodaje połączenia, gdy film ich potrzebuje; stała liczba by je wyłączyła. Zmierzono: jedno połączenie %1$s, %3$d × %4$d MB osiągnęło %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatyczne przyspieszenie jest włączone. Jedno połączenie dało %1$s, to już co najmniej 2× bitrate tego tytułu, więc rzadko będzie musiało dodawać kolejne.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatyczne przyspieszenie jest włączone i samo dodaje połączenia, gdy film ich potrzebuje. Żaden strumień nie został przetestowany, więc nie ma prędkości do pokazania.</string>
+    <string name="assessment_grounds_vod_auto">Auto dobiera rozmiar z wolnego miejsca (20%% wolnego w granicach limitów, 1 GB rezerwy), więc pamięć podręczna może urosnąć do ≈%1$s na tym urządzeniu. Gdy pamięć podręczna jest wyłączona, nic nie jest zapisywane.</string>
+    <string name="assessment_suggested">Sugerowane: %1$s</string>
     <string name="playback_dim_hdr_overlays">Przyciemniaj sterowanie w HDR</string>
     <string name="playback_dim_hdr_overlays_sub">Łagodniejsze elementy sterowania odtwarzacza podczas odtwarzania HDR, HLG i Dolby Vision. Jasność wideo się nie zmienia. Napisy w HDR korzystają ze stylu HDR w ustawieniach napisów.</string>
     <string name="tvdb_metadata_credit">Metadane dostarcza %1$s</string>

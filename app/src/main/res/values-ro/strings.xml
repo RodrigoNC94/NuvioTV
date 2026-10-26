@@ -924,6 +924,10 @@
     <string name="audio_tunneled_sub_prefer_app">Indisponibil cât timp Prioritate decodor este setată la Preferă decoderele aplicației</string>
     <string name="audio_use_system_passthrough">Passthrough de sistem</string>
     <string name="audio_use_system_passthrough_sub">Trimite TrueHD și DTS-HD către receptor prin Android (calea de sistem) în loc de Nuvio Arc (calea IEC). Folosește opțiunea dacă formatele lossless produc zgomot, desincronizare sau nu au sunet.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough DTS-HD și DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Alege Passthrough prin TV dacă soundbarul arată DTS simplu sau nu redă nimic la filmele DTS-HD sau DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough prin TV</string>
     <string name="audio_surround_header">Sunet surround</string>
     <string name="audio_surround_reset_iec_probe">Șterge decizia testului IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Testează din nou ieșirea IEC 61937. Folosește opțiunea dacă formatele lossless trec pe PCM după schimbarea receptorului sau a intrării.</string>
@@ -1173,13 +1177,14 @@
     <string name="assessment_value_your_call">Decizia ta</string>
     <string name="assessment_value_leave_as_is">Lasă așa</string>
     <string name="assessment_value_auto">Automat</string>
-    <string name="assessment_value_on_auto">Activat \u00b7 Automat (\u2248%1$s acum)</string>
+    <string name="assessment_value_on_auto">Activat · Automat, până la ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Activat - la pornire &amp; oprire</string>
     <string name="assessment_value_afr_start">Activat - doar la pornire</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Activat - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automat (urmează Accelerare automată)</string>
     <string name="assessment_item_parallel">Conexiuni paralele</string>
     <string name="assessment_item_chunk">Dimensiune fragment</string>
     <string name="assessment_item_network_master">Rețea personalizată</string>
@@ -1203,6 +1208,9 @@
     <string name="assessment_grounds_parallel_cannot">Cel mai rapid măsurat: %1$s la %2$d \u00d7 %3$d MB - sub bitrate-ul titlului; această conexiune nu poate susține fluxul</string>
     <string name="assessment_grounds_parallel_fastest">Cel mai rapid măsurat: %1$s la %2$d \u00d7 %3$d MB - bitrate-ul titlului nu era cunoscut, deci fără verdict de suficiență</string>
     <string name="assessment_grounds_chunk">Asociată cu numărul de conexiuni de mai sus, din aceeași măsurătoare</string>
+    <string name="assessment_grounds_connections_auto">Accelerare automată este activată și adaugă singură conexiuni când un film are nevoie; un număr fix ar dezactiva-o. Măsurat: o conexiune %1$s, %3$d × %4$d MB au atins %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Accelerare automată este activată. O singură conexiune a măsurat %1$s, deja cel puțin 2× bitrate-ul acestui titlu, așa că rareori va trebui să adauge mai multe.</string>
+    <string name="assessment_grounds_connections_auto_untested">Accelerare automată este activată și adaugă singură conexiuni când un film are nevoie. Niciun stream nu a fost testat, așa că nu există viteze de afișat.</string>
     <string name="assessment_grounds_perf_mode">Ține bufferele de mărimea unui remux în afara heap-ului Java, ca garbage collection să nu sacadeze cadrele; limitele de memorie se adaptează la nivelul %1$s al acestui dispozitiv (sigur %2$d MB / avertizare %3$d MB), iar peste %4$d conexiuni este obligatorie</string>
     <string name="assessment_grounds_perf_mode_unsupported">Necesită Android 8.0 sau mai nou</string>
     <string name="assessment_grounds_native_auto">Aplicația dimensionează bufferul pentru acest dispozitiv de %1$s (până la %2$d MB, mai puțin când memoria e puțină) și îl ține în memoria nativă</string>
@@ -1217,7 +1225,7 @@
     <string name="assessment_grounds_network_untested">Necesar doar pentru conexiuni paralele și niciun stream nu a fost testat pentru a decide</string>
     <string name="assessment_grounds_max_buffer">O țintă de %1$d MB ține \u2248%2$d s din acest titlu (%3$s) - secundele peste această valoare nu se pot materializa</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Bitrate-ul titlului e necunoscut - plafonul în octeți nu poate fi calculat; limita rămâne la %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automat dimensionează după spațiul liber (20%% din spațiul liber, în limite, cu rezervă de 1 GB) - \u2248%1$s pe acest dispozitiv acum</string>
+    <string name="assessment_grounds_vod_auto">Automat dimensionează după spațiul liber (20%% din spațiul liber, în limite, cu rezervă de 1 GB), așa că memoria cache poate ajunge până la ≈%1$s pe acest dispozitiv. Nu se salvează nimic cât timp memoria cache este dezactivată.</string>
     <string name="assessment_grounds_vod_off">Spațiu liber insuficient pentru un cache util (necesită \u2265 100 MB după rezerva de 1 GB) - redarea ar merge oricum direct din flux</string>
     <string name="assessment_grounds_afr_on">Ecranul raportează mai multe rate de reîmprospătare la rezoluția curentă (%1$s)</string>
     <string name="assessment_grounds_afr_already">Deja activat - La pornire sau La pornire &amp; oprire ține de preferință: mai puține resincronizări HDMI sau interfața revine la 60 Hz</string>
@@ -1264,6 +1272,7 @@
     <string name="assessment_section_verify">Detectate - verifică singur</string>
     <string name="assessment_measured_skipped">Niciun flux redat recent - testarea a fost omisă. Redă ceva, apoi rulează din nou pentru rândurile măsurate.</string>
     <string name="assessment_currently">Acum: %1$s</string>
+    <string name="assessment_suggested">Sugerat: %1$s</string>
     <string name="assessment_profile_values">pornire %1$d s \u00b7 rebuffer %2$d s \u00b7 min. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Sugerat - conexiunea ta a rămas stabilă în timpul testării</string>
     <string name="assessment_profile_suggested_variable">Sugerat - conexiunea ta a oscilat în timpul testării</string>

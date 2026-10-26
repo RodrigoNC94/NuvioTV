@@ -3213,6 +3213,10 @@
     <string name="audio_tunneled_sub_prefer_app">Недоступно, если в настройке «Приоритет декодеров» выбрано «Предпочитать программные декодеры»</string>
     <string name="audio_use_system_passthrough">Системный проброс</string>
     <string name="audio_use_system_passthrough_sub">Отправляет TrueHD и DTS-HD на ресивер через Android (системный путь) вместо Nuvio Arc (путь IEC). Используйте, если форматы без потерь дают шум, рассинхрон или тишину.</string>
+    <string name="audio_dtshd_tv_passthrough">Проброс DTS-HD и DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Выберите «Проброс через ТВ», если саундбар показывает обычный DTS или ничего не воспроизводит в фильмах с DTS-HD или DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Стандартный</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Проброс через ТВ</string>
     <string name="audio_surround_header">Объёмный звук</string>
     <string name="audio_surround_reset_iec_probe">Сбросить результат проверки IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Проверить вывод IEC 61937 заново. Используйте, если после смены ресивера или входа форматы без потерь переходят в PCM.</string>
@@ -3462,13 +3466,14 @@
     <string name="assessment_value_your_call">На ваше усмотрение</string>
     <string name="assessment_value_leave_as_is">Оставить как есть</string>
     <string name="assessment_value_auto">Авто</string>
-    <string name="assessment_value_on_auto">Вкл \u00b7 Авто (сейчас \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Вкл · Авто, до ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d с</string>
     <string name="assessment_value_afr_start_stop">Вкл - при старте и остановке</string>
     <string name="assessment_value_afr_start">Вкл - только при старте</string>
     <string name="assessment_unit_mb">%1$d МБ</string>
     <string name="assessment_unit_kb">%1$d КБ</string>
     <string name="assessment_current_parallel_on">Вкл - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Автоматически (по Автоматическому ускорению)</string>
     <string name="assessment_item_parallel">Параллельные соединения</string>
     <string name="assessment_item_chunk">Размер фрагмента</string>
     <string name="assessment_item_network_master">Пользовательская сеть</string>
@@ -3492,6 +3497,9 @@
     <string name="assessment_grounds_parallel_cannot">Максимум %1$s при %2$d \u00d7 %3$d МБ - ниже битрейта самого тайтла; это подключение не тянет поток</string>
     <string name="assessment_grounds_parallel_fastest">Максимум %1$s при %2$d \u00d7 %3$d МБ - битрейт тайтла неизвестен, поэтому вывода о достаточности нет</string>
     <string name="assessment_grounds_chunk">В паре с числом соединений выше, из того же измерения</string>
+    <string name="assessment_grounds_connections_auto">Автоматическое ускорение включено и само добавляет соединения, когда фильму это нужно; фиксированное число отключило бы его. Измерено: одно соединение %1$s, %3$d × %4$d МБ достигли %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Автоматическое ускорение включено. Одно соединение дало %1$s, это уже не меньше 2× битрейта этого тайтла, поэтому добавлять соединения придётся редко.</string>
+    <string name="assessment_grounds_connections_auto_untested">Автоматическое ускорение включено и само добавляет соединения, когда фильму это нужно. Ни один поток не проверялся, поэтому скоростей для показа нет.</string>
     <string name="assessment_grounds_perf_mode">Держит буферы размером с ремукс вне кучи Java, чтобы сборка мусора не вызывала подёргивания кадров; лимиты памяти зависят от класса устройства %1$s (безопасно %2$d МБ / предупреждение %3$d МБ), а больше %4$d соединений без неё нельзя</string>
     <string name="assessment_grounds_perf_mode_unsupported">Требуется Android 8.0 или новее</string>
     <string name="assessment_grounds_native_auto">Приложение подбирает буфер под эту приставку на %1$s (до %2$d МБ, меньше при нехватке памяти) и держит его в нативной памяти</string>
@@ -3506,7 +3514,7 @@
     <string name="assessment_grounds_network_untested">Нужно только для параллельных соединений, а для решения не проверялся ни один поток</string>
     <string name="assessment_grounds_max_buffer">Цель %1$d МБ вмещает \u2248%2$d с этого тайтла (%3$s) - секунды сверх этого не наберутся</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Битрейт тайтла неизвестен - предел по байтам не вычислить; ограничение остаётся %1$d с</string>
-    <string name="assessment_grounds_vod_auto">Авто подбирает размер по свободному месту (20%% свободного в пределах лимитов, резерв 1 ГБ) - сейчас на этом устройстве \u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">Авто подбирает размер по свободному месту (20%% свободного в пределах лимитов, резерв 1 ГБ), поэтому кэш на этом устройстве может вырасти до ≈%1$s. Пока кэш выключен, ничего не сохраняется.</string>
     <string name="assessment_grounds_vod_off">Мало свободного места для полезного кэша (нужно \u2265 100 МБ сверх резерва 1 ГБ) - поток всё равно шёл бы напрямую</string>
     <string name="assessment_grounds_afr_on">Дисплей сообщает несколько частот обновления при текущем разрешении (%1$s)</string>
     <string name="assessment_grounds_afr_already">Уже включено - «при старте» или «при старте и остановке» дело вкуса: меньше пересинхронизаций HDMI или возврат интерфейса к 60 Гц</string>
@@ -3553,6 +3561,7 @@
     <string name="assessment_section_verify">Обнаружено - проверьте сами</string>
     <string name="assessment_measured_skipped">Нет последнего воспроизведённого потока - прогон пропущен. Воспроизведите что-нибудь и запустите снова, чтобы получить измеряемые строки.</string>
     <string name="assessment_currently">Сейчас: %1$s</string>
+    <string name="assessment_suggested">Рекомендуется: %1$s</string>
     <string name="assessment_profile_values">старт %1$d с \u00b7 повт. буферизация %2$d с \u00b7 мин. %3$d с</string>
     <string name="assessment_profile_suggested_stable">Рекомендуется - подключение было стабильным во время прогона</string>
     <string name="assessment_profile_suggested_variable">Рекомендуется - подключение было нестабильным во время прогона</string>

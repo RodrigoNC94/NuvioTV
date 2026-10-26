@@ -3324,6 +3324,10 @@
     <string name="audio_tunneled_sub_prefer_app">「解码器优先级」设为「偏好应用解码器」时不可用</string>
     <string name="audio_use_system_passthrough">系统穿透</string>
     <string name="audio_use_system_passthrough_sub">通过 Android (系统路径) 而非 Nuvio Arc (IEC 路径) 将 TrueHD 和 DTS-HD 发送至接收器。如果无损格式出现噪音、漂移或无声，请使用此选项。</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD 和 DTS:X 穿透</string>
+    <string name="audio_dtshd_tv_passthrough_sub">如果回音壁只显示普通 DTS，或播放 DTS-HD、DTS:X 影片时没有声音，请选择“电视穿透”。</string>
+    <string name="audio_dtshd_tv_passthrough_standard">标准</string>
+    <string name="audio_dtshd_tv_passthrough_tv">电视穿透</string>
     <string name="audio_surround_header">环绕声</string>
     <string name="audio_surround_reset_iec_probe">清除 IEC 探测结果</string>
     <string name="audio_surround_reset_iec_probe_sub">重新测试 IEC 61937 输出。如果更换接收器或输入后无损格式回退为 PCM，请使用此选项。</string>
@@ -3573,13 +3577,14 @@
     <string name="assessment_value_your_call">由您决定</string>
     <string name="assessment_value_leave_as_is">保持不变</string>
     <string name="assessment_value_auto">自动</string>
-    <string name="assessment_value_on_auto">开启 \u00b7 自动 (当前 \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">开启 · 自动，最多 ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">开启 - 开始和停止时</string>
     <string name="assessment_value_afr_start">开启 - 仅开始时</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">开启 - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">自动 (跟随自动加速)</string>
     <string name="assessment_item_parallel">并行连接</string>
     <string name="assessment_item_chunk">块大小</string>
     <string name="assessment_item_network_master">自定义网络</string>
@@ -3603,6 +3608,9 @@
     <string name="assessment_grounds_parallel_cannot">最快在 %2$d \u00d7 %3$d MB 下测得 %1$s - 低于标题本身的比特率；此线路无法支撑该流</string>
     <string name="assessment_grounds_parallel_fastest">最快在 %2$d \u00d7 %3$d MB 下测得 %1$s - 标题比特率未知，因此无法判断是否足够</string>
     <string name="assessment_grounds_chunk">与上方的连接数配对，来自同一轮测量</string>
+    <string name="assessment_grounds_connections_auto">自动加速已开启，会在影片需要时自行增加连接；固定数量会让它停止工作。测得：单连接 %1$s，%3$d × %4$d MB 达到 %2$s。</string>
+    <string name="assessment_grounds_connections_auto_one">自动加速已开启。单连接测得 %1$s，已至少是此标题比特率的 2×，因此很少需要再增加连接。</string>
+    <string name="assessment_grounds_connections_auto_untested">自动加速已开启，会在影片需要时自行增加连接。尚未测试任何流，因此没有可显示的速度。</string>
     <string name="assessment_grounds_perf_mode">将原盘级大小的缓冲放在 Java 堆之外，避免垃圾回收造成画面卡顿；内存限制按此设备的 %1$s 档位调整 (安全 %2$d MB / 警告 %3$d MB)，连接数超过 %4$d 时必须开启</string>
     <string name="assessment_grounds_perf_mode_unsupported">需要 Android 8.0 或更高版本</string>
     <string name="assessment_grounds_native_auto">应用为这台 %1$s 设备设定缓冲大小 (最多 %2$d MB，内存不足时更少)，并保存在原生内存中</string>
@@ -3617,7 +3625,7 @@
     <string name="assessment_grounds_network_untested">仅并行连接需要，且尚未测试任何流来作决定</string>
     <string name="assessment_grounds_max_buffer">%1$d MB 的目标可容纳此标题 (%3$s) \u2248%2$d s 的内容 - 超出的秒数无法实现</string>
     <string name="assessment_grounds_max_buffer_nobitrate">标题比特率未知 - 无法计算字节上限；上限保持为 %1$d s</string>
-    <string name="assessment_grounds_vod_auto">自动会根据可用空间确定大小 (限制范围内取可用空间的 20%%，保留 1 GB) - 此设备当前 \u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">自动会根据可用空间确定大小 (限制范围内取可用空间的 20%%，保留 1 GB)，因此此设备上的缓存最多可增长到 ≈%1$s。缓存关闭时不会保存任何内容。</string>
     <string name="assessment_grounds_vod_off">可用空间不足以建立有效的缓存 (保留 1 GB 后需 \u2265 100 MB) - 运行时无论如何都会直接在线播放</string>
     <string name="assessment_grounds_afr_on">显示器在当前分辨率下报告了多个刷新率 (%1$s)</string>
     <string name="assessment_grounds_afr_already">已开启 -「开始时」还是「开始和停止时」取决于偏好：减少 HDMI 重新同步，还是让界面回到 60 Hz</string>
@@ -3664,6 +3672,7 @@
     <string name="assessment_section_verify">已检测 - 请自行确认</string>
     <string name="assessment_measured_skipped">没有上次播放的流 - 已跳过扫描。播放一些内容后重新运行即可获得测量行。</string>
     <string name="assessment_currently">当前：%1$s</string>
+    <string name="assessment_suggested">建议：%1$s</string>
     <string name="assessment_profile_values">启动 %1$d s \u00b7 重新缓冲 %2$d s \u00b7 最小 %3$d s</string>
     <string name="assessment_profile_suggested_stable">建议 - 扫描期间您的线路保持稳定</string>
     <string name="assessment_profile_suggested_variable">建议 - 扫描期间您的线路有波动</string>

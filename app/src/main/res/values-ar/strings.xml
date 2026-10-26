@@ -3131,6 +3131,10 @@
     <string name="audio_tunneled_sub_prefer_app">غير متاح عند ضبط \"أولوية فك التشفير\" على \"الأولوية لفك التشفير عبر التطبيق\"</string>
     <string name="audio_use_system_passthrough">تمرير الصوت عبر النظام</string>
     <string name="audio_use_system_passthrough_sub">يرسل TrueHD و DTS-HD إلى المستقبل عبر Android (مسار النظام) بدلاً من Nuvio Arc (مسار IEC). استخدمه إذا سبّبت الصيغ عديمة الفقد ضجيجاً أو انحرافاً أو انقطاع الصوت.</string>
+    <string name="audio_dtshd_tv_passthrough">تمرير DTS-HD وDTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">اختر تمرير التلفاز إذا كان مكبر الصوت يعرض DTS عاديًا أو لا يشغّل أي صوت في أفلام DTS-HD أو DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">قياسي</string>
+    <string name="audio_dtshd_tv_passthrough_tv">تمرير التلفاز</string>
     <string name="audio_surround_header">الصوت المحيطي</string>
     <string name="audio_surround_reset_iec_probe">مسح قرار فحص IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">اختبار مخرج IEC 61937 من جديد. استخدمه إذا عادت الصيغ عديمة الفقد إلى PCM بعد تغيير المستقبل أو المدخل.</string>
@@ -3380,13 +3384,14 @@
     <string name="assessment_value_your_call">القرار لك</string>
     <string name="assessment_value_leave_as_is">اتركه كما هو</string>
     <string name="assessment_value_auto">تلقائي</string>
-    <string name="assessment_value_on_auto">مفعل · تلقائي (≈%1$s الآن)</string>
+    <string name="assessment_value_on_auto">مفعل · تلقائي، حتى ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d ث</string>
     <string name="assessment_value_afr_start_stop">مفعل - عند البدء والإيقاف</string>
     <string name="assessment_value_afr_start">مفعل - عند البدء فقط</string>
     <string name="assessment_unit_mb">%1$d م.ب</string>
     <string name="assessment_unit_kb">%1$d ك.ب</string>
     <string name="assessment_current_parallel_on">مفعل - %1$d × %2$s</string>
+    <string name="assessment_value_connections_auto">تلقائي (يتبع التسريع التلقائي)</string>
     <string name="assessment_item_parallel">اتصالات متوازية</string>
     <string name="assessment_item_chunk">حجم القطعة</string>
     <string name="assessment_item_network_master">شبكة مخصصة</string>
@@ -3410,6 +3415,9 @@
     <string name="assessment_grounds_parallel_cannot">الأسرع سجّل %1$s عند %2$d × %3$d م.ب - أقل من معدل البت للعنوان نفسه؛ هذا الاتصال لا يتحمّل البث</string>
     <string name="assessment_grounds_parallel_fastest">الأسرع سجّل %1$s عند %2$d × %3$d م.ب - معدل البت للعنوان غير معروف، فلا حكم على الكفاية</string>
     <string name="assessment_grounds_chunk">مقترن بعدد الاتصالات أعلاه، من جولة القياس نفسها</string>
+    <string name="assessment_grounds_connections_auto">التسريع التلقائي مفعل ويضيف الاتصالات بنفسه عندما يحتاجها الفيلم؛ أي رقم ثابت سيوقفه. القياس: اتصال واحد %1$s، و%3$d × %4$d م.ب وصل إلى %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">التسريع التلقائي مفعل. الاتصال الواحد سجّل %1$s، وهو أصلاً 2× معدل البت لهذا العنوان على الأقل، لذا نادراً ما سيحتاج إلى إضافة المزيد.</string>
+    <string name="assessment_grounds_connections_auto_untested">التسريع التلقائي مفعل ويضيف الاتصالات بنفسه عندما يحتاجها الفيلم. لم يُختبر أي بث، لذا لا توجد سرعات لعرضها.</string>
     <string name="assessment_grounds_perf_mode">يُبقي التخزين المؤقت بحجم remux خارج heap جافا حتى لا يسبّب جمع المهملات تقطّع الإطارات؛ حدود الذاكرة تتبع فئة %1$s لهذا الجهاز (آمن %2$d م.ب / تحذير %3$d م.ب)، وما فوق %4$d اتصالات يتطلبه</string>
     <string name="assessment_grounds_perf_mode_unsupported">يتطلب Android 8.0 أو أحدث</string>
     <string name="assessment_grounds_native_auto">يحدد التطبيق حجم المخزون لهذا الجهاز بذاكرة %1$s (حتى %2$d م.ب، وأقل عند نقص الذاكرة) ويبقيه في الذاكرة الأصلية</string>
@@ -3424,7 +3432,7 @@
     <string name="assessment_grounds_network_untested">مطلوب فقط للاتصالات المتوازية، ولم يُختبر أي بث لتحديدها</string>
     <string name="assessment_grounds_max_buffer">هدف %1$d م.ب يحمل ≈%2$d ث من هذا العنوان (%3$s) - الثواني الزائدة عن ذلك لا يمكن أن تتحقق</string>
     <string name="assessment_grounds_max_buffer_nobitrate">معدل البت للعنوان غير معروف - لا يمكن حساب سقف البايت؛ يبقى الحد عند %1$d ث</string>
-    <string name="assessment_grounds_vod_auto">التلقائي يحدّد الحجم من المساحة الحرة (20%% من الحرة ضمن الحدود، مع احتياطي 1 ج.ب) - ≈%1$s على هذا الجهاز الآن</string>
+    <string name="assessment_grounds_vod_auto">التلقائي يحدّد الحجم من المساحة الحرة (20%% من الحرة ضمن الحدود، مع احتياطي 1 ج.ب)، لذا يمكن أن يكبر التخزين المؤقت حتى ≈%1$s على هذا الجهاز. لا يُحفظ أي شيء ما دام التخزين المؤقت متوقفاً.</string>
     <string name="assessment_grounds_vod_off">المساحة الحرة لا تكفي لذاكرة مؤقتة مفيدة (تحتاج ≥ 100 م.ب بعد احتياطي 1 ج.ب) - سيتم البث مباشرة على أي حال</string>
     <string name="assessment_grounds_afr_on">الشاشة تفيد بعدة معدلات تحديث عند الدقة الحالية (%1$s)</string>
     <string name="assessment_grounds_afr_already">مفعل مسبقاً - البدء فقط أو البدء والإيقاف مسألة تفضيل: إعادة مزامنة HDMI أقل مقابل عودة الواجهة إلى 60 Hz</string>
@@ -3471,6 +3479,7 @@
     <string name="assessment_section_verify">مكتشف - تحقق بنفسك</string>
     <string name="assessment_measured_skipped">لا يوجد بث تم تشغيله مؤخراً - تم تخطي الفحص. شغّل شيئاً ثم أعد التشغيل للصفوف المقاسة.</string>
     <string name="assessment_currently">حالياً: %1$s</string>
+    <string name="assessment_suggested">مقترح: %1$s</string>
     <string name="assessment_profile_values">البدء %1$d ث · إعادة التخزين %2$d ث · الأدنى %3$d ث</string>
     <string name="assessment_profile_suggested_stable">مقترح - بقي اتصالك ثابتاً أثناء الفحص</string>
     <string name="assessment_profile_suggested_variable">مقترح - تذبذب اتصالك أثناء الفحص</string>

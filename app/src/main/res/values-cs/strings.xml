@@ -2931,6 +2931,10 @@
     <string name="audio_tunneled_sub_prefer_app">Nedostupné, když je Priorita dekodéru nastavena na Preferovat dekodéry aplikace</string>
     <string name="audio_use_system_passthrough">Systémový passthrough</string>
     <string name="audio_use_system_passthrough_sub">Posílá TrueHD a DTS-HD do receiveru přes Android (systémová cesta) místo přes Nuvio Arc (cesta IEC). Použijte, pokud bezztrátové formáty šumí, rozcházejí se nebo nehrají.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough DTS-HD a DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Zvolte Passthrough přes TV, pokud soundbar ukazuje jen DTS nebo u filmů s DTS-HD či DTS:X nehraje nic.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standardní</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough přes TV</string>
     <string name="audio_surround_header">Prostorový zvuk</string>
     <string name="audio_surround_reset_iec_probe">Vymazat výsledek testu IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Znovu otestuje výstup IEC 61937. Použijte, pokud po změně receiveru nebo vstupu bezztrátové formáty přecházejí na PCM.</string>
@@ -3180,13 +3184,14 @@
     <string name="assessment_value_your_call">Na vás</string>
     <string name="assessment_value_leave_as_is">Nechat beze změny</string>
     <string name="assessment_value_auto">Automaticky</string>
-    <string name="assessment_value_on_auto">Zapnuto \u00b7 Automaticky (nyní \u2248%1$s)</string>
+    <string name="assessment_value_on_auto">Zapnuto · Automaticky, až ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Zapnuto - start a stop</string>
     <string name="assessment_value_afr_start">Zapnuto - jen start</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Zapnuto - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automaticky (podle Automatického zrychlení)</string>
     <string name="assessment_item_parallel">Paralelní spojení</string>
     <string name="assessment_item_chunk">Velikost bloku</string>
     <string name="assessment_item_network_master">Vlastní síť</string>
@@ -3210,6 +3215,9 @@
     <string name="assessment_grounds_parallel_cannot">Nejrychlejší měření %1$s při %2$d \u00d7 %3$d MB - pod datovým tokem samotného titulu; tato linka stream neutáhne</string>
     <string name="assessment_grounds_parallel_fastest">Nejrychlejší měření %1$s při %2$d \u00d7 %3$d MB - datový tok titulu nebyl známý, proto bez verdiktu o dostatečnosti</string>
     <string name="assessment_grounds_chunk">V páru s počtem spojení výše, ze stejného měření</string>
+    <string name="assessment_grounds_connections_auto">Automatické zrychlení je zapnuté a samo přidává spojení, když je film potřebuje; pevný počet by ho vypnul. Naměřeno: jedno spojení %1$s, %3$d × %4$d MB dosáhlo %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatické zrychlení je zapnuté. Jedno spojení naměřilo %1$s, to už je nejméně 2× datový tok tohoto titulu, takže další bude přidávat jen zřídka.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatické zrychlení je zapnuté a samo přidává spojení, když je film potřebuje. Nebyl otestován žádný stream, takže nejsou žádné rychlosti k zobrazení.</string>
     <string name="assessment_grounds_perf_mode">Drží buffery velikosti remuxu mimo haldu Javy, takže úklid paměti nezpůsobí zadrhávání snímků; limity paměti odpovídají třídě tohoto zařízení (%1$s: bezpečné %2$d MB / varování %3$d MB) a více než %4$d spojení ji vyžaduje</string>
     <string name="assessment_grounds_perf_mode_unsupported">Vyžaduje Android 8.0 nebo novější</string>
     <string name="assessment_grounds_native_auto">Aplikace určí velikost bufferu pro toto zařízení s pamětí %1$s (až %2$d MB, při nedostatku paměti méně) a drží ho v nativní paměti</string>
@@ -3224,7 +3232,7 @@
     <string name="assessment_grounds_network_untested">Potřeba jen pro paralelní spojení a nebyl otestován žádný stream, podle kterého by se dalo rozhodnout</string>
     <string name="assessment_grounds_max_buffer">Cíl %1$d MB pojme \u2248%2$d s tohoto titulu (%3$s) - víc sekund se stejně nenačte</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Datový tok titulu není známý - strop v bajtech nelze spočítat; limit zůstává na %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Automaticky určí velikost podle volného místa (20%% volného v rámci limitů, rezerva 1 GB) - na tomto zařízení nyní \u2248%1$s</string>
+    <string name="assessment_grounds_vod_auto">Automaticky určí velikost podle volného místa (20%% volného v rámci limitů, rezerva 1 GB), takže mezipaměť může na tomto zařízení narůst až na ≈%1$s. Dokud je mezipaměť vypnutá, nic se neukládá.</string>
     <string name="assessment_grounds_vod_off">Málo volného místa pro užitečný cache (potřeba \u2265 100 MB po rezervě 1 GB) - přehrávání by stejně běželo přímo</string>
     <string name="assessment_grounds_afr_on">Displej hlásí v aktuálním rozlišení více obnovovacích frekvencí (%1$s)</string>
     <string name="assessment_grounds_afr_already">Už zapnuto - Start nebo Start a stop je věc preference: méně resynchronizací HDMI, nebo návrat rozhraní na 60 Hz</string>
@@ -3271,6 +3279,7 @@
     <string name="assessment_section_verify">Zjištěno - ověřte sami</string>
     <string name="assessment_measured_skipped">Žádný naposledy přehraný stream - měření přeskočeno. Něco přehrajte a spusťte znovu pro měřené řádky.</string>
     <string name="assessment_currently">Aktuálně: %1$s</string>
+    <string name="assessment_suggested">Doporučeno: %1$s</string>
     <string name="assessment_profile_values">start %1$d s \u00b7 po výpadku %2$d s \u00b7 min. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Navrženo - linka byla během měření stabilní</string>
     <string name="assessment_profile_suggested_variable">Navrženo - linka během měření kolísala</string>

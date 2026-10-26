@@ -2668,6 +2668,10 @@
     <string name="audio_tunneled_sub_prefer_app">Indisponível enquanto Prioridade do descodificador estiver em Preferir descodificadores da app</string>
     <string name="audio_use_system_passthrough">Passthrough do sistema</string>
     <string name="audio_use_system_passthrough_sub">Envia TrueHD e DTS-HD para o recetor através do Android (via do sistema) em vez do Nuvio Arc (via IEC). Utiliza se os formatos sem perdas produzirem ruído, desvio ou nenhum áudio.</string>
+    <string name="audio_dtshd_tv_passthrough">Passthrough de DTS-HD e DTS:X</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Escolha Passthrough pela TV se a sua soundbar mostrar DTS simples ou não reproduzir nada em filmes DTS-HD ou DTS:X.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Padrão</string>
+    <string name="audio_dtshd_tv_passthrough_tv">Passthrough pela TV</string>
     <string name="audio_surround_header">Som surround</string>
     <string name="audio_surround_reset_iec_probe">Limpar decisão do teste IEC</string>
     <string name="audio_surround_reset_iec_probe_sub">Testa de novo a saída IEC 61937. Utiliza se os formatos sem perdas passarem para PCM depois de mudares de recetor ou de entrada.</string>
@@ -2915,13 +2919,14 @@
     <string name="assessment_value_your_call">À tua escolha</string>
     <string name="assessment_value_leave_as_is">Deixar como está</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">Ligado \u00b7 Auto (\u2248%1$s agora)</string>
+    <string name="assessment_value_on_auto">Ligado · Auto, até ≈%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">Ligado - início e fim</string>
     <string name="assessment_value_afr_start">Ligado - só no início</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">Ligado - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automático (segue a Aceleração automática)</string>
     <string name="assessment_item_parallel">Ligações paralelas</string>
     <string name="assessment_item_chunk">Tamanho dos blocos</string>
     <string name="assessment_item_network_master">Rede personalizada</string>
@@ -2945,6 +2950,9 @@
     <string name="assessment_grounds_parallel_cannot">Máximo medido: %1$s a %2$d \u00d7 %3$d MB - abaixo da taxa de bits do próprio título; esta ligação não aguenta o stream</string>
     <string name="assessment_grounds_parallel_fastest">Máximo medido: %1$s a %2$d \u00d7 %3$d MB - taxa de bits do título desconhecida, por isso sem veredicto de suficiência</string>
     <string name="assessment_grounds_chunk">Emparelhado com o número de ligações acima, da mesma passagem medida</string>
+    <string name="assessment_grounds_connections_auto">A Aceleração automática está ligada e acrescenta ligações sozinha quando um filme precisa delas; um número fixo desligava-a. Medido: uma ligação %1$s, %3$d × %4$d MB chegaram a %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">A Aceleração automática está ligada. Uma ligação mediu %1$s, já pelo menos 2× a taxa de bits deste título, por isso raramente precisará de acrescentar mais.</string>
+    <string name="assessment_grounds_connections_auto_untested">A Aceleração automática está ligada e acrescenta ligações sozinha quando um filme precisa delas. Nenhum stream foi testado, por isso não há velocidades para mostrar.</string>
     <string name="assessment_grounds_perf_mode">Mantém os buffers de tamanho remux fora da heap Java para que a recolha de lixo não provoque saltos de fotogramas; os limites de memória ajustam-se ao nível %1$s deste dispositivo (seguro %2$d MB / aviso %3$d MB) e mais de %4$d ligações exigem-no</string>
     <string name="assessment_grounds_perf_mode_unsupported">Requer Android 8.0 ou mais recente</string>
     <string name="assessment_grounds_native_auto">A app ajusta o buffer a este dispositivo de %1$s (até %2$d MB, menos quando falta memória) e mantém-no em memória nativa</string>
@@ -2959,7 +2967,7 @@
     <string name="assessment_grounds_network_untested">Só é preciso para ligações paralelas, e nenhum stream foi testado para decidir</string>
     <string name="assessment_grounds_max_buffer">Um alvo de %1$d MB guarda \u2248%2$d s deste título (%3$s) - os segundos acima disso não se concretizam</string>
     <string name="assessment_grounds_max_buffer_nobitrate">Taxa de bits do título desconhecida - o teto em bytes não pode ser calculado; o limite fica em %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto dimensiona a partir do espaço livre (20%% do livre dentro dos limites, reserva de 1 GB) - \u2248%1$s neste dispositivo neste momento</string>
+    <string name="assessment_grounds_vod_auto">Auto dimensiona a partir do espaço livre (20%% do livre dentro dos limites, reserva de 1 GB), por isso a cache pode crescer até ≈%1$s neste dispositivo. Nada é guardado enquanto a cache está desligada.</string>
     <string name="assessment_grounds_vod_off">Espaço livre insuficiente para uma cache útil (precisa de \u2265 100 MB após a reserva de 1 GB) - a reprodução seria direta de qualquer forma</string>
     <string name="assessment_grounds_afr_on">O ecrã reporta várias taxas de atualização na resolução atual (%1$s)</string>
     <string name="assessment_grounds_afr_already">Já ligado - Início ou Início e fim é uma preferência: menos ressincronizações HDMI ou a interface a voltar aos 60 Hz</string>
@@ -3006,6 +3014,7 @@
     <string name="assessment_section_verify">Detetado - verifica tu</string>
     <string name="assessment_measured_skipped">Sem último stream reproduzido - varrimento ignorado. Reproduz algo e repete para obter linhas medidas.</string>
     <string name="assessment_currently">Atualmente: %1$s</string>
+    <string name="assessment_suggested">Sugerido: %1$s</string>
     <string name="assessment_profile_values">início %1$d s \u00b7 rebuffer %2$d s \u00b7 mín. %3$d s</string>
     <string name="assessment_profile_suggested_stable">Sugerido - a tua ligação manteve-se estável durante o varrimento</string>
     <string name="assessment_profile_suggested_variable">Sugerido - a tua ligação oscilou durante o varrimento</string>
