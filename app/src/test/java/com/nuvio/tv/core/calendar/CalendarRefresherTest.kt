@@ -56,10 +56,19 @@ class CalendarRefresherTest {
         val traktCalendarCalls = AtomicInteger()
 
         override suspend fun settings(profileId: Int) = CalendarSettings(profileId = profileId, bellOn = bells)
-        override suspend fun followed(profileId: Int): CalendarFollowedSnapshot {
-            val snapshot = followed[profileId] ?: CalendarFollowedSnapshot()
+        var followedWith: ((Map<String, CalendarIds>) -> CalendarFollowedSnapshot)? = null
+        val knownIdsSeen: MutableList<Map<String, CalendarIds>> = Collections.synchronizedList(mutableListOf())
+        override suspend fun followed(profileId: Int, knownIds: Map<String, CalendarIds>): CalendarFollowedSnapshot {
+            knownIdsSeen += knownIds
+            val snapshot = followedWith?.invoke(knownIds) ?: followed[profileId] ?: CalendarFollowedSnapshot()
             reads.incrementAndGet()
             return snapshot
+        }
+        val lookups: MutableList<String> = Collections.synchronizedList(mutableListOf())
+        var lookup: (String) -> CalendarIds? = { null }
+        override suspend fun lookupIds(type: CalendarTitleType, contentId: String): CalendarIds? {
+            lookups += contentId
+            return lookup(contentId)
         }
         override fun traktSignedIn() = signedInToTrakt
         override suspend fun traktCalendar(today: LocalDate): List<TraktCalendarItem> {
@@ -486,5 +495,42 @@ class CalendarRefresherTest {
         refresher.requestRefresh(CalendarRefreshReason.CALENDAR_OPENED)
         until("the show to leave") { titles().keys == setOf(1) }
         assertEquals(listOf(1L), storage.load(1).titles.map { it.ids.tmdb })
+    }
+
+    @Test fun aKitsuShowIsLookedUpOnceAndItsIdsAreKeptForTheNextStart() = runBlocking {
+        val ids = CalendarIds(imdb = "tt7", tmdb = 7)
+        inputs.followedWith = { known ->
+            val found = known["kitsu:7"]
+            if (found == null) {
+                CalendarFollowedSnapshot(unresolved = listOf(CalendarTitleType.SERIES to "kitsu:7"))
+            } else {
+                CalendarFollowedSnapshot(
+                    candidates = listOf(CalendarTitleCandidate(found, CalendarTitleType.SERIES, CalendarOrigin.LIBRARY, contentId = "kitsu:7")),
+                    resolvedIds = mapOf("kitsu:7" to found)
+                )
+            }
+        }
+        inputs.lookup = { if (it == "kitsu:7") ids else null }
+        refresher.requestRefresh(CalendarRefreshReason.CALENDAR_OPENED)
+        until("the anime to show") { titles().keys == setOf(7) }
+        awaitIdle()
+        assertEquals(listOf("kitsu:7"), inputs.lookups.toList())
+        assertEquals(ids, storage.load(1).resolvedIds["kitsu:7"]?.ids)
+
+        inputs.knownIdsSeen.clear()
+        refresher.requestRefresh(CalendarRefreshReason.CALENDAR_OPENED)
+        until("the second refresh") { inputs.knownIdsSeen.isNotEmpty() && !refresher.state.value.refreshing }
+        assertEquals(ids, inputs.knownIdsSeen.first()["kitsu:7"])
+        assertEquals(1, inputs.lookups.size)
+    }
+
+    @Test fun aKitsuShowWithNoIdsInItsDetailsIsNotAskedAgainEveryRefresh() = runBlocking {
+        inputs.followedWith = { CalendarFollowedSnapshot(unresolved = listOf(CalendarTitleType.SERIES to "kitsu:8")) }
+        inputs.lookup = { CalendarIds() }
+        refresher.requestRefresh(CalendarRefreshReason.CALENDAR_OPENED)
+        until("the first refresh") { inputs.reads.get() == 1 && !refresher.state.value.refreshing }
+        refresher.requestRefresh(CalendarRefreshReason.CALENDAR_OPENED)
+        until("the second refresh") { inputs.reads.get() == 2 && !refresher.state.value.refreshing }
+        assertEquals(listOf("kitsu:8"), inputs.lookups.toList())
     }
 }

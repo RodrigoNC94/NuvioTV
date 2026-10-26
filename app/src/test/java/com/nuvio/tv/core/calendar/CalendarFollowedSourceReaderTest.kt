@@ -59,6 +59,14 @@ class CalendarFollowedSourceReaderTest {
         assertEquals(listOf("series" to "kitsu:46474", "series" to "kitsu:1"), asked)
     }
 
+    @Test fun aKitsuTitleWithoutCachedDetailsTakesTheIdsFoundBefore() {
+        val anime = CalendarTitleCandidate(CalendarIds(), CalendarTitleType.SERIES, CalendarOrigin.LIBRARY, contentId = "kitsu:46474")
+        val saved = CalendarIds(imdb = "tt13706018")
+        val out = calendarResolveUnreadableIds(listOf(anime, anime.copy(contentId = "kitsu:1")), mapOf("kitsu:46474" to saved)) { _, _ -> null }
+        assertEquals(saved, out[0].ids)
+        assertTrue(out[1].ids.isEmpty)
+    }
+
     @Test fun watchedUnderAKitsuIdCountsOnceTheShowHasAnImdbId() {
         val ids = CalendarIds(imdb = "tt13706018")
         val index = CalendarWatchedIndex.Builder()

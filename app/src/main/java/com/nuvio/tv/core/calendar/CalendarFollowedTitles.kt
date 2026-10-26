@@ -62,7 +62,7 @@ data class CalendarFollowResult(
 /**
  * Hidden titles are always left out. Unless the bell is on, so are dropped titles, titles removed from Continue
  * Watching, started shows idle for [CalendarFollowRules.staleAfter] (or with no date and not saved anywhere) and films
- * that were only watched, not saved.
+ * that were only watched, not saved. A show in the Nuvio library is never idle.
  */
 fun followCalendarTitles(
     candidates: List<CalendarTitleCandidate>,
@@ -94,7 +94,8 @@ fun followCalendarTitles(
             CalendarOrigin.DROPPED in origins -> CalendarLeftOutReason.DROPPED
             type == CalendarTitleType.SERIES && ids.aliases().any { it in removedAliases } ->
                 CalendarLeftOutReason.REMOVED_FROM_CONTINUE_WATCHING
-            origins.any { it.started } && (lastActivity?.isBefore(staleBefore) ?: origins.none { it.savesFilms }) &&
+            CalendarOrigin.LIBRARY !in origins && origins.any { it.started } &&
+                (lastActivity?.isBefore(staleBefore) ?: origins.none { it.savesFilms }) &&
                 ids.aliases().none { it in rules.upcomingAliases } -> CalendarLeftOutReason.IDLE
             type == CalendarTitleType.MOVIE && origins.none { it.savesFilms } -> CalendarLeftOutReason.FILM_NOT_SAVED
             else -> null

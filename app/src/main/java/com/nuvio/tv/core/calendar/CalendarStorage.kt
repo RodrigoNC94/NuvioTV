@@ -137,9 +137,53 @@ fun boundCalendarSnapshot(snapshot: CalendarSnapshot, now: Instant): CalendarSna
             .entries.sortedByDescending { it.value.checkedAtMs }
             .take(MAX_TVMAZE_IDS)
             .associate { it.key to it.value },
+        resolvedIds = snapshot.resolvedIds
+            .filterValues { !it.ids.isEmpty || it.checkedAtMs >= now.minus(RESOLVED_MISSING_KEEP).toEpochMilli() }
+            .entries.sortedByDescending { it.value.checkedAtMs }
+            .take(MAX_RESOLVED_IDS)
+            .associate { it.key to it.value },
         seenReminders = snapshot.seenReminders.filterValues { it >= seenSince }
     )
 }
+
+/**
+ * Adds what this refresh found to the saved ids: [found] by the source reader, [looked] up from the add-ons. A miss
+ * never replaces ids found before.
+ */
+fun mergeCalendarResolvedIds(
+    saved: Map<String, CalendarResolvedIds>,
+    found: Map<String, CalendarIds>,
+    looked: Map<String, CalendarResolvedIds>,
+    now: Instant
+): Map<String, CalendarResolvedIds> {
+    val merged = LinkedHashMap(saved)
+    looked.forEach { (contentId, result) ->
+        if (!result.ids.isEmpty || merged[contentId]?.ids?.isEmpty != false) merged[contentId] = result
+    }
+    found.forEach { (contentId, ids) -> merged[contentId] = CalendarResolvedIds(ids, now.toEpochMilli()) }
+    return merged
+}
+
+fun Map<String, CalendarResolvedIds>.usableIds(): Map<String, CalendarIds> =
+    entries.filter { !it.value.ids.isEmpty }.associate { it.key to it.value.ids }
+
+/** Content ids still unread that are worth asking the add-ons about: not already known, and no miss in the last week. */
+fun calendarIdsToLookUp(
+    unresolved: List<Pair<CalendarTitleType, String>>,
+    saved: Map<String, CalendarResolvedIds>,
+    now: Instant,
+    max: Int = MAX_ID_LOOKUPS
+): List<Pair<CalendarTitleType, String>> {
+    val retryBefore = now.minus(RESOLVED_MISSING_RETRY).toEpochMilli()
+    return unresolved.distinctBy { it.second }
+        .filter { (_, contentId) -> saved[contentId]?.let { it.ids.isEmpty && it.checkedAtMs < retryBefore } ?: true }
+        .take(max)
+}
+
+private val RESOLVED_MISSING_KEEP: Duration = Duration.ofDays(30)
+private val RESOLVED_MISSING_RETRY: Duration = Duration.ofDays(7)
+private const val MAX_RESOLVED_IDS = 1_000
+private const val MAX_ID_LOOKUPS = 10
 
 /** Drops the [count] titles with the oldest activity; titles with the bell on stay. */
 fun trimLeastActiveTitles(snapshot: CalendarSnapshot, count: Int): CalendarSnapshot {

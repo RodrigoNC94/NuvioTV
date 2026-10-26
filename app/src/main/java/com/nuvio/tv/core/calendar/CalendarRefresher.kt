@@ -11,6 +11,7 @@ import com.nuvio.tv.data.repository.MetaCaller
 import com.nuvio.tv.domain.repository.MetaRepository
 import java.time.Clock
 import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -76,7 +77,7 @@ interface CalendarRefreshInputs {
     val appVisible: StateFlow<Boolean>
     val settings: StateFlow<CalendarSettings?>
     suspend fun settings(profileId: Int): CalendarSettings
-    suspend fun followed(profileId: Int): CalendarFollowedSnapshot
+    suspend fun followed(profileId: Int, knownIds: Map<String, CalendarIds>): CalendarFollowedSnapshot
     fun traktSignedIn(): Boolean
     suspend fun traktCalendar(today: LocalDate): List<TraktCalendarItem>?
     suspend fun refreshConcurrency(): Int
@@ -85,6 +86,9 @@ interface CalendarRefreshInputs {
 
     /** A title's backdrop and logo from its details; null when they could not be read. */
     suspend fun fetchArt(type: String, ids: List<String>): CalendarArt? = null
+
+    /** The ids in a title's details from the add-ons; empty when it has none, null when they could not be read. */
+    suspend fun lookupIds(type: CalendarTitleType, contentId: String): CalendarIds? = null
 }
 
 @Singleton
@@ -105,8 +109,8 @@ class DefaultCalendarRefreshInputs @Inject constructor(
     override val appVisible: StateFlow<Boolean> = appVisibility.visible
     override val settings = settingsStore.settings
     override suspend fun settings(profileId: Int) = settingsStore.current(profileId)
-    override suspend fun followed(profileId: Int) =
-        sourceReader.read(profileId, settingsStore.current(profileId).followOtherServices)
+    override suspend fun followed(profileId: Int, knownIds: Map<String, CalendarIds>) =
+        sourceReader.read(profileId, settingsStore.current(profileId).followOtherServices, knownIds)
     override fun traktSignedIn() = trackingProviders.isAuthenticated(TrackingProviderId.TRAKT)
     override suspend fun traktCalendar(today: LocalDate) = traktCalendarClient.myShows(today)
     override suspend fun refreshConcurrency() = deviceTier.refreshConcurrency()
@@ -128,6 +132,22 @@ class DefaultCalendarRefreshInputs @Inject constructor(
             if (result is NetworkResult.Success) return calendarArtOf(result.data)
         }
         return null
+    }
+
+    override suspend fun lookupIds(type: CalendarTitleType, contentId: String): CalendarIds? {
+        val result = try {
+            withTimeoutOrNull(ART_FETCH_MS) {
+                withContext(MetaCaller("calendar-ids")) {
+                    val kind = if (type == CalendarTitleType.MOVIE) "movie" else "series"
+                    metaRepository.getMetaFromAllAddons(kind, contentId).first { it !is NetworkResult.Loading }
+                }
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            null
+        }
+        return (result as? NetworkResult.Success)?.let { calendarIdsOf(it.data) }
     }
 
     /** The box's own region, not the app language, for film release dates. */
@@ -295,7 +315,12 @@ class CalendarRefresher internal constructor(
             val profileId = current.profileId
             val settings = inputs.settings(profileId)
             val now = clock.instant()
-            val sources = inputs.followed(profileId)
+            val savedIds = dataMutex.withLock { data.resolvedIds }
+            var sources = inputs.followed(profileId, savedIds.usableIds())
+            val looked = lookUpUnreadableIds(sources.unresolved, savedIds, now)
+            if (looked.values.any { !it.ids.isEmpty }) {
+                sources = inputs.followed(profileId, mergeCalendarResolvedIds(savedIds, emptyMap(), looked, now).usableIds())
+            }
             withOwner(current) {
                 watched = sources.watched
                 publishLocked()
@@ -340,6 +365,7 @@ class CalendarRefresher internal constructor(
                 }
                 data = data.copy(
                     titles = records,
+                    resolvedIds = mergeCalendarResolvedIds(data.resolvedIds, sources.resolvedIds, looked, now),
                     traktCalendarFetchedAtMs = when {
                         traktItems != null -> now.toEpochMilli()
                         traktSignedIn -> data.traktCalendarFetchedAtMs
@@ -464,7 +490,8 @@ class CalendarRefresher internal constructor(
     }
 
     private suspend fun readWatched(current: Owner): CalendarWatchedIndex {
-        val index = inputs.followed(current.profileId).watched
+        val known = dataMutex.withLock { data.resolvedIds }.usableIds()
+        val index = inputs.followed(current.profileId, known).watched
         withOwner(current) {
             watched = index
             publishLocked()
@@ -513,6 +540,24 @@ class CalendarRefresher internal constructor(
 
     private suspend fun awaitNoPlayback() {
         inputs.playbackActive.first { active -> !active }
+    }
+
+    /** Asks the add-ons for the ids of a few titles saved under ids the Calendar cannot read; kept, so asked once. */
+    private suspend fun lookUpUnreadableIds(
+        unresolved: List<Pair<CalendarTitleType, String>>,
+        saved: Map<String, CalendarResolvedIds>,
+        now: Instant
+    ): Map<String, CalendarResolvedIds> {
+        val wanted = calendarIdsToLookUp(unresolved, saved, now)
+        if (wanted.isEmpty()) return emptyMap()
+        val found = LinkedHashMap<String, CalendarResolvedIds>()
+        wanted.forEach { (type, contentId) ->
+            awaitNoPlayback()
+            val ids = inputs.lookupIds(type, contentId) ?: return@forEach
+            found[contentId] = CalendarResolvedIds(ids, now.toEpochMilli())
+        }
+        Log.i(TAG, "looked up ids for ${wanted.size} titles, found ${found.values.count { !it.ids.isEmpty }}")
+        return found
     }
 
     private companion object {

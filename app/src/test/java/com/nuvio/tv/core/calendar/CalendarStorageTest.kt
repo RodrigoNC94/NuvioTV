@@ -192,4 +192,33 @@ class CalendarStorageTest {
         val snapshot = CalendarSnapshot(titles = (1..5).map { allSources(it, bell = it == 5) })
         assertEquals(listOf(1, 2, 5), trimLeastActiveTitles(snapshot, 2).titles.map { it.ids.tmdb!!.toInt() })
     }
+
+    @Test fun matchedIdsAreSavedAndAMissNeverReplacesThem() = runBlocking {
+        val day = Duration.ofDays(1).toMillis()
+        val ids = CalendarIds(imdb = "tt1")
+        val merged = mergeCalendarResolvedIds(
+            saved = mapOf("kitsu:1" to CalendarResolvedIds(ids, now.toEpochMilli() - day)),
+            found = mapOf("kitsu:2" to CalendarIds(tmdb = 2)),
+            looked = mapOf("kitsu:1" to CalendarResolvedIds(CalendarIds(), now.toEpochMilli()), "kitsu:3" to CalendarResolvedIds(CalendarIds(), now.toEpochMilli())),
+            now = now
+        )
+        assertEquals(ids, merged["kitsu:1"]?.ids)
+        assertEquals(CalendarIds(tmdb = 2), merged["kitsu:2"]?.ids)
+        assertTrue(merged["kitsu:3"]!!.ids.isEmpty)
+        assertEquals(mapOf("kitsu:1" to ids, "kitsu:2" to CalendarIds(tmdb = 2)), merged.usableIds())
+
+        storage.save(1, CalendarSnapshot(resolvedIds = merged + ("kitsu:4" to CalendarResolvedIds(CalendarIds(), now.toEpochMilli() - 40 * day))), storage.generation(), force = true)
+        assertEquals(setOf("kitsu:1", "kitsu:2", "kitsu:3"), storage.load(1).resolvedIds.keys)
+    }
+
+    @Test fun onlyUnknownIdsAndOldMissesAreLookedUpAtMostTenAtATime() {
+        val day = Duration.ofDays(1).toMillis()
+        val saved = mapOf(
+            "kitsu:1" to CalendarResolvedIds(CalendarIds(imdb = "tt1"), now.toEpochMilli()),
+            "kitsu:2" to CalendarResolvedIds(CalendarIds(), now.toEpochMilli() - 2 * day),
+            "kitsu:3" to CalendarResolvedIds(CalendarIds(), now.toEpochMilli() - 8 * day)
+        )
+        val unresolved = (1..14).map { CalendarTitleType.SERIES to "kitsu:$it" } + (CalendarTitleType.SERIES to "kitsu:4")
+        assertEquals((3..12).map { "kitsu:$it" }, calendarIdsToLookUp(unresolved, saved, now).map { it.second })
+    }
 }

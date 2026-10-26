@@ -50,7 +50,11 @@ data class CalendarFollowedSnapshot(
     /** Origins those sources would have given; titles the Calendar holds from them are kept until they can be read. */
     val unreadOrigins: Set<CalendarOrigin> = emptySet(),
     /** Backdrops the app already holds, by id alias. */
-    val cachedArt: Map<String, CalendarArt> = emptyMap()
+    val cachedArt: Map<String, CalendarArt> = emptyMap(),
+    /** Ids found this time for content ids the Calendar cannot read, so they are known after a restart too. */
+    val resolvedIds: Map<String, CalendarIds> = emptyMap(),
+    /** Content ids the Calendar cannot read and found no ids for; their titles are left out this time. */
+    val unresolved: List<Pair<CalendarTitleType, String>> = emptyList()
 ) {
     val complete: Boolean get() = notReady.isEmpty()
 }
@@ -149,20 +153,25 @@ private fun CalendarEntry.airDateOrNull(): LocalDate? =
 
 /**
  * A title saved under an id the Calendar cannot read (an anime add-on's kitsu:, for example) takes the IMDb or TMDB id
- * from the add-on's cached details instead of being left out.
+ * from the add-on's cached details, or else the ids found for it before ([known]), instead of being left out.
  */
 fun calendarResolveUnreadableIds(
     candidates: List<CalendarTitleCandidate>,
+    known: Map<String, CalendarIds> = emptyMap(),
     cachedMeta: (type: String, id: String) -> com.nuvio.tv.domain.model.Meta?
 ): List<CalendarTitleCandidate> = candidates.map { candidate ->
     if (!candidate.ids.isEmpty) return@map candidate
     val contentId = candidate.contentId?.takeIf(String::isNotBlank) ?: return@map candidate
     val type = if (candidate.type == CalendarTitleType.MOVIE) "movie" else "series"
-    val meta = cachedMeta(type, contentId) ?: return@map candidate
-    val ids = CalendarIds.fromContentId(meta.imdbId?.takeIf { it.startsWith("tt") })
-        .merged(CalendarIds.fromContentId(meta.id))
-    if (ids.isEmpty) candidate else candidate.copy(ids = ids)
+    val ids = cachedMeta(type, contentId)?.let(::calendarIdsOf)?.takeIf { !it.isEmpty }
+        ?: known[contentId]?.takeIf { !it.isEmpty }
+        ?: return@map candidate
+    candidate.copy(ids = ids)
 }
+
+/** The ids the Calendar can read from a title's details. */
+fun calendarIdsOf(meta: com.nuvio.tv.domain.model.Meta): CalendarIds =
+    CalendarIds.fromContentId(meta.imdbId?.takeIf { it.startsWith("tt") }).merged(CalendarIds.fromContentId(meta.id))
 
 /** Nuvio's own numbering of a show's episodes, from an add-on's episode list. */
 fun calendarKnownEpisodes(videos: List<com.nuvio.tv.domain.model.Video>): List<CalendarKnownEpisode> =
@@ -226,7 +235,11 @@ class CalendarFollowedSourceReader @Inject constructor(
     private val trackingProviders: TrackingProviderRegistry,
     private val metaRepository: MetaRepository
 ) {
-    suspend fun read(profileId: Int, followOtherServices: Boolean = false): CalendarFollowedSnapshot {
+    suspend fun read(
+        profileId: Int,
+        followOtherServices: Boolean = false,
+        knownIds: Map<String, CalendarIds> = emptyMap()
+    ): CalendarFollowedSnapshot {
         val candidates = mutableListOf<CalendarTitleCandidate>()
         val watched = CalendarWatchedIndex.Builder()
         val unread = CalendarSourceParts()
@@ -386,11 +399,18 @@ class CalendarFollowedSourceReader @Inject constructor(
             watched.nextUpNotAired(item.contentId, date)
         }
         val resolved = unread.runPart("unreadable ids", counts = false) {
-            calendarResolveUnreadableIds(candidates) { type, id -> metaRepository.getCachedMeta(type, id) }
+            calendarResolveUnreadableIds(candidates, knownIds) { type, id -> metaRepository.getCachedMeta(type, id) }
         } ?: candidates
+        val resolvedIds = HashMap<String, CalendarIds>()
+        val unresolved = mutableListOf<Pair<CalendarTitleType, String>>()
         resolved.forEach { candidate ->
-            if (CalendarIds.fromContentId(candidate.contentId).isEmpty && !candidate.ids.isEmpty) {
-                candidate.contentId?.let { watched.alias(it, candidate.ids) }
+            val contentId = candidate.contentId?.takeIf(String::isNotBlank) ?: return@forEach
+            if (!CalendarIds.fromContentId(contentId).isEmpty) return@forEach
+            if (candidate.ids.isEmpty) {
+                unresolved += candidate.type to contentId
+            } else {
+                watched.alias(contentId, candidate.ids)
+                resolvedIds[contentId] = candidate.ids
             }
         }
         val usable = resolved.filterNot { it.ids.isEmpty }
@@ -429,7 +449,8 @@ class CalendarFollowedSourceReader @Inject constructor(
         }.orEmpty()
         return CalendarFollowedSnapshot(
             usable, removed, addon, watched.build(), traktWatchedLoaded, traktProgress, posters,
-            unread.reasons, unread.origins, cachedArt = art
+            unread.reasons, unread.origins, cachedArt = art,
+            resolvedIds = resolvedIds, unresolved = unresolved.distinct()
         )
     }
 

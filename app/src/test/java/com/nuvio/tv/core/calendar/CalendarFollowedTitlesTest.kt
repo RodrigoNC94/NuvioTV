@@ -273,6 +273,22 @@ class CalendarFollowedTitlesTest {
         assertEquals(CalendarLeftOut("series:imdb:tt1", "Imported", CalendarLeftOutReason.IDLE, null), result.leftOut.single())
     }
 
+    @Test fun aShowInTheNuvioLibraryIsNeverIdle() {
+        val ids = CalendarIds(imdb = "tt9")
+        val result = followCalendarTitles(
+            listOf(
+                show(CalendarOrigin.LIBRARY, ids, daysAgo(900), "Back After Two Years"),
+                show(CalendarOrigin.WATCHED, ids, daysAgo(700)),
+                show(CalendarOrigin.TRAKT_WATCHLIST, CalendarIds(imdb = "tt8"), daysAgo(900)),
+                show(CalendarOrigin.TRAKT_WATCHED, CalendarIds(imdb = "tt8"), daysAgo(700))
+            ),
+            CalendarFollowRules(),
+            now
+        )
+        assertEquals(listOf("Back After Two Years"), result.titles.map { it.name })
+        assertEquals(listOf("series:imdb:tt8" to CalendarLeftOutReason.IDLE), result.leftOut.map { it.key to it.reason })
+    }
+
     @Test fun aStartedShowWithAnUpcomingEpisodeIsNeverIdle() {
         val candidates = listOf(show(CalendarOrigin.TRAKT_WATCHED, CalendarIds(imdb = "tt9", tmdb = 90), daysAgo(800), "Old Show"))
         val left = followCalendarTitles(candidates, CalendarFollowRules(), now)
