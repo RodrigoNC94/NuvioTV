@@ -29,6 +29,10 @@ internal class AutoSpeedupPolicy(
     @Volatile
     var knownPieceBytes: Long = 0L
 
+    /** The piece size this server's films needed before ([HostSpeeds.Entry.startPieceBytes]), 0 when unknown. */
+    @Volatile
+    var knownStartPieceBytes: Long = 0L
+
     /** The wait for the first byte on the start's single request (an add-on's redirect included), -1 while unknown. */
     @Volatile
     var firstByteMs: Long = -1L
@@ -326,6 +330,28 @@ internal class AutoSpeedupPolicy(
         pieceBytes = if (n == plan.downloads || raw == null) plan.pieceBytes
             else pieceForDownloads(n, waitMs(), raw, targetNow(fileBitrate), pieceBudgetBytes) ?: plan.pieceBytes
         return n
+    }
+
+    /**
+     * The piece a film starts on with [downloads]: the size this server's films needed before ([knownStartPieceBytes])
+     * when that is bigger than the plan's and fits [pieceBudgetBytes], so the next film skips the climb the last one made.
+     */
+    fun rememberedStartPiece(downloads: Int): Long {
+        val known = knownStartPieceBytes
+        val piece = pieceBytes
+        if (pieceBudgetBytes <= 0L || known !in PIECE_STEPS || known <= piece) return piece
+        return maxOf(piece, fittingPiece(downloads, known, pieceBudgetBytes))
+    }
+
+    /**
+     * The piece size to remember for the server at the film's end: the one it ran on ([active]), or the smaller one
+     * the rule takes there for the downloads it ran on, so a size the film no longer needed is not carried forward.
+     */
+    fun pieceToRemember(active: Long): Long {
+        val raw = measuredRawBps() ?: rawRateNow() ?: return active
+        val n = if (boostBase > 0) boostBase else downloads
+        val rule = pieceForDownloads(n, waitMs(), raw, targetNow(lastFileBitrate), pieceBudgetBytes) ?: return active
+        return minOf(active, rule)
     }
 
     /** The plan for this film from what is known about the server, null while the first byte or the rate is not. */

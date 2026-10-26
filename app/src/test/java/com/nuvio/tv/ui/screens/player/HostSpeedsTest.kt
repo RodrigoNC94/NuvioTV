@@ -48,7 +48,7 @@ class HostSpeedsTest {
         assertNull(HostSpeeds.decode("12000000,2,730,1000"))
         assertNull(HostSpeeds.decode("12000000,2,730,1000,8388608"))
         assertNull(HostSpeeds.decode("12000000,2,730,1000,8388608,v1"))
-        assertEquals(HostSpeeds.Entry(12_000_000L, 2, 730L, 1_000L, 8_388_608L),
+        assertEquals(HostSpeeds.Entry(12_000_000L, 2, 730L, 1_000L, 8_388_608L, 8_388_608L),
             HostSpeeds.decode("12000000,2,730,1000,8388608,v2"))
     }
 

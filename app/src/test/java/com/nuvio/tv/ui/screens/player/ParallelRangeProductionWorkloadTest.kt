@@ -324,5 +324,28 @@ class ParallelRangeProductionWorkloadTest {
             assertEquals(true,field(f.resources,"hudClampLatched"))
         }
     }
+    @Test fun `pieces refused together wait as one then the nearest piece tries alone before the rest`() {
+        manualClock.set(1000)
+        Fixture().use { f ->
+            val ds=f.source();f.bootstrap(ds)
+            f.beforeWorkerOpen={ _,attempt,spec ->
+                if(attempt==1) throw HttpDataSource.InvalidResponseCodeException(
+                    429,"fixture limiter",null,emptyMap(),spec,byteArrayOf())
+            }
+            ds.open(f.spec(1))
+            for(chunk in 1L..3L) invoke(ds,"ensureChunkScheduled",chunk)
+            val gate=field(f.session(ds),"rateGate") as ParallelRangeRateGate
+            awaitCondition("all three refused pieces wait at the gate") { f.workerOpens.size==3 && gate.waitingCount()==3 }
+            assertTrue(gate.blocking)
+            assertEquals("a burst counts once",1,gate.refusals)
+            assertEquals("nothing is sent while the wait runs",3,f.workerOpens.size)
+            manualClock.set(1000+ParallelRangeRateGate.FIRST_WAIT_MS+ParallelRangeRateGate.JITTER_MS)
+            for(chunk in 1L..3L) assertNotNull(f.futures(f.session(ds))[chunk]!!.get(5,TimeUnit.SECONDS))
+            assertEquals(6,f.workerOpens.size)
+            assertEquals("the piece nearest the player tries first",CHUNK,f.workerOpens[3].second)
+            assertFalse(gate.blocking)
+            ds.close()
+        }
+    }
     companion object { private const val CHUNK=262144L }
 }

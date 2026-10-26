@@ -341,10 +341,12 @@ internal object AutoSpeedup {
         val start = synchronized(pieceLock) {
             p.knownPerDownloadBps = known.perDownloadBps
             p.knownPieceBytes = known.pieceBytes
+            p.knownStartPieceBytes = known.startPieceBytes
             if (p.firstByteMs < 0L && known.firstByteMs >= 0L) p.firstByteMs = known.firstByteMs
             if (known.firstByteMs >= 0L) p.knownFirstByteMs = known.firstByteMs
             val before = p.pieceBytes
             val n = if (guessedBps > 0L) p.startFor(guessedBps) else 0
+            if (n > 1) p.pieceBytes = p.rememberedStartPiece(n)
             // The chunk session may already read the old size: the plan's size then follows between pieces.
             if (p.pieceBytes != before) pieceBytes = p.pieceBytes
             n
@@ -395,6 +397,7 @@ internal object AutoSpeedup {
             if (known != null) {
                 p.knownPerDownloadBps = known.perDownloadBps
                 p.knownPieceBytes = known.pieceBytes
+                p.knownStartPieceBytes = known.startPieceBytes
                 if (known.firstByteMs >= 0L) {
                     firstByteMs = known.firstByteMs
                     p.firstByteMs = known.firstByteMs
@@ -415,13 +418,16 @@ internal object AutoSpeedup {
                 }
                 pieceFixed = true
                 val start = p.startFor(guessed)
+                var from = ""
                 if (limits.pieceBudgetBytes > 0L && start > 1) {
-                    p.pieceBytes = AutoSpeedupPolicy.fittingPiece(start, p.pieceBytes, limits.pieceBudgetBytes)
+                    val planned = p.pieceBytes
+                    p.pieceBytes = AutoSpeedupPolicy.fittingPiece(start, p.rememberedStartPiece(start), limits.pieceBudgetBytes)
+                    if (p.pieceBytes > planned) from = " plannedMb=${planned / MB} rememberedMb=${p.knownStartPieceBytes / MB}"
                 }
                 pieceBytes = p.pieceBytes
                 p.preset(start, guessed)
                 Log.i(TAG, "AUTO_SPEEDUP: start guessed downloads=$start fileKbps=${guessed / 1000} " +
-                    "pieceMb=${pieceBytes / MB}")
+                    "pieceMb=${pieceBytes / MB}$from")
             }
             if (pieceFixed) logOn()
         }
@@ -442,14 +448,16 @@ internal object AutoSpeedup {
                 firstByteMs >= 0L -> firstByteMs
                 else -> remembered?.firstByteMs ?: -1L
             }
+            val ran = activePieceBytes.takeIf { it > 0L } ?: pieceBytes
             val entry = HostSpeeds.Entry(p.measuredPerDownloadBps, p.peakKept.coerceAtLeast(1), wait, System.currentTimeMillis(),
-                activePieceBytes.takeIf { it > 0L } ?: pieceBytes)
+                ran, p.pieceToRemember(ran))
             // The real server's entry is what the next film from it starts on; the add-on's is only a first guess.
             keys.forEach { HostSpeeds.record(it, entry) }
             Log.i(TAG, "AUTO_SPEEDUP: saved host=${keys.joinToString("+")} " +
                 "perDownloadKbps=${entry.perDownloadBps * 8 / 1000} downloads=${entry.downloads} " +
                 "averagedKbps=${(HostSpeeds.get(keys.first())?.perDownloadBps ?: 0L) * 8 / 1000} " +
                 "pieceMb=${entry.pieceBytes / MB} averagedPieceMb=${(HostSpeeds.get(keys.first())?.pieceBytes ?: 0L) / MB} " +
+                "startPieceMb=${entry.startPieceBytes / MB} nextStartPieceMb=${(HostSpeeds.get(keys.first())?.startPieceBytes ?: 0L) / MB} " +
                 "firstByteMs=${entry.firstByteMs} pieceFirstByteMs=$pieceWait")
         }
         if (wasOn) PlaybackConnectionEvents.trackPieces = false

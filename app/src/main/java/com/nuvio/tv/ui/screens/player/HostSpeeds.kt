@@ -6,9 +6,10 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * What Automatic speed-up learnt per server: the rate one request carried, the downloads a film kept, the wait for
- * the first byte and the piece size the rate was carried on. The next film from the same server starts from it
- * instead of measuring again. Kept [KEEP_MS]. Entries saved before [VERSION] shared the rate by downloads while the
- * read-ahead's pieces ran too, so read up to four times too high, and are not used.
+ * the first byte, the piece size the rate was carried on and the piece size its next film starts on at least. The next
+ * film from the same server starts from it instead of measuring again. Kept [KEEP_MS]. Entries saved before version 2
+ * shared the rate by downloads while the read-ahead's pieces ran too, so read up to four times too high, and are not
+ * used; version 2 entries start on the piece their rate was carried on.
  */
 internal object HostSpeeds {
     data class Entry(
@@ -16,7 +17,8 @@ internal object HostSpeeds {
         val downloads: Int,
         val firstByteMs: Long,
         val savedAtMs: Long,
-        val pieceBytes: Long = 0L
+        val pieceBytes: Long = 0L,
+        val startPieceBytes: Long = 0L
     )
 
     const val KEEP_MS = 30L * 24 * 60 * 60 * 1000
@@ -64,7 +66,8 @@ internal object HostSpeeds {
             downloads = ((old.downloads * OLD_SHARE + film.downloads * (100 - OLD_SHARE) + 50) / 100).coerceAtLeast(1),
             firstByteMs = if (film.firstByteMs >= 0L) film.firstByteMs else old.firstByteMs,
             savedAtMs = film.savedAtMs,
-            pieceBytes = mergePiece(old.pieceBytes, film.pieceBytes)
+            pieceBytes = mergePiece(old.pieceBytes, film.pieceBytes),
+            startPieceBytes = stepPiece(old.startPieceBytes, film.startPieceBytes)
         )
     }
 
@@ -75,22 +78,33 @@ internal object HostSpeeds {
         return AutoSpeedupPolicy.PIECE_STEPS.minBy { kotlin.math.abs(it - mean) }
     }
 
+    /** One piece size step from [old] toward [film], so one film moves the start piece but never all the way. */
+    fun stepPiece(old: Long, film: Long): Long {
+        if (old <= 0L || film <= 0L) return if (film > 0L) film else old
+        val steps = AutoSpeedupPolicy.PIECE_STEPS
+        val from = steps.indices.minBy { kotlin.math.abs(steps[it] - old) }
+        val to = steps.indices.minBy { kotlin.math.abs(steps[it] - film) }
+        return steps[from + (to - from).coerceIn(-1, 1)]
+    }
+
     const val OLD_SHARE = 60
 
-    const val VERSION = 2
+    const val VERSION = 3
 
     fun encode(e: Entry): String =
-        "${e.perDownloadBps},${e.downloads},${e.firstByteMs},${e.savedAtMs},${e.pieceBytes},v$VERSION"
+        "${e.perDownloadBps},${e.downloads},${e.firstByteMs},${e.savedAtMs},${e.pieceBytes},${e.startPieceBytes},v$VERSION"
 
     fun decode(text: String): Entry? {
         val p = text.split(',')
-        if (p.size != 6 || p[5] != "v$VERSION") return null
+        val v2 = p.size == 6 && p[5] == "v2"
+        if (!v2 && (p.size != 7 || p[6] != "v$VERSION")) return null
         val bps = p[0].toLongOrNull() ?: return null
         val n = p[1].toIntOrNull() ?: return null
         val fb = p[2].toLongOrNull() ?: return null
         val at = p[3].toLongOrNull() ?: return null
-        val piece = p[4].toLongOrNull() ?: return null
-        return if (bps > 0L && n > 0) Entry(bps, n, fb, at, piece.coerceAtLeast(0L)) else null
+        val piece = p[4].toLongOrNull()?.coerceAtLeast(0L) ?: return null
+        val start = if (v2) piece else p[5].toLongOrNull()?.coerceAtLeast(0L) ?: return null
+        return if (bps > 0L && n > 0) Entry(bps, n, fb, at, piece, start) else null
     }
 
     /**

@@ -143,25 +143,9 @@ internal class ParallelRangeDataSource(
         private const val ESCALATE_AFTER_MS = 2_000L
         private const val ESCALATE_POLL_EXTENSION_MS = 3_000L
 
-        // HTTP 429/503 is server-side rate-limiting, not a stalled
-        // socket. Back off before retrying (immediate retry just re-hits the
-        // limit). The response is shaped like congestion
-        // control: waits honour a server-stated Retry-After and escalate
-        // across episodes, and prefetch depth adapts multiplicatively down /
-        // additively up (AIMD) so a session converges just under the
-        // provider's actual request budget. Reachable from any chunk-session
-        // path (parallel-on and MP4 session mode).
-        private const val RATE_LIMIT_MAX_BACKOFF_RETRIES = 3
-        private const val RATE_LIMIT_BACKOFF_BASE_MS = 500L
-        // Cap for GUESSED waits in a first episode. Deliberately short:
-        // playback is real-time, so long speculative sleeps on a download
-        // thread trade a maybe-429 for a certain stall.
-        private const val RATE_LIMIT_BACKOFF_CYCLE_CAP_MS = 3_000L
-        // Absolute ceiling for any single wait, including a server-stated
-        // Retry-After: a broken or hostile header must never camp a
-        // real-time pipeline.
-        private const val RATE_LIMIT_WAIT_HARD_CAP_MS = 15_000L
-        private const val RATE_LIMIT_BACKOFF_JITTER_MS = 250L
+        // HTTP 429/503 is server-side rate-limiting, not a stalled socket. The
+        // session's rate gate holds every piece while the server refuses, and the
+        // prefetch depth adapts multiplicatively down / additively up (AIMD).
         private const val RATE_LIMIT_SLEEP_SLICE_MS = 100L
 
         // Additive-recovery probe cadence: +1 depth per quiet
@@ -465,6 +449,7 @@ internal class ParallelRangeDataSource(
             @Volatile var lastDepthStepAtMs: Long = 0L
             @Volatile var depthStepIntervalMs: Long = RATE_LIMIT_DEPTH_STEP_BASE_MS
             val rateLimitEscalation = AtomicInteger(0)
+            val rateGate = ParallelRangeRateGate({ SystemClock.uptimeMillis() })
             val activeSources: MutableSet<DataSource> = java.util.concurrent.ConcurrentHashMap.newKeySet()
             // Progressive reads: live views of downloads in
             // flight, keyed like futures. Entries are owned by the
@@ -551,7 +536,7 @@ internal class ParallelRangeDataSource(
              */
             fun currentAllowedDepth(configuredDepth: Int): Int {
                 val cap = rateLimitDepthCap.get()
-                if (cap >= configuredDepth) return configuredDepth
+                if (cap == Int.MAX_VALUE) return configuredDepth
                 val now = SystemClock.uptimeMillis()
                 if (now - lastRateLimitAtMs >= depthStepIntervalMs &&
                     now - lastDepthStepAtMs >= depthStepIntervalMs) {
@@ -1607,7 +1592,7 @@ internal class ParallelRangeDataSource(
             Log.i(TAG, "RS_ESCALATE skip chunk=$chunkIndex reason=done")
             return
         }
-        if (resources.hudClampLatched) {
+        if (resources.hudClampLatched || activeSession.rateGate.blocking) {
             Log.i(TAG, "RS_ESCALATE skip chunk=$chunkIndex reason=clamp")
             return
         }
@@ -1833,15 +1818,25 @@ internal class ParallelRangeDataSource(
     }
 
     private fun downloadChunk(activeSession: Resources.ChunkSession, chunkIndex: Long, future: CompletableFuture<*>): DownloadedChunk {
+        try {
+            return downloadChunkGated(activeSession, chunkIndex, future)
+        } finally {
+            activeSession.rateGate.finished(chunkIndex)
+        }
+    }
+
+    private fun downloadChunkGated(activeSession: Resources.ChunkSession, chunkIndex: Long, future: CompletableFuture<*>): DownloadedChunk {
         var lastException: Exception? = null
         for (attempt in 0..1) {
             // isDone => a racing completer (reader-blocked escalation) already
             // won; a retry here would fetch a full chunk only to lose the
             // ownership race and release it.
             if (future.isDone || activeSession.abandoned.get()) throw IOException("Cancelled")
+            if (!awaitRateGate(activeSession, chunkIndex, future, lastException)) throw IOException("Cancelled")
             val target = activeSession.requestTarget()
+            val startedAtMs = activeSession.rateGate.now()
             try {
-                return downloadChunkOnce(activeSession, chunkIndex, future)
+                return downloadChunkOnce(activeSession, chunkIndex, future, startedAtMs = startedAtMs)
             } catch (e: Exception) {
                 // Downloads belong to the session, not the instance:
                 // future completion, cancellation or session teardown retires them.
@@ -1859,7 +1854,7 @@ internal class ParallelRangeDataSource(
                 }
                 val rlError = e.findRateLimitException()
                 if (rlError != null) {
-                    return downloadChunkWithRateLimitBackoff(activeSession, chunkIndex, future, rlError)
+                    return downloadChunkWithRateLimitBackoff(activeSession, chunkIndex, future, rlError, startedAtMs)
                 }
                 if (attempt == 0) {
                     if (e.isTransientInterruption()) {
@@ -1877,7 +1872,13 @@ internal class ParallelRangeDataSource(
         throw IOException("Failed to download chunk $chunkIndex after 2 attempts", lastException)
     }
 
-    private fun downloadChunkOnce(activeSession: Resources.ChunkSession, chunkIndex: Long, future: CompletableFuture<*>, allowStallRestart: Boolean = true): DownloadedChunk {
+    private fun downloadChunkOnce(
+        activeSession: Resources.ChunkSession,
+        chunkIndex: Long,
+        future: CompletableFuture<*>,
+        allowStallRestart: Boolean = true,
+        startedAtMs: Long = activeSession.rateGate.now()
+    ): DownloadedChunk {
         val sessionLength = activeSession.totalLength
         val start = chunkIndex * chunkSize
         val end = if (sessionLength > 0L) {
@@ -1907,6 +1908,9 @@ internal class ParallelRangeDataSource(
             Log.d(TAG, "Starting chunk download: idx=$chunkIndex, range=$start-$end")
             val sent = openTarget(activeSession, ds, spec, sessionLength) { future.isDone || activeSession.abandoned.get() }
             slot?.moveTo(runCatching { ds.uri?.toString() }.getOrNull())
+            if (activeSession.rateGate.answered(startedAtMs)) {
+                Log.i(TAG, "RATE_GATE open chunk=$chunkIndex: the server answers again")
+            }
             // Short-chunk rejection: with a known session length the
             // requested range is exact, so a chunk that comes back short must
             // fail (and retry) rather than be cached as if complete.
@@ -2106,14 +2110,6 @@ internal class ParallelRangeDataSource(
         return null
     }
 
-    /**
-     * Dedicated handling for a rate-limited chunk. One
-     * invocation = one congestion episode: one multiplicative depth decrease
-     * and one wait-escalation step, then up to RATE_LIMIT_MAX_BACKOFF_RETRIES
-     * properly-spaced retries. Bounded and cancellation-aware; when the
-     * budget is spent it throws and the normal failure handling /
-     * auto-recovery takes over.
-     */
     /** The refused request has ended already, so the requests running at the refusal are those left plus it. */
     private fun noteRateLimited(activeSession: Resources.ChunkSession) {
         val callback = onRateLimited ?: return
@@ -2121,93 +2117,88 @@ internal class ParallelRangeDataSource(
         runCatching { callback(activeSession.requestTarget(), running + 1) }
     }
 
+    /**
+     * A rate-limited piece waits for the session's [ParallelRangeRateGate] instead of retrying on its own: the
+     * pieces refused together count once, nothing is sent while the wait runs, then the piece nearest the player
+     * tries alone. The piece fails only after [ParallelRangeRateGate.GIVE_UP_MS] without any request answered.
+     */
     private fun downloadChunkWithRateLimitBackoff(
         activeSession: Resources.ChunkSession,
         chunkIndex: Long,
         future: CompletableFuture<*>,
-        firstError: HttpDataSource.InvalidResponseCodeException
+        firstError: HttpDataSource.InvalidResponseCodeException,
+        firstStartedAtMs: Long
     ): DownloadedChunk {
+        val gate = activeSession.rateGate
         var rl: HttpDataSource.InvalidResponseCodeException = firstError
+        var startedAtMs = firstStartedAtMs
         var lastException: Exception = firstError
         if (future.isDone || activeSession.abandoned.get()) throw IOException("Chunk already retired")
-        noteRateLimited(activeSession)
-        val escalation = activeSession.beginRateLimitEpisode(effectivePrefetchDepth)
-        var attempt = 0
-        while (attempt < RATE_LIMIT_MAX_BACKOFF_RETRIES) {
-            val waitMs = rateLimitWaitMs(attempt, escalation, rl)
-            Log.w(TAG, "Chunk $chunkIndex rate-limited (HTTP ${rl.responseCode}); backing off ${waitMs}ms " +
-                "(attempt ${attempt + 1}/$RATE_LIMIT_MAX_BACKOFF_RETRIES, escalation $escalation)")
-            if (!sleepInterruptibly(waitMs, future, activeSession)) throw IOException("Cancelled during rate-limit backoff")
-            if (future.isDone || activeSession.abandoned.get()) throw IOException("Cancelled")
+        while (true) {
+            val refusal = gate.refused(chunkIndex, startedAtMs, retryAfterMs(rl))
+            if (refusal > 0) {
+                noteRateLimited(activeSession)
+                // Only the burst that opened the spell says too many ran at once; a lone try refused later does not.
+                if (refusal == 1) activeSession.beginRateLimitEpisode(effectivePrefetchDepth)
+                else activeSession.noteRateLimitHit()
+                Log.w(TAG, "RATE_GATE closed chunk=$chunkIndex HTTP ${rl.responseCode} refusals=$refusal " +
+                    "waitMs=${gate.waitLeftMs()} waiting=${gate.waitingCount()} running=${requestMeter?.running() ?: -1}")
+            } else {
+                activeSession.noteRateLimitHit()
+            }
+            if (!awaitRateGate(activeSession, chunkIndex, future, lastException)) {
+                throw IOException("Cancelled during rate-limit backoff")
+            }
+            startedAtMs = gate.now()
             try {
-                return downloadChunkOnce(activeSession, chunkIndex, future)
+                return downloadChunkOnce(activeSession, chunkIndex, future, startedAtMs = startedAtMs)
             } catch (e: Exception) {
                 if (activeSession.abandoned.get() || future.isDone) throw IOException("Session abandoned or cancelled")
                 lastException = e
                 // A non-rate-limit error after a 429 is a different failure: surface it.
                 rl = e.findRateLimitException() ?: throw e
-                activeSession.noteRateLimitHit()
-                noteRateLimited(activeSession)
-                attempt++
             }
         }
-        throw IOException("Chunk $chunkIndex still rate-limited after $RATE_LIMIT_MAX_BACKOFF_RETRIES backoffs", lastException)
     }
 
     /**
-     * Wait before retrying a rate-limited chunk. A server-stated
-     * Retry-After (delta-seconds or HTTP-date, via ParallelRangeRetryAfter)
-     * is honoured up to a hard cap: the server knows its own limiter, but a
-     * broken or hostile header must never camp a real-time pipeline. With no
-     * usable header the wait is exponential per attempt from a base that
-     * escalates with repeated episodes, so a hard limiter produces
-     * progressively longer waits across cycles instead of the indefinite
-     * fixed-period retry a self-resetting ladder degenerates into. Jitter
-     * decorrelates concurrent retries. Capping a server-stated wait at a few
-     * seconds would cause an indefinite re-429 loop against strict CDNs.
+     * Waits until the session's rate gate lets piece [chunkIndex] send. False when the piece was retired meanwhile;
+     * throws once the server has refused everything for [ParallelRangeRateGate.GIVE_UP_MS].
      */
-    private fun rateLimitWaitMs(
-        attempt: Int,
-        escalation: Int,
-        rl: HttpDataSource.InvalidResponseCodeException
-    ): Long {
-        val jitter = (Math.random() * RATE_LIMIT_BACKOFF_JITTER_MS).toLong()
+    private fun awaitRateGate(
+        activeSession: Resources.ChunkSession,
+        chunkIndex: Long,
+        future: CompletableFuture<*>,
+        cause: Exception?
+    ): Boolean {
+        val gate = activeSession.rateGate
+        var started = false
+        try {
+            while (true) {
+                if (future.isDone || activeSession.abandoned.get()) return false
+                if (gate.tryStart(chunkIndex)) {
+                    started = true
+                    return true
+                }
+                if (gate.spellMs() >= ParallelRangeRateGate.GIVE_UP_MS) {
+                    throw IOException("Chunk $chunkIndex still rate-limited after ${gate.spellMs() / 1000} s", cause)
+                }
+                try {
+                    Thread.sleep(RATE_LIMIT_SLEEP_SLICE_MS)
+                } catch (_: InterruptedException) {
+                    return false
+                }
+            }
+        } finally {
+            if (!started) gate.leave(chunkIndex)
+        }
+    }
+
+    private fun retryAfterMs(rl: HttpDataSource.InvalidResponseCodeException): Long? {
         val header = rl.headerFields.entries
             .firstOrNull { it.key?.equals("Retry-After", ignoreCase = true) == true }
             ?.value?.firstOrNull()?.trim()
-        val headerMs = ParallelRangeRetryAfter.parseHeaderMs(header)
-        if (headerMs != null) {
-            return headerMs.coerceAtMost(RATE_LIMIT_WAIT_HARD_CAP_MS) + jitter
-        }
-        val cycleCapMs = (RATE_LIMIT_BACKOFF_CYCLE_CAP_MS shl escalation.coerceIn(0, RATE_LIMIT_ESCALATION_MAX))
-            .coerceAtMost(RATE_LIMIT_WAIT_HARD_CAP_MS)
-        val base = RATE_LIMIT_BACKOFF_BASE_MS shl (attempt + escalation).coerceIn(0, 6)
-        return base.coerceIn(RATE_LIMIT_BACKOFF_BASE_MS, cycleCapMs) + jitter
-    }
-
-    /**
-     * Sleep in short slices so a stop/seek aborts the backoff promptly.
-     * Watches future completion/cancellation and session teardown only, not the instance
-     * closed flag, to stay consistent with the session-owned download model.
-     * Returns false if the wait should abort.
-     */
-    private fun sleepInterruptibly(
-        totalMs: Long,
-        future: CompletableFuture<*>,
-        activeSession: Resources.ChunkSession
-    ): Boolean {
-        var slept = 0L
-        while (slept < totalMs) {
-            if (future.isDone || activeSession.abandoned.get()) return false
-            val slice = minOf(RATE_LIMIT_SLEEP_SLICE_MS, totalMs - slept)
-            try {
-                Thread.sleep(slice)
-            } catch (_: InterruptedException) {
-                return false
-            }
-            slept += slice
-        }
-        return !(future.isDone || activeSession.abandoned.get())
+        return ParallelRangeRetryAfter.parseHeaderMs(header)
     }
 
     /** Read from an already-opened DataSource into a pooled chunk buffer. */
