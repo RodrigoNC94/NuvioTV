@@ -1,0 +1,85 @@
+name: Shield Arc Build
+
+# Builds an installable Nuvio Arc APK for the 2019 Shield TV Pro from this branch.
+# - Installs next to the official Nuvio and the author's Nuvio Arc (package suffix .rodrigo).
+# - Its updater looks at this repository, so it never offers or installs the author's releases.
+# - Signing: uses the SHIELD_TEST_* secrets when they exist (same key every build, so new
+#   builds install over the old one). Without them a throwaway key is made each run, and you
+#   must uninstall the previous build before installing a new one.
+
+on:
+  push:
+    branches: [nuvio-arc-review]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shield-arc-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build release APKs
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.SHIELD_TEST_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.SHIELD_TEST_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SHIELD_TEST_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SHIELD_TEST_KEY_PASSWORD }}
+        run: |
+          keystore="$RUNNER_TEMP/shield.jks"
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$keystore"
+            echo "Signing with the SHIELD_TEST_* key (stable across builds)."
+          else
+            STORE_PASSWORD=android; KEY_ALIAS=shieldtest; KEY_PASSWORD=android
+            keytool -genkeypair -keystore "$keystore" -storepass "$STORE_PASSWORD" \
+              -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" -dname "CN=Shield Test" \
+              -keyalg RSA -keysize 2048 -validity 10000
+            echo "::warning::No SHIELD_TEST_* secrets: signed with a one-off key. Uninstall the previous build before installing this one."
+          fi
+          touch local.properties
+          {
+            echo "NUVIO_RELEASE_STORE_FILE=$keystore"
+            echo "NUVIO_RELEASE_STORE_PASSWORD=$STORE_PASSWORD"
+            echo "NUVIO_RELEASE_KEY_ALIAS=$KEY_ALIAS"
+            echo "NUVIO_RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Build release APKs
+        run: >
+          ./gradlew :app:assembleFullRelease --stacktrace
+          -PnuvioAppIdSuffix=.rodrigo
+          -PnuvioUpdateOwner=${{ github.repository_owner }}
+          -PnuvioUpdateRepo=${{ github.event.repository.name }}
+
+      - name: Upload Shield APK (arm64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuvio-arc-shield-arm64-${{ github.sha }}
+          path: app/build/outputs/apk/full/release/app-full-arm64-v8a-release.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Run the tests touched by the review fixes
+        if: always()
+        continue-on-error: true
+        run: ./gradlew :app:testFullReleaseUnitTest --tests 'com.nuvio.tv.core.party.PartyLinkPolicyTest' --stacktrace

@@ -187,8 +187,12 @@ android {
         buildConfigField("String", "SPONSOR_NAMES", buildConfigString(sponsorNames))
 
         // One beta stream for this fork, including GitHub prereleases.
-        buildConfigField("String", "GITHUB_OWNER", "\"ysosrs123\"")
-        buildConfigField("String", "GITHUB_REPO", "\"NuvioTV-Fork\"")
+        // -PnuvioUpdateOwner / -PnuvioUpdateRepo point a personal build's updater at its own
+        // repository, so it never offers (or silently installs) the upstream fork's releases.
+        val updateOwner = providers.gradleProperty("nuvioUpdateOwner").orNull?.takeIf { it.isNotBlank() } ?: "ysosrs123"
+        val updateRepo = providers.gradleProperty("nuvioUpdateRepo").orNull?.takeIf { it.isNotBlank() } ?: "NuvioTV-Fork"
+        buildConfigField("String", "GITHUB_OWNER", "\"$updateOwner\"")
+        buildConfigField("String", "GITHUB_REPO", "\"$updateRepo\"")
         buildConfigField("String", "GITHUB_REPO_NEW_NAME", "\"Nuvio-Arc\"")
         buildConfigField("boolean", "UPDATE_CHECK_ENABLED", "true")
     }
