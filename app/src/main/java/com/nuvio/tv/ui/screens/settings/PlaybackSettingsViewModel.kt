@@ -170,6 +170,10 @@ class PlaybackSettingsViewModel @Inject constructor(
         playerSettingsDataStore.setUseSystemPassthrough(enabled)
     }
 
+    suspend fun setDtsHdTvPassthrough(enabled: Boolean) {
+        playerSettingsDataStore.setDtsHdTvPassthrough(enabled)
+    }
+
     fun resetIecPassthroughProbe() {
         _iecProbeFeedback.tryEmit(IecProbeFeedback.STARTED)
         PlatformIecAudioTrackFactory.resetIec61937Probe { usable ->

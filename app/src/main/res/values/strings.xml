@@ -915,6 +915,10 @@
     <string name="audio_tunneled_sub_prefer_app">Not available while Decoder priority is set to Prefer app decoders</string>
     <string name="audio_use_system_passthrough">System Passthrough</string>
     <string name="audio_use_system_passthrough_sub">Sends TrueHD and DTS-HD to your receiver through Android (System path) instead of Nuvio Arc (IEC path). Use this if lossless formats produce noise, drift, or no audio.</string>
+    <string name="audio_dtshd_tv_passthrough">DTS-HD and DTS:X passthrough</string>
+    <string name="audio_dtshd_tv_passthrough_sub">Choose TV passthrough if your soundbar shows plain DTS or plays nothing on DTS-HD or DTS:X films.</string>
+    <string name="audio_dtshd_tv_passthrough_standard">Standard</string>
+    <string name="audio_dtshd_tv_passthrough_tv">TV passthrough</string>
     <string name="audio_force_optical_passthrough">Force AC-3 transcoding (optical/SPDIF)</string>
     <string name="audio_force_optical_passthrough_sub">Transcodes multichannel formats (TrueHD, DTS, AAC, etc.) to Dolby Digital 5.1 in real-time for Optical/SPDIF connections.</string>
     <string name="audio_surround_header">Surround Sound</string>
@@ -3681,13 +3685,14 @@
     <string name="assessment_value_your_call">Your call</string>
     <string name="assessment_value_leave_as_is">Leave as is</string>
     <string name="assessment_value_auto">Auto</string>
-    <string name="assessment_value_on_auto">On \u00b7 Auto (\u2248%1$s now)</string>
+    <string name="assessment_value_on_auto">On \u00b7 Auto, up to \u2248%1$s</string>
     <string name="assessment_value_seconds">%1$d s</string>
     <string name="assessment_value_afr_start_stop">On - start &amp; stop</string>
     <string name="assessment_value_afr_start">On - start only</string>
     <string name="assessment_unit_mb">%1$d MB</string>
     <string name="assessment_unit_kb">%1$d KB</string>
     <string name="assessment_current_parallel_on">On - %1$d \u00d7 %2$s</string>
+    <string name="assessment_value_connections_auto">Automatic (follows Automatic speed-up)</string>
 
     <string name="assessment_item_parallel">Parallel Connections</string>
     <string name="assessment_item_chunk">Chunk Size</string>
@@ -3713,6 +3718,9 @@
     <string name="assessment_grounds_parallel_cannot">Fastest measured %1$s at %2$d \u00d7 %3$d MB - below the title\'s own bitrate; this link can\'t sustain the stream</string>
     <string name="assessment_grounds_parallel_fastest">Fastest measured %1$s at %2$d \u00d7 %3$d MB - no title bitrate was known, so no sufficiency verdict</string>
     <string name="assessment_grounds_chunk">Paired with the connection count above, from the same measured pass</string>
+    <string name="assessment_grounds_connections_auto">Automatic speed-up is on and adds connections by itself when a film needs them; a fixed number would switch that off. Measured: one connection %1$s, %3$d \u00d7 %4$d MB reached %2$s.</string>
+    <string name="assessment_grounds_connections_auto_one">Automatic speed-up is on. One connection measured %1$s, already at least 2\u00d7 this title\'s bitrate, so it will seldom need to add more.</string>
+    <string name="assessment_grounds_connections_auto_untested">Automatic speed-up is on and adds connections by itself when a film needs them. No stream was tested, so there are no speeds to show.</string>
     <string name="assessment_grounds_perf_mode">Keeps remux-sized buffers off the Java heap so garbage collection can\'t stutter frames; memory limits scale to this device\'s %1$s tier (safe %2$d MB / warning %3$d MB) and counts above %4$d connections require it</string>
     <string name="assessment_grounds_perf_mode_unsupported">Requires Android 8.0 or newer</string>
     <string name="assessment_grounds_native_auto">The app sizes the buffer for this %1$s box (up to %2$d MB, less when memory is short) and keeps it in native memory</string>
@@ -3727,7 +3735,7 @@
     <string name="assessment_grounds_network_untested">Only needed for parallel connections, and no stream was tested to decide on them</string>
     <string name="assessment_grounds_max_buffer">A %1$d MB target holds \u2248%2$d s of this title (%3$s) - seconds beyond that can\'t materialise</string>
     <string name="assessment_grounds_max_buffer_nobitrate">No title bitrate known - the byte ceiling can\'t be computed; leaving the cap at %1$d s</string>
-    <string name="assessment_grounds_vod_auto">Auto sizes from free space (20%% of free within limits, 1 GB reserve) - \u2248%1$s on this device right now</string>
+    <string name="assessment_grounds_vod_auto">Auto sizes from free space (20%% of free within limits, 1 GB reserve), so the cache can grow to \u2248%1$s on this device. Nothing is stored while the cache is off.</string>
     <string name="assessment_grounds_vod_off">Not enough free space for a useful cache (needs \u2265 100 MB after the 1 GB reserve) - the runtime would stream direct anyway</string>
     <string name="assessment_grounds_afr_on">Display reports multiple refresh rates at the current resolution (%1$s)</string>
     <string name="assessment_grounds_afr_already">Already on - Start vs Start &amp; stop is preference: fewer HDMI resyncs vs the UI returning to 60 Hz</string>
@@ -3779,6 +3787,7 @@
     <string name="assessment_section_verify">Detected - verify yourself</string>
     <string name="assessment_measured_skipped">No last-played stream - sweep skipped. Play something, then rerun for measured rows.</string>
     <string name="assessment_currently">Currently: %1$s</string>
+    <string name="assessment_suggested">Suggested: %1$s</string>
     <string name="assessment_profile_values">start %1$d s \u00b7 rebuffer %2$d s \u00b7 min %3$d s</string>
     <string name="assessment_profile_suggested_stable">Suggested - your link held steady during the sweep</string>
     <string name="assessment_profile_suggested_variable">Suggested - your link wobbled during the sweep</string>

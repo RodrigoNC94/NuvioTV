@@ -122,6 +122,17 @@ class ParallelDiagnosticOwnershipTest {
         assertEquals(1,diagnostic.diagnosticClampTrips)
         assertEquals(7,ParallelRangeDataSource.hudClampTrips); assertFalse(ParallelRangeDataSource.hudClampLatched)
     }
+    @Test fun `a clamp above the live download limit clears after a quiet spell`() {
+        val playback=source(false); val own=session(playback)
+        call(own,"beginRateLimitEpisode",24)
+        assertTrue(ParallelRangeDataSource.hudClampLatched)
+        assertEquals(5,call(own,"currentAllowedDepth",5))
+        assertTrue(ParallelRangeDataSource.hudClampLatched)
+        every { SystemClock.uptimeMillis() } returns 110_001L
+        assertEquals(5,call(own,"currentAllowedDepth",5))
+        assertFalse(ParallelRangeDataSource.hudClampLatched)
+        assertEquals(0,ParallelRangeDataSource.hudDepthCap)
+    }
     @Test fun `diagnostic clamp suppresses escalation using its private state`() {
         val diagnostic=source(true); val own=session(diagnostic); val future=CompletableFuture<Any>()
         futures(own)[0L]=future; call(own,"beginRateLimitEpisode",3)

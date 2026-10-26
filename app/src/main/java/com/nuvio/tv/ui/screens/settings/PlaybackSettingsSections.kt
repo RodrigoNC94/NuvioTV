@@ -179,8 +179,11 @@ private fun PlaybackThumbnailRows(
 ) {
     val context = LocalContext.current
     val internalPlayer = settings.playerPreference != PlayerPreference.EXTERNAL
-    val seekThumbMode by SeekThumbnailPreferences.modeFlow(context).collectAsState(initial = SeekThumbMode.OFF)
-    // Null until the store has answered: the row below is not greyed out for that first frame.
+    // Null until the store has answered: the rows below are not greyed out for that first frame.
+    val seekThumbModeRead by SeekThumbnailPreferences.modeFlow(context)
+        .collectAsState<SeekThumbMode, SeekThumbMode?>(initial = null)
+    val seekThumbMode = seekThumbModeRead ?: SeekThumbMode.OFF
+    val seekThumbsOn = seekThumbModeRead != SeekThumbMode.OFF
     val seekThumbPrepareRead by SeekThumbnailPreferences.prepareModeFlow(context)
         .collectAsState<ThumbPrepareMode, ThumbPrepareMode?>(initial = null)
     val seekThumbPrepare = seekThumbPrepareRead ?: ThumbPrepareMode.OFF
@@ -205,14 +208,14 @@ private fun PlaybackThumbnailRows(
         title = stringResource(R.string.seek_thumbnails_prepare_title),
         subtitle = null,
         value = stringResource(seekThumbPrepare.label),
-        enabled = internalPlayer,
+        enabled = internalPlayer && seekThumbsOn,
         onClick = { onOpenDialog(PlaybackDialog.SEEK_THUMBNAIL_PREPARE) }
     )
     SettingsActionRow(
         title = stringResource(R.string.seek_thumbnails_before_play_title),
         subtitle = null,
         value = stringResource(seekThumbBeforePlay.label),
-        enabled = internalPlayer && seekThumbPrepareRead != ThumbPrepareMode.OFF,
+        enabled = internalPlayer && seekThumbsOn && seekThumbPrepareRead != ThumbPrepareMode.OFF,
         onClick = { onOpenDialog(PlaybackDialog.SEEK_THUMBNAILS_BEFORE_PLAY) }
     )
     SettingsToggleRow(
@@ -220,7 +223,7 @@ private fun PlaybackThumbnailRows(
         subtitle = stringResource(R.string.seek_thumbnails_from_copy_subtitle),
         checked = seekThumbFromCopy,
         onToggle = { seekThumbScope.launch { SeekThumbnailPreferences.setCopy(context, !seekThumbFromCopy) } },
-        enabled = internalPlayer && seekThumbMode != SeekThumbMode.OFF
+        enabled = internalPlayer && seekThumbsOn
     )
     val seekThumbStoredLabel = when {
         seekThumbStoredBytes < 0L -> null

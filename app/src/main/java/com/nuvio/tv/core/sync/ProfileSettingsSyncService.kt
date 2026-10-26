@@ -108,6 +108,7 @@ private val localOnlyPlayerProfileSettingsKeys = setOf(
     "denied_codec_handling",
     "mat_passthrough_enabled",
     "use_system_passthrough",
+    "dts_hd_tv_passthrough",
     "surround_format_mode",
     "surround_channel_target",
     "surround_tv_arc_soundbar",

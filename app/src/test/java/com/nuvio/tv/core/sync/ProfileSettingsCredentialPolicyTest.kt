@@ -72,6 +72,7 @@ class ProfileSettingsCredentialPolicyTest {
     @Test
     fun `system passthrough stays device local like the other audio chain switches`() {
         assertTrue(shouldExcludePreferenceFromProfileSettingsSync("player_settings", "use_system_passthrough"))
+        assertTrue(shouldExcludePreferenceFromProfileSettingsSync("player_settings", "dts_hd_tv_passthrough"))
         assertTrue(shouldExcludePreferenceFromProfileSettingsSync("player_settings", "tunneling_enabled"))
         assertTrue(shouldExcludePreferenceFromProfileSettingsSync("player_settings", "force_optical_passthrough"))
         assertFalse(shouldExcludePreferenceFromProfileSettingsSync("debrid_settings", "use_system_passthrough"))

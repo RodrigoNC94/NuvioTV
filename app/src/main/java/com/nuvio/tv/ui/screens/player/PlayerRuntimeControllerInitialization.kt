@@ -195,6 +195,7 @@ internal data class ExoConstructionFingerprint(
     val maintainOriginalAudioOnDownmix: Boolean,
     val forceOpticalPassthroughActive: Boolean,
     val useSystemPassthrough: Boolean,
+    val dtsHdTvPassthrough: Boolean = false,
     val iecOff: Boolean = false,
     val initialForcePcm: Boolean,
     val audioPassthroughPolicy: com.nuvio.tv.core.player.AudioPassthroughPolicy,
@@ -1268,6 +1269,9 @@ internal fun PlayerRuntimeController.initializePlayer(
             val isForcePassthroughActive = !isBluetoothAudioOutput &&
                 playerSettings.forceOpticalPassthrough &&
                 playerSettings.decoderPriority != 0
+            val dtsHdTvPassthroughActive = playerSettings.dtsHdTvPassthrough &&
+                !isBluetoothAudioOutput &&
+                TvArcAudioOutput.isActive(context)
             // Force-AC3 does not escalate the *global* extension mode to
             // PREFER (that would put software AV1 video decode ahead of
             // MediaCodec). The FFmpeg audio renderer is instead reordered
@@ -1411,6 +1415,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                 downmixNormalizationEnabled = !playerSettings.maintainOriginalAudioOnDownmix,
                 forceOpticalPassthrough = isForcePassthroughActive,
                 useSystemPassthrough = playerSettings.useSystemPassthrough,
+                dtsHdTvPassthrough = dtsHdTvPassthroughActive,
                 iecOff = iecOffStreamUrls.contains(url),
                 onIecFailed = {
                     Handler(Looper.getMainLooper()).post { onOwnIecOutputFailed() }
@@ -1535,6 +1540,7 @@ internal fun PlayerRuntimeController.initializePlayer(
                 maintainOriginalAudioOnDownmix = playerSettings.maintainOriginalAudioOnDownmix,
                 forceOpticalPassthroughActive = isForcePassthroughActive,
                 useSystemPassthrough = playerSettings.useSystemPassthrough,
+                dtsHdTvPassthrough = dtsHdTvPassthroughActive,
                 iecOff = iecOffStreamUrls.contains(url),
                 initialForcePcm = hasTriedAudioPcmFallback,
                 audioPassthroughPolicy = surroundResolution.policy,
@@ -3230,6 +3236,7 @@ private class SubtitleOffsetRenderersFactory(
     private val downmixNormalizationEnabled: Boolean,
     private val forceOpticalPassthrough: Boolean,
     private val useSystemPassthrough: Boolean,
+    private val dtsHdTvPassthrough: Boolean = false,
     private val iecOff: Boolean = false,
     private val onIecFailed: (() -> Unit)? = null,
     private val deniedTranscodeMimes: Set<String>,
@@ -3399,7 +3406,8 @@ private class SubtitleOffsetRenderersFactory(
             },
             onIecFailed = onIecFailed,
             onDiagnosticEvent = onAudioDiagnosticEvent,
-            audioOutputReady = { PassthroughOutputReturn.outputReadyNow(context) }
+            audioOutputReady = { PassthroughOutputReturn.outputReadyNow(context) },
+            dtsHdIecEnabled = !dtsHdTvPassthrough
         )
         val playbackSpeedAwareAudioSink = PlaybackSpeedAwareAudioSink(
             sink = iecAudioSink,
