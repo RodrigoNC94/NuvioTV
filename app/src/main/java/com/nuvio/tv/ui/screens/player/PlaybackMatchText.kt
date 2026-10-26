@@ -24,6 +24,94 @@ internal fun playbackMatchText(info: PlayerMediaInfo, languages: List<String>, r
 }
 
 /**
+ * What a badge pack is matched against on the player: what is playing, then the file name the
+ * stats HUD shows, as one text like the stream list joins a stream's texts. The pack's own
+ * patterns then meet the spellings they were written for. Words in the file name that the player
+ * contradicts are taken out first, so a Dolby Vision file playing as HDR10 still reads HDR only
+ * and a switch to another audio track drops the file name's audio.
+ */
+internal fun playerBadgeMatchText(
+    info: PlayerMediaInfo,
+    languages: List<String>,
+    releaseText: String,
+    fileName: String,
+    audioFromRelease: Boolean
+): String {
+    val playing = playbackMatchText(info, languages, releaseText.takeIf { audioFromRelease }.orEmpty())
+    val file = playbackFileName(fileName, info, releaseText, audioFromRelease)
+    return "$playing $file".trim()
+}
+
+/**
+ * [fileName] with the words the player contradicts blanked out: picture format, resolution,
+ * video codec, audio format, Atmos and channels. A word stays while the player cannot tell yet.
+ */
+internal fun playbackFileName(
+    fileName: String,
+    info: PlayerMediaInfo,
+    releaseText: String = fileName,
+    audioFromRelease: Boolean = true
+): String {
+    if (fileName.isBlank()) return ""
+    val dv = "DV" in info.hdr || !info.hdrKnown
+    val hdr = "HDR10" in info.hdr || "HLG" in info.hdr || !info.hdrKnown
+    val sdr = info.hdr.isEmpty() || !info.hdrKnown
+    val resolutions = resolutionTokens(info).map(::resolutionKey).toSet()
+    val videoFamily = info.videoCodec?.let(::videoFamily)
+    val audioKey = info.audioCodec?.let(::codecKey)
+    val playingAudio = audioKey?.let(::audioWordFamily)
+    val atmos = audioFacts(info.audioCodec, info.audioProfile, releaseText.lowercase())?.atmos
+    val channels = channelLabel(info.audioChannels)
+    val dtsCore = audioKey == "DTS" && info.audioProfile.orEmpty().uppercase().let { "HD" !in it && "MA" !in it && ":X" !in it }
+    fun audioWordFits(word: String): Boolean {
+        if (!audioFromRelease) return false
+        if (playingAudio == null) return true
+        val family = audioWordFamily(word.uppercase().filter { it.isLetterOrDigit() || it == '+' })
+        if (family != playingAudio) return false
+        // DTS-HD MA or DTS:X in the name, but the player reports the DTS core.
+        return family != "DTS" || !dtsCore || word.filter { it.isLetter() }.equals("dts", ignoreCase = true)
+    }
+    return fileName.replace('\n', ' ')
+        .replace(FILE_DV) { if (dv) it.value else " " }
+        .replace(FILE_HDR) { if (hdr) it.value else " " }
+        .replace(FILE_SDR) { if (sdr) it.value else " " }
+        .replace(FILE_RESOLUTION) { if (info.videoWidth == null || resolutionKey(it.value) in resolutions) it.value else " " }
+        .replace(FILE_VIDEO_CODEC) { if (videoFamily == null || videoFamily(it.value) == videoFamily) it.value else " " }
+        .replace(FILE_AUDIO_CODEC) { if (audioWordFits(it.value)) it.value else " " }
+        .replace(FILE_ATMOS) { if (audioFromRelease && (playingAudio == null || atmos == true)) it.value else " " }
+        .replace(FILE_CHANNELS) {
+            val label = "${it.groupValues[1]}.${it.groupValues[2]}"
+            if (audioFromRelease && (channels == null || label == channels)) it.value else " "
+        }
+}
+
+private fun resolutionKey(word: String): String = when (val key = word.lowercase().filter { it.isLetterOrDigit() }) {
+    "fullhd" -> "fhd"
+    "ultrahd" -> "uhd"
+    else -> key
+}
+
+private fun videoFamily(codec: String): String = when (val key = codecKey(codec)) {
+    "HEVC", "H265", "X265", "DOLBYVISION" -> "HEVC"
+    "AVC", "H264", "X264" -> "AVC"
+    "VC1" -> "VC1"
+    "MPEG2", "MPEG2VIDEO" -> "MPEG2"
+    "MPEG4", "XVID", "DIVX" -> "MPEG4"
+    else -> key
+}
+
+/** [key] upper case letters and digits, with the + of DD+ kept. */
+private fun audioWordFamily(key: String): String = when {
+    key.startsWith("DDP") || key.startsWith("DD+") || key.startsWith("EAC3") || key == "DOLBYDIGITALPLUS" -> "EAC3"
+    key == "DD" || key == "AC3" || key == "DOLBYDIGITAL" -> "AC3"
+    key.startsWith("TRUEHD") -> "TRUEHD"
+    key.startsWith("DTS") -> "DTS"
+    key.startsWith("AAC") -> "AAC"
+    key.startsWith("PCM") || key == "LPCM" -> "PCM"
+    else -> key
+}
+
+/**
  * The selected audio language as packs spell it: the track's code, the upper-case ISO 639-1 code
  * AIOStreams prints (EN, PT-BR), both ISO 639-2 codes, the name, and AIOStreams' flag for it.
  */
@@ -95,6 +183,28 @@ private fun audioFamily(codec: String?): String? {
         else -> key
     }
 }
+
+private const val WORD_START = "(?<![A-Za-z0-9])"
+private const val WORD_END = "(?![A-Za-z0-9])"
+private val FILE_DV = Regex("""$WORD_START(?:dolby[ ._-]?vision|dovi|dv)$WORD_END""", RegexOption.IGNORE_CASE)
+private val FILE_HDR = Regex("""$WORD_START(?:hdr[ ._-]?10(?:\+|[ ._-]?plus|p)?|hdr|hlg)(?![A-Za-z0-9+])""", RegexOption.IGNORE_CASE)
+private val FILE_SDR = Regex("""${WORD_START}sdr$WORD_END""", RegexOption.IGNORE_CASE)
+private val FILE_RESOLUTION = Regex(
+    """$WORD_START(?:\d{3,4}[pi]|[248]k|uhd|qhd|fhd|full[ ._-]?hd|ultra[ ._-]?hd)$WORD_END""",
+    RegexOption.IGNORE_CASE
+)
+private val FILE_VIDEO_CODEC = Regex(
+    """$WORD_START(?:hevc|[xh][ .]?265|avc|[xh][ .]?264|av1|vp9|vc-?1|mpeg-?2|xvid|divx)$WORD_END""",
+    RegexOption.IGNORE_CASE
+)
+/** Digits may follow, as in DDP5.1 or AAC2.0. */
+private val FILE_AUDIO_CODEC = Regex(
+    """$WORD_START(?:ddpa?|dd\+|e-?ac-?3|dd|ac-?3|dolby[ ._-]?digital(?:[ ._-]?plus)?|true[ ._-]?hd|""" +
+        """dts(?:[ ._:-]?(?:hd|ma|x|es|hra?|xll|express))*|aac|flac|opus|l?pcm)(?![A-Za-z+])""",
+    RegexOption.IGNORE_CASE
+)
+private val FILE_ATMOS = Regex("""(?:(?<![A-Za-z0-9])|(?<=ddp|truehd))atmos$WORD_END""", RegexOption.IGNORE_CASE)
+private val FILE_CHANNELS = Regex("""(?<!\d)(?<!\d[.])([1-8])[ ._]([01])(?![0-9])""")
 
 private val SECONDARY_AUDIO_ROLES = setOf(TrackRole.COMMENTARY, TrackRole.AUDIO_DESCRIPTION)
 

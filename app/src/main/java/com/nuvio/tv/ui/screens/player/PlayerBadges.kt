@@ -33,6 +33,7 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
     // A new stream starts clean, so its row never carries the last stream's audio.
     var mediaInfo by remember(uiState.currentStreamUrl) { mutableStateOf(PlayerMediaInfo()) }
     var releaseText by remember(uiState.currentStreamUrl) { mutableStateOf("") }
+    var fileName by remember(uiState.currentStreamUrl) { mutableStateOf("") }
     val selectedAudio = uiState.audioTracks.firstOrNull { it.isSelected }
     LaunchedEffect(
         enabled,
@@ -53,6 +54,8 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
             if (info != mediaInfo) mediaInfo = info
             val release = viewModel.playingReleaseText()
             if (release != releaseText) releaseText = release
+            val file = viewModel.playingFileName()
+            if (file != fileName) fileName = file
             // Look again sooner while the row is still filling in or the player catches up with a switch;
             // capped, as a stream with no audio never completes and a source's track ids may never meet.
             val switching = info.audioTrackId != null && selectedAudio?.trackId != null && info.audioTrackId != selectedAudio.trackId
@@ -70,7 +73,7 @@ internal fun rememberPlayerBadges(viewModel: PlayerViewModel, uiState: PlayerUiS
         }
     }
     val language = mediaInfo.audioLanguage ?: playingAudio?.language
-    val text = playbackMatchText(mediaInfo, playbackLanguageTokens(language), releaseText.takeIf { audioFromRelease }.orEmpty())
+    val text = playerBadgeMatchText(mediaInfo, playbackLanguageTokens(language), releaseText, fileName, audioFromRelease)
     return remember(text, filters) {
         StreamBadgeMatcher.matchedBadges(listOfNotNull(text.takeIf { it.isNotBlank() }), filters)
             .filter { it.imageURL.isNotBlank() }

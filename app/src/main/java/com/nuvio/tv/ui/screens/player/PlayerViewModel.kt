@@ -421,14 +421,7 @@ class PlayerViewModel @Inject constructor(
         // Resolved only by this media source's network data sources; background calls cannot set it.
         hud.transfer.endpoint?.let { rows += StatsRow("Server", it.display) }
             ?: host?.let { rows += StatsRow("Source host", "$it · serving endpoint unavailable") }
-        val urlFileName = streamUrl
-            ?.let { runCatching { URI(it).path }.getOrNull() }
-            ?.substringAfterLast('/')
-            ?.let { runCatching { java.net.URLDecoder.decode(it, "UTF-8") }.getOrNull() ?: it }
-            ?.takeIf { it.isNotBlank() && it.contains('.') }
-        val scraperFileName = controller.currentFilename?.takeIf { it.isNotBlank() }
-        (scraperFileName ?: urlFileName ?: controller.uiState.value.currentStreamName)
-            ?.takeIf { it.isNotBlank() }
+        controller.playingFileName()
             ?.let { rows += StatsRow("File", it.replace("\n", " \u00b7 "), marquee = true) }
 
         // File size, whenever the source declared a content length at open(). It also
@@ -1103,6 +1096,8 @@ class PlayerViewModel @Inject constructor(
     fun playerMediaInfo(): PlayerMediaInfo = controller.playerMediaInfo()
 
     fun playingReleaseText(): String = controller.playingReleaseText()
+
+    fun playingFileName(): String = controller.playingFileName().orEmpty()
 
     fun bindExoSubtitleView(subtitleView: androidx.media3.ui.SubtitleView?) {
         controller.bindExoSubtitleView(subtitleView)

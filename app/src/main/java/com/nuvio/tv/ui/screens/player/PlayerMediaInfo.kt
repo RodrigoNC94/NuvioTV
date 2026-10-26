@@ -46,6 +46,17 @@ private fun Player.selectedTrackFormat(type: Int): Format? {
     return selected.singleOrNull()?.let(group::getTrackFormat)
 }
 
+/** The file name the stats HUD shows: the add-on's file name, else the link's last part, else the stream name. */
+internal fun PlayerRuntimeController.playingFileName(): String? =
+    listOfNotNull(currentFilename, urlFileName(getCurrentStreamUrl()), _uiState.value.currentStreamName)
+        .firstOrNull { it.isNotBlank() }
+
+internal fun urlFileName(url: String?): String? = url
+    ?.let { runCatching { java.net.URI(it).path }.getOrNull() }
+    ?.substringAfterLast('/')
+    ?.let { runCatching { java.net.URLDecoder.decode(it, "UTF-8") }.getOrNull() ?: it }
+    ?.takeIf { it.isNotBlank() && it.contains('.') }
+
 /** File name, stream name and description of what is playing, for badges the player cannot read. */
 internal fun PlayerRuntimeController.playingReleaseText(): String =
     listOfNotNull(currentFilename, _uiState.value.currentStreamName, currentStreamDescription)
