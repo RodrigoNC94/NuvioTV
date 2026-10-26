@@ -177,17 +177,36 @@ internal object CopyChoice {
         return null
     }
 
+    /** A copy above this many Mbit/s (a disc remux) costs several times the bytes per thumbnail of a WEB copy. */
+    const val HEAVY_MBPS = 20.0
+    /** With no length to work the bitrate out from, a disc copy this large counts as heavy. */
+    const val HEAVY_DISC_BYTES = 15_000_000_000L
+
+    /**
+     * A disc remux or anything else above [HEAVY_MBPS]: its keyframes are 3 to 5 times the size of a WEB copy's for
+     * the same 480-wide thumbnail. The bitrate comes from the size and the copy's length, else the playing title's
+     * length [ownMs].
+     */
+    fun heavy(offer: CopyOffer, ownMs: Long?): Boolean {
+        val bytes = offer.sizeBytes?.takeIf { it > 0L } ?: return false
+        val ms = offer.durationMs?.takeIf { it > 0L } ?: ownMs?.takeIf { it > 0L }
+        if (ms == null) return !offer.web && bytes >= HEAVY_DISC_BYTES
+        return bytes * 8.0 / (ms / 1000.0) / 1_000_000.0 > HEAVY_MBPS
+    }
+
     /**
      * Copies with no account side effects first (TorBox list, server versions, ready links), then a version on a media
      * server away from home, then a TorBox copy added
      * and removed again, then Premiumize, then a debrid resolve link (may stay in that account), then Usenet (an
-     * indexer grab); within that SDR before HDR, H.264 before HEVC
+     * indexer grab); within that light copies before [heavy] ones (fewer bytes per thumbnail), SDR before HDR, H.264
+     * before HEVC
      * (a thumbnail is 480 wide, so a 720p H.264 copy gives the same picture faster than a 1080p HEVC one), 1080p before
      * 720p, WEB first, smaller files first, and by source cost last (TorBox list before server versions and links). For a title playing from Usenet ([usenet]) the source comes first: server versions, the TorBox list,
      * Premiumize, ready links, a TorBox copy added and removed again, then a debrid resolve link.
      */
-    fun order(offers: List<CopyOffer>, usenet: Boolean = false): List<CopyOffer> = offers.sortedWith(
+    fun order(offers: List<CopyOffer>, usenet: Boolean = false, ownMs: Long? = null): List<CopyOffer> = offers.sortedWith(
         compareBy<CopyOffer> { if (usenet) usenetRank(it.kind) else sideEffects(it) }
+            .thenBy { if (heavy(it, ownMs)) 1 else 0 }
             .thenBy { if (it.hdr) 1 else 0 }
             .thenBy { codecRank(it.codec) }
             .thenBy { HEIGHTS.indexOf(it.height).let { i -> if (i < 0) HEIGHTS.size else i } }

@@ -236,7 +236,7 @@ internal class CopyPass(
             val why = CopyChoice.rejection(o, offers.playingText, own.durationMs, own.maxHeight, own.usenet)
             if (why == null) usable += o else if (logged++ < MAX_REJECT_LOGS) Log.i(TAG, "not used: ${o.label} - $why")
         }
-        val ranked = CopyChoice.order(usable, own.usenet)
+        val ranked = CopyChoice.order(usable, own.usenet, own.durationMs)
         if (ranked.isEmpty()) return end(State.DONE, "no copy of this title among ${offers.offers.size} sources fits")
         Log.i(TAG, "${ranked.size} possible copies, in order: " + ranked.take(5).joinToString("; ") { describe(it) })
         var checks = 0
@@ -290,7 +290,7 @@ internal class CopyPass(
     private fun describe(o: CopyOffer): String =
         "${o.label} [${o.kind.name.lowercase()}, ${o.height}p ${o.codec.name}${if (o.hdr) " HDR" else ""}" +
             "${if (o.web) " WEB" else ""}${o.sizeBytes?.let { ", ${it / (1024 * 1024)} MB" } ?: ""}" +
-            "${o.durationMs?.let { ", ${it / 1000} s" } ?: ""}]"
+            "${o.durationMs?.let { ", ${it / 1000} s" } ?: ""}${if (CopyChoice.heavy(o, own.durationMs)) ", heavy" else ""}]"
 
     private suspend fun awaitOffers(): CopyOffers? {
         val deadline = SystemClock.elapsedRealtime() + LIST_WAIT_MS

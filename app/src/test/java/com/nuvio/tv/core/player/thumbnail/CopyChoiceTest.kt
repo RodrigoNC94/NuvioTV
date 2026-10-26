@@ -127,6 +127,42 @@ class CopyChoiceTest {
     }
 
     @Test
+    fun aHeavyRemuxCopyComesAfterALightWebCopyEvenWhenTheRemuxIsH264() {
+        // 2 h film: a 1080p H.264 disc remux of 30 GB is ~33 Mbit/s, a 1080p HEVC WEB-DL of 6 GB ~6.7 Mbit/s.
+        val ordered = CopyChoice.order(listOf(
+            offer("remux", web = false, size = 30_000_000_000L, text = "Film.2019.1080p.BluRay.REMUX.AVC-GRP"),
+            offer("webhevc", codec = CopyCodec.HEVC, size = 6_000_000_000L),
+            offer("web720", height = 720, size = 3_000_000_000L),
+        ), ownMs = ownMs).map { it.id }
+        assertEquals(listOf("web720", "webhevc", "remux"), ordered)
+        // Without the film's length the old order stands: H.264 first.
+        assertEquals("remux", CopyChoice.order(listOf(
+            offer("webhevc", codec = CopyCodec.HEVC, size = 6_000_000_000L),
+            offer("remux", web = false, size = 12_000_000_000L),
+        )).first().id)
+    }
+
+    @Test
+    fun heavyIsWorkedOutFromTheCopysOwnLengthFirst() {
+        assertTrue(CopyChoice.heavy(offer("a", size = 20_000_000_000L), ownMs))           // 22 Mbit/s
+        assertFalse(CopyChoice.heavy(offer("b", size = 15_000_000_000L), ownMs))          // 16.7 Mbit/s
+        assertFalse(CopyChoice.heavy(offer("c", size = 20_000_000_000L, durationMs = 10_800_000L), ownMs)) // 3 h: 14.8
+        assertFalse(CopyChoice.heavy(offer("d", size = null), ownMs))
+        assertTrue(CopyChoice.heavy(offer("e", web = false, size = 16_000_000_000L), null))
+        assertFalse(CopyChoice.heavy(offer("f", web = true, size = 16_000_000_000L), null))
+        assertFalse(CopyChoice.heavy(offer("g", web = false, size = 8_000_000_000L), null))
+    }
+
+    @Test
+    fun heavyCopiesStayBehindTheSideEffectRule() {
+        val ordered = CopyChoice.order(listOf(
+            offer("added", kind = CopyKind.TORBOX_ADD, size = 5_000_000_000L),
+            offer("remux", web = false, size = 30_000_000_000L),
+        ), ownMs = ownMs).map { it.id }
+        assertEquals(listOf("remux", "added"), ordered)
+    }
+
+    @Test
     fun aUsenetTitleTakesAnyCopyUpToItsOwnResolutionButNoUsenetLink() {
         val hd = "Film.2019.1080p.WEB-DL.DDP5.1.H264-GRP"
         assertNull(CopyChoice.rejection(offer("same"), hd, ownMs, maxHeight = 1080, usenet = true))
